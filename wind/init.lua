@@ -1,3 +1,4 @@
-local extension = require("packages/shzl/wind/wind")[1]
+local pack = require("packages/shzl/wind/wind")[1]
+pack.extensionName = "shzl"
 
-return extension
+return pack
