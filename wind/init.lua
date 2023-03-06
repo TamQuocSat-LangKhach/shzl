@@ -30,7 +30,7 @@ local jushou = fk.CreateTriggerSkill{
   anim_type = "offensive",
   events = {fk.EventPhaseEnd},
   can_trigger = function(self, event, target, player, data)
-    return taregt == player and player:hasSkill(self.name) and player.phase == Player.Finish
+    return target == player and player:hasSkill(self.name) and player.phase == Player.Finish
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room
@@ -73,9 +73,9 @@ local kuanggu = fk.CreateTriggerSkill{
   name = "kuanggu",
   anim_type = "support",
   frequency = Skill.Compulsory,
-  events = {fk.Damaged},
+  events = {fk.Damage},
   can_trigger = function(self, event, target, player, data)
-    return player:hasSkill(self.name) and player:distanceTo(target) <= 1 and target == player and data.from == player
+    return player:hasSkill(self.name) and target == player and player:distanceTo(target) <= 1 and data.from == player and player:isWounded()
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room
@@ -105,6 +105,7 @@ local leiji = fk.CreateTriggerSkill{
   on_cost = function(self, event, target, player, data)
     local room = player.room
     local other = room:getOtherPlayers(player)
+    local prompt = "#leiji-target"
     local targets = {}
 
     for _, p in ipairs(other) do
@@ -149,6 +150,7 @@ local guidao = fk.CreateTriggerSkill{
   on_cost = function(self, event, target, player, data)
     local room = player.room
     local prompt = "#guidao-ask::" .. target.id
+
     local card = room:askForResponse(player, self.name, ".|.|spade,club|hand,equip", prompt, true)
     if card ~= nil then
       self.cost_data = card
@@ -167,6 +169,7 @@ Fk:loadTranslationTable{
   ["zhangjiao"] = "张角",
   ["leiji"] = "雷击",
   [":leiji"] = "当你使用或打出【闪】时，你可以令一名角色进行判定，若结果为黑桃，你对其造成2点雷电伤害。",
+  ["#leiji-target"] = "雷击：当你使用或打出【闪】时，你可以令一名角色进行判定，若结果为黑桃，你对其造成2点雷电伤害。",
   ["guidao"] = "鬼道",
   [":guidao"] = "当一名角色的判定牌生效前，你可以打出一张黑色牌替换之。",
   ["#guidao-ask"] = "是否发动“鬼道”，打出一张牌替换 %dest 的判定？",
@@ -182,6 +185,7 @@ local tianxiang = fk.CreateTriggerSkill{
   on_cost = function(self, event, target, player, data)
     local room = player.room
     local other = room:getOtherPlayers(player)
+    local prompt = "#tianxaing-target" 
     local targets = {}
 
     for _, p in ipairs(other) do
@@ -203,18 +207,17 @@ local tianxiang = fk.CreateTriggerSkill{
 
     room:throwCard(self.cost_data2, self.name, player)
 
-    data.damage = 0
-
     room:damage{
       from = data.from,
       to = tar,
-      damage = 1,
+      damage = data.damage,
       damageType = data.type,
       skillName = self.name,
     }
 
-    data.to = tar
     tar:drawCards((tar.maxHp - tar.hp), self.name)
+
+    return true
   end,
 }
 local hongyan = fk.CreateFilterSkill{
@@ -233,6 +236,7 @@ Fk:loadTranslationTable{
   ["xiaoqiao"] = "小乔",
   ["tianxiang"] = "天香",
   [":tianxiang"] = "当你受到伤害时，你可以弃置一张红桃手牌并选择一名其他角色。若如此做，你将此伤害转移给该角色，然后其摸X张牌（X为其已损失体力值）。",
+  ["#tianxaing-target" ] = "天香：当你受到伤害时，你可以弃置一张红桃手牌并选择一名其他角色。若如此做，你将此伤害转移给该角色，然后其摸X张牌（X为其已损失体力值）。",
   ["hongyan"] = "红颜",
   [":hongyan"] = "锁定技，你的黑桃牌视为红桃牌。",
 }
