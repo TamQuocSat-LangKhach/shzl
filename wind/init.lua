@@ -75,7 +75,7 @@ local kuanggu = fk.CreateTriggerSkill{
   frequency = Skill.Compulsory,
   events = {fk.Damage},
   can_trigger = function(self, event, target, player, data)
-    return player:hasSkill(self.name) and target == player and player:distanceTo(target) <= 1 and data.from == player and player:isWounded()
+    return player:hasSkill(self.name) and target == player and player:distanceTo(data.to) <= 1 and player:isWounded()
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room
