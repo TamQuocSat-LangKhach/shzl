@@ -51,9 +51,9 @@ local mengjin = fk.CreateTriggerSkill{
   anim_type = "offensive",
   events = {fk.CardUseFinished},
   can_trigger = function(self, event, target, player, data)
-    if not player:hasSkill(self.name) and target:isNude() then return end
+    if (not player:hasSkill(self.name)) or target:isNude() then return end
     local use = data
-    if use.card.name == "jink" and use.toCard and use.toCard.name == "slash" then
+    if use.card.name == "jink" and use.toCard and use.toCard.trueName == "slash" then
       local effect = use.responseToEvent
       return effect.from == player.id
     end

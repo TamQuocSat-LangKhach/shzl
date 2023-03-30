@@ -48,17 +48,18 @@ Fk:loadTranslationTable{
 
 local liegong = fk.CreateTriggerSkill{
   name = "liegong",
-  anim_type = "drawcard",
+  anim_type = "offensive",
   events = {fk.TargetSpecified},
   can_trigger = function(self, event, target, player, data)
-    if target == player and player:hasSkill(self.name) then
-      local num = target:getCardIds(Player.Hand)
-      local filter = #num <= player:getAttackRange() or #num >= player.hp
-      return data.card.name == "slash" and filter and player.phase == Player.Play
-    end
+    if not (target == player and player:hasSkill(self.name)) then return end
+    local room = player.room
+    local to = room:getPlayerById(data.to)
+    local num = #to:getCardIds(Player.Hand)
+    local filter = num <= player:getAttackRange() or num >= player.hp
+    return data.card.trueName == "slash" and filter and player.phase == Player.Play
   end,
   on_use = function(self, event, target, player, data)
-    data.disresponsive = true
+    data.disresponsive = true -- FIXME: use disreponseList. this is FK's bug
   end,
 }
 local huangzhong = General:new(extension, "huangzhong", "shu", 4)   
