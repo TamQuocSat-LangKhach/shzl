@@ -106,9 +106,83 @@ Fk:loadTranslationTable{
   ["sunjian"] = "孙坚",
   ["yinghun"] = "英魂",
   [":yinghun"] = "准备阶段，若你已受伤，你可以选择一名其他角色并选择一项：1.令其摸X张牌，然后弃置一张牌；2.令其摸一张牌，然后弃置X张牌（X为你已损失的体力值）。",
-  ["#yinghun-target"] = "英魂：准备阶段，若你已受伤，你可以选择一名其他角色并选择一项：1.令其摸X张牌，然后弃置一张牌；2.令其摸一张牌，然后弃置X张牌（X为你已损失的体力值）。",
+  ["#yinghun-target"] = "英魂：你可以令一名其他角色：摸X张牌然后弃一张牌，或摸一张牌然后弃X张牌",
   ["#yinghun-draw"] = "摸X弃一",
   ["#yinghun-discard"] = "摸一弃X"
+}
+
+local dongzhuo = General(extension, "dongzhuo", "qun", 8)
+local jiuchi = fk.CreateViewAsSkill{
+  name = "jiuchi",
+  anim_type = "offensive",
+  pattern = "analeptic",
+  card_filter = function(self, to_select, selected)
+    return #selected == 0 and Fk:getCardById(to_select).suit == Card.Spade and Fk:currentRoom():getCardArea(to_select) ~= Player.Equip
+  end,
+  view_as = function(self, cards)
+    if #cards ~= 1 then return nil end
+    local c = Fk:cloneCard("analeptic")
+    c.skillName = self.name
+    c:addSubcard(cards[1])
+    return c
+  end,
+}
+local roulin = fk.CreateTriggerSkill{
+  name = "roulin",
+  anim_type = "offensive",
+  frequency = Skill.Compulsory,
+  events = {fk.TargetSpecified, fk.TargetConfirmed},
+  can_trigger = function(self, event, target, player, data)
+    if target == player and player:hasSkill(self.name) and data.card.trueName == "slash" then
+      if event == fk.TargetSpecified then
+        return player.room:getPlayerById(data.to).gender == General.Female
+      else
+        return player.room:getPlayerById(data.from).gender == General.Female
+      end
+    end
+  end,
+  on_use = function(self, event, target, player, data)
+    data.fixedResponseTimes = data.fixedResponseTimes or {}
+    data.fixedResponseTimes["jink"] = 2
+  end,
+}
+local benghuai = fk.CreateTriggerSkill{
+  name = "benghuai",
+  anim_type = "negative",
+  frequency = Skill.Compulsory,
+  events = {fk.EventPhaseStart},
+  can_trigger = function(self, event, target, player, data)
+    if target == player and player:hasSkill(self.name) and player.phase == Player.Finish then
+      for _, p in ipairs(player.room:getOtherPlayers(player)) do
+        if p.hp < player.hp then
+          return true
+        end
+      end
+    end
+  end,
+  on_use = function(self, event, target, player, data)
+    local room = player.room
+    local choice = room:askForChoice(player, {"loseMaxHp", "loseHp"}, self.name)
+    if choice == "loseMaxHp" then
+      room:changeMaxHp(player, -1)
+    else
+      room:loseHp(player, 1, self.name)
+    end
+  end,
+}
+dongzhuo:addSkill(jiuchi)
+dongzhuo:addSkill(roulin)
+dongzhuo:addSkill(benghuai)
+Fk:loadTranslationTable{
+  ["dongzhuo"] = "董卓",
+  ["jiuchi"] = "酒池",
+  [":jiuchi"] = "你可以将一张♠手牌当【酒】使用。",
+  ["roulin"] = "肉林",
+  [":roulin"] = "锁定技，你对女性角色使用【杀】，或女性角色对你使用【杀】均需两张【闪】才能抵消。",
+  ["benghuai"] = "崩坏",
+  [":benghuai"] = "锁定技，结束阶段，若你不是体力值最小的角色，你选择减1点体力上限或失去1点体力。",
+  ["baonve"] = "暴虐",
+  [":baonve"] = "主公技，其他群雄武将造成伤害时，其可以进行一次判定，若判定结果为♠，你回复1点体力。",
 }
 
 return extension

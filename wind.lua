@@ -5,24 +5,65 @@ Fk:loadTranslationTable{
   ["wind"] = "风",
 }
 
+local xiahouyuan = General(extension, "xiahouyuan", "wei", 4)
 local shensu = fk.CreateTriggerSkill{
   name = "shensu",
   anim_type = "offensive",
-  events = {fk.EventPhaseStart},
+  events = {fk.EventPhaseChanging},
   can_trigger = function(self, event, target, player, data)
-    return target == player and player:hasSkill(self.name) and player.phase == Player.Start
+    if target == player and player:hasSkill(self.name) then
+      if data.to == Player.Judge then
+        return true
+      elseif data.to == Player.Play then
+        return not player:isNude()
+      end
+    end
   end,
-  on_use = function(self, event, target, player, data) 
-    player:skip(Player.Judge)
-    player:skip(Player.Draw)
+  on_cost = function(self, event, target, player, data)
+    local room = player.room
+    local targets = {}
+    for _, p in ipairs(room:getOtherPlayers(player)) do  --TODO: target filter
+      table.insert(targets, p.id)
+    end
+    if #targets == 0 then return end
+    if data.to == Player.Judge then
+      local to = room:askForChoosePlayers(player, targets, 1, 1, "#shensu1-choose", self.name, true)
+      if #to > 0 then
+        self.cost_data = to[1]
+        player:skip(Player.Judge)
+        player:skip(Player.Draw)
+        return true
+      end
+    elseif data.to == Player.Play then
+      --FIXME: this will divulge handcard !
+      local tos, id = room:askForChooseCardAndPlayers(player, targets, 1, 1, ".|.|.|.|.|equip", "#shensu2-choose", self.name, true)
+      if #tos > 0 then
+        self.cost_data = tos[1]
+        player:skip(Player.Play)
+        room:throwCard({id}, self.name, player, player)
+        return true
+      end
+    end
+  end,
+  on_use = function(self, event, target, player, data)
+    local slash = Fk:cloneCard("slash")
+    player.room:useCard({
+      card = slash,
+      from = player.id,
+      tos = {{self.cost_data}},
+      skillName = self.name,
+      extraUse = true,
+    })
+    return true
   end,
 }
--- local xiahouyuan = General:new(extension, "xiahouyuan", "wei", 4)
--- xiahouyuan:addSkill(shensu)
+xiahouyuan:addSkill(shensu)
 Fk:loadTranslationTable{
   ["xiahouyuan"] = "夏侯渊",
   ["shensu"] = "神速",
   [":shensu"] = "你可以做出如下选择：1.跳过判定阶段和摸牌阶段；2.跳过出牌阶段并弃置一张装备牌。你每选择一项，便视为你使用一张无距离限制的【杀】。",
+  ["#shensu1-choose"] = "神速：你可以跳过判定阶段和摸牌阶段，视为你使用一张无距离限制的【杀】",
+  ["#shensu2-choose"] = "神速：你可以跳过出牌阶段并弃置一张装备牌，视为你使用一张无距离限制的【杀】",
 }
 
 local jushou = fk.CreateTriggerSkill{
@@ -145,8 +186,7 @@ local guidao = fk.CreateTriggerSkill{
   anim_type = "control",
   events = {fk.AskForRetrial},
   can_trigger = function(self, event, target, player, data)
-    local cards = player:getCardIds({Player.Hand, Player.Equip})
-    return player:hasSkill(self.name) and #cards > 0
+    return player:hasSkill(self.name) and not player:isNude()
   end,
   on_cost = function(self, event, target, player, data)
     local room = player.room
@@ -203,21 +243,18 @@ local tianxiang = fk.CreateTriggerSkill{
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room
-    local tar = room:getPlayerById(self.cost_data)
-    local num = data.damage
-
-    room:throwCard(self.cost_data2, self.name, player)
-
+    local to = room:getPlayerById(self.cost_data)
+    room:throwCard(self.cost_data2, self.name, player, player)
     room:damage{
       from = data.from,
-      to = tar,
+      to = to,
       damage = data.damage,
       damageType = data.type,
       skillName = self.name,
     }
-
-    tar:drawCards((tar.maxHp - tar.hp), self.name)
-
+    if not to.dead then
+      to:drawCards(to:getLostHp(), self.name)
+    end
     return true
   end,
 }
@@ -230,7 +267,7 @@ local hongyan = fk.CreateFilterSkill{
     return Fk:cloneCard(to_select.name, Card.Heart, to_select.number)
   end,
 }
-local xiaoqiao = General:new(extension, "xiaoqiao", "wu", 3, 3, General.Female)   
+local xiaoqiao = General:new(extension, "xiaoqiao", "wu", 3, 3, General.Female)
 xiaoqiao:addSkill(tianxiang)
 xiaoqiao:addSkill(hongyan)
 Fk:loadTranslationTable{
