@@ -233,7 +233,7 @@ local tianxiang = fk.CreateTriggerSkill{
       table.insert(targets, p.id)
     end
 
-    local tar, card = room:askForChooseCardAndPlayers(player, targets, 1, 1, ".|.|heart|hand", prompt, self.name)
+    local tar, card = room:askForChooseCardAndPlayers(player, targets, 1, 1, ".|.|heart|hand", prompt, self.name, true)
 
     if #tar > 0 and card then
       self.cost_data = tar[1]
