@@ -5,31 +5,35 @@ Fk:loadTranslationTable{
   ["fire"] = "火",
 }
 
+local dianwei = General(extension, "dianwei", "wei", 4)
 local qiangxi = fk.CreateActiveSkill{
   name = "qiangxi",
   anim_type = "offensive",
+  max_card_num = 1,
+  target_num = 1,
   can_use = function(self, player)
     return player:usedSkillTimes(self.name) == 0
   end,
   card_filter = function(self, to_select, selected)
-    local card = Fk:getCardById(to_select)
-    return card.sub_type == Card.SubtypeWeapon
+    return Fk:getCardById(to_select).sub_type == Card.SubtypeWeapon
   end,
-  target_filter = function(self, to_select, selected)
-    return #selected == 0 and to_select ~= Self.id
+  target_filter = function(self, to_select, selected, selected_cards)
+    if #selected == 0 and to_select ~= Self.id then
+      if #selected_cards == 0 or Fk:currentRoom():getCardArea(selected_cards[1]) ~= Player.Equip then
+        return Self:inMyAttackRange(Fk:currentRoom():getPlayerById(to_select))
+      else
+        return Self:distanceTo(Fk:currentRoom():getPlayerById(to_select)) == 1  --FIXME: some skills(eg.gongqi, meibu) add attackrange directly!
+      end
+    end
   end,
-  target_num = 1,
-  max_card_num = 1,
   on_use = function(self, room, effect)
     local player = room:getPlayerById(effect.from)
     local target = room:getPlayerById(effect.tos[1])
-
     if #effect.cards > 0 then
       room:throwCard(effect.cards, self.name, player)
     else
       room:loseHp(player, 1, self.name)
     end
-
     room:damage{
       from = player,
       to = target,
@@ -38,7 +42,6 @@ local qiangxi = fk.CreateActiveSkill{
     }
   end,
 }
-local dianwei = General:new(extension, "dianwei", "wei", 4)
 dianwei:addSkill(qiangxi)
 Fk:loadTranslationTable{
   ["dianwei"] = "典韦",
@@ -46,31 +49,23 @@ Fk:loadTranslationTable{
   [":qiangxi"] = "出牌阶段限一次，你可以失去1点体力或弃置一张武器牌，并选择你攻击范围内的一名其他角色，对其造成1点伤害。",
 }
 
+local pangde = General(extension, "pangde", "qun", 4)
 local mengjin = fk.CreateTriggerSkill{
   name = "mengjin",
   anim_type = "offensive",
   events = {fk.CardUseFinished},
   can_trigger = function(self, event, target, player, data)
-    if (not player:hasSkill(self.name)) or target:isNude() then return end
-    local use = data
-    if use.card.name == "jink" and use.toCard and use.toCard.trueName == "slash" then
-      local effect = use.responseToEvent
-      return effect.from == player.id
-    end
+    return player:hasSkill(self.name) and
+      data.card.name == "jink" and data.toCard and data.toCard.trueName == "slash" and
+      data.responseToEvent and data.responseToEvent.from == player.id and
+      not target:isNude()
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room
-    local cid = room:askForCardChosen(
-      player,
-      target,
-      "he",
-      self.name
-    )
-
+    local cid = room:askForCardChosen(player, target, "he", self.name)
     room:throwCard(cid, self.name, target)
   end,
 }
-local pangde = General:new(extension, "pangde", "qun", 4)
 pangde:addSkill("mashu")
 pangde:addSkill(mengjin)
 Fk:loadTranslationTable{

@@ -5,6 +5,101 @@ Fk:loadTranslationTable{
   ["mountain"] = "山",
 }
 
+local dengai = General(extension, "dengai", "wei", 4)
+local tuntian = fk.CreateTriggerSkill{
+  name = "tuntian",
+  anim_type = "special",
+  events = {fk.AfterCardsMove},
+  can_trigger = function(self, event, target, player, data)
+    if player:hasSkill(self.name) and player.phase == Player.NotActive then
+      for _, move in ipairs(data) do
+        if move.from == player.id then
+          for _, info in ipairs(move.moveInfo) do
+            if info.fromArea == Card.PlayerHand or info.fromArea == Card.PlayerEquip then
+              return true
+            end
+          end
+        end
+      end
+    end
+  end,
+  on_use = function(self, event, target, player, data)
+    local room = player.room
+    local judge = {
+      who = player,
+      reason = self.name,
+      pattern = ".|.|spade,club,diamond",
+    }
+    room:judge(judge)
+  end,
+
+  refresh_events = {fk.FinishJudge},
+  can_refresh = function(self, event, target, player, data)
+    return player:hasSkill(self.name) and data.reason == self.name
+  end,
+  on_refresh = function(self, event, target, player, data)
+    if data.card.suit ~= Card.Heart and player.room:getCardArea(data.card) == Card.Processing then
+      player:addToPile("dengai_tian", data.card, true, self.name)
+    end
+  end,
+}
+local tuntian_distance = fk.CreateDistanceSkill{
+  name = "#tuntian_distance",
+  correct_func = function(self, from, to)
+    if from:hasSkill(self.name) then
+      return -#from:getPile("dengai_tian")
+    end
+  end,
+}
+local zaoxian = fk.CreateTriggerSkill{
+  name = "zaoxian",
+  frequency = Skill.Wake,
+  events = {fk.EventPhaseStart},
+  can_trigger = function(self, event, target, player, data)
+    return target == player and player:hasSkill(self.name) and
+      player:usedSkillTimes(self.name, Player.HistoryGame) == 0 and
+      player.phase == Player.Start and
+      #player:getPile("dengai_tian") > 2
+  end,
+  on_use = function(self, event, target, player, data)
+    local room = player.room
+    room:changeMaxHp(player, -1)
+    room:handleAddLoseSkills(player, "jixi", nil)
+  end,
+}
+local jixi = fk.CreateViewAsSkill{
+  name = "jixi",
+  anim_type = "control",
+  pattern = "snatch",
+  expand_pile = "dengai_tian",
+  card_filter = function(self, to_select, selected)
+    return #selected == 0 and Self:getPileNameOfId(to_select) == "dengai_tian"
+  end,
+  view_as = function(self, cards)
+    if #cards ~= 1 then
+      return nil
+    end
+    local c = Fk:cloneCard("snatch")
+    c.skillName = self.name
+    c:addSubcard(cards[1])
+    return c
+  end,
+}
+tuntian:addRelatedSkill(tuntian_distance)
+dengai:addSkill(tuntian)
+dengai:addSkill(zaoxian)
+Fk:addSkill(jixi)
+Fk:loadTranslationTable{
+  ["dengai"] = "邓艾",
+  ["tuntian"] = "屯田",
+  [":tuntian"] = "当你于回合外失去牌后，你可以进行判定：若结果不为♥，你将生效后的判定牌置于你的武将牌上，称为“田”；你计算与其他角色的距离-X（X为“田”的数量）。",
+  ["zaoxian"] = "凿险",
+  [":zaoxian"] = "觉醒技，准备阶段，若“田”的数量不少于3张，你减1点体力上限，然后获得〖急袭〗。",
+  ["jixi"] = "急袭",
+  [":jixi"] = "你可以将一张“田”当【顺手牵羊】使用。",
+  ["dengai_tian"] = "田",
+}
+
 local jiangwei = General(extension, "jiangwei", "shu", 4)
 local tiaoxin = fk.CreateActiveSkill{
   name = "tiaoxin",
@@ -116,7 +211,7 @@ Fk:loadTranslationTable{
   ["jiang"] = "激昂",
   [":jiang"] = "当你使用【决斗】或红色【杀】指定目标后，或成为【决斗】或红色【杀】的目标后，你可以摸一张牌。",
   ["hunzi"] = "魂姿",
-  [":hunzi"] = "觉醒技，准备阶段，若你的体力值为1，你减1点体力上限，然后获得“英姿”和“英魂”。",
+  [":hunzi"] = "觉醒技，准备阶段，若你的体力值为1，你减1点体力上限，然后获得〖英姿〗和〖英魂〗。",
   ["zhiba"] = "制霸",
   [":zhiba"] = "主公技，其他吴势力角色的出牌阶段限一次，该角色可以与你拼点（若你已觉醒，你可以拒绝此拼点），若其没赢，你可以获得拼点的两张牌。",
 }

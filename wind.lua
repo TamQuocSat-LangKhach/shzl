@@ -87,6 +87,7 @@ Fk:loadTranslationTable{
   [":jushou"] = "结束阶段，你可以摸三张牌，然后翻面。",
 }
 
+local huangzhong = General(extension, "huangzhong", "shu", 4)
 local liegong = fk.CreateTriggerSkill{
   name = "liegong",
   anim_type = "offensive",
@@ -103,7 +104,6 @@ local liegong = fk.CreateTriggerSkill{
     data.disresponsive = true -- FIXME: use disreponseList. this is FK's bug
   end,
 }
-local huangzhong = General:new(extension, "huangzhong", "shu", 4)   
 huangzhong:addSkill(liegong)
 Fk:loadTranslationTable{
   ["huangzhong"] = "黄忠",
@@ -111,6 +111,7 @@ Fk:loadTranslationTable{
   [":liegong"] = "当你于出牌阶段内使用【杀】指定一个目标后，若该角色的手牌数不小于你的体力值或不大于你的攻击范围，则你可以令其不能使用【闪】响应此【杀】。",
 }
 
+local weiyan = General(extension, "weiyan", "shu", 4)
 local kuanggu = fk.CreateTriggerSkill{
   name = "kuanggu",
   anim_type = "support",
@@ -129,7 +130,6 @@ local kuanggu = fk.CreateTriggerSkill{
     })
   end,
 }
-local weiyan = General:new(extension, "weiyan", "shu", 4)   
 weiyan:addSkill(kuanggu)
 Fk:loadTranslationTable{
   ["weiyan"] = "魏延",
