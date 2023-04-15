@@ -49,6 +49,101 @@ Fk:loadTranslationTable{
   [":qiangxi"] = "出牌阶段限一次，你可以失去1点体力或弃置一张武器牌，并选择你攻击范围内的一名其他角色，对其造成1点伤害。",
 }
 
+local xunyu = General(extension, "xunyu", "wei", 3)
+local quhu = fk.CreateActiveSkill{
+  name = "quhu",
+  anim_type = "offensive",
+  card_num = 0,
+  target_num = 1,
+  can_use = function(self, player)
+    return not player:isKongcheng() and player:usedSkillTimes(self.name) == 0
+  end,
+  card_filter = function(self, to_select, selected)
+    return false
+  end,
+  target_filter = function(self, to_select, selected, selected_cards)
+    local target = Fk:currentRoom():getPlayerById(to_select)
+    return #selected == 0 and not target:isKongcheng() and target.hp > Self.hp
+  end,
+  on_use = function(self, room, effect)
+    local player = room:getPlayerById(effect.from)
+    local target = room:getPlayerById(effect.tos[1])
+    local pindian = player:pindian({target}, self.name)
+    if pindian.results[target.id].winner == player then
+      local targets = {}
+      for _, p in ipairs(room:getOtherPlayers(target)) do
+        if target:inMyAttackRange(p) then
+          table.insert(targets, p.id)
+        end
+      end
+      if #targets == 0 then return end
+      local tos = room:askForChoosePlayers(player, targets, 1, 1, "#quhu-choose", self.name)
+      local to
+      if #tos > 0 then
+        to = tos[1]
+      else
+        to = table.random(targets)
+      end
+      room:damage{
+        from = target,
+        to = room:getPlayerById(to),
+        damage = 1,
+        skillName = self.name,
+      }
+    else
+      room:damage{
+        from = target,
+        to = player,
+        damage = 1,
+        skillName = self.name,
+      }
+    end
+  end,
+}
+local jieming = fk.CreateTriggerSkill{
+  name = "jieming",
+  anim_type = "masochism",
+  events = {fk.Damaged},
+  on_trigger = function(self, event, target, player, data)
+    self.cancel_cost = false
+    for i = 1, data.damage do
+      if self.cancel_cost then break end
+      self:doCost(event, target, player, data)
+    end
+  end,
+  on_cost = function(self, event, target, player, data)
+    local room = player.room
+    local targets = {}
+    for _, p in ipairs(room:getAlivePlayers()) do
+      if #p.player_cards[Player.Hand] < math.min(p.maxHp, 5) then
+        table.insert(targets, p.id)
+      end
+    end
+    if #targets == 0 then return end
+    local to = room:askForChoosePlayers(player, targets, 1, 1, "#jieming-choose", self.name, true)
+    if #to > 0 then
+      self.cost_data = to[1]
+      return true
+    end
+    self.cancel_cost = true
+  end,
+  on_use = function(self, event, target, player, data)
+    local to = player.room:getPlayerById(self.cost_data)
+    to:drawCards(math.min(to.maxHp, 5) - #to.player_cards[Player.Hand])
+  end,
+}
+xunyu:addSkill(quhu)
+xunyu:addSkill(jieming)
+Fk:loadTranslationTable{
+  ["xunyu"] = "荀彧",
+  ["quhu"] = "驱虎",
+  [":quhu"] = "出牌阶段限一次，你可以与一名体力值大于你的角色拼点。若你赢，则该角色对其攻击范围内你指定的另一名角色造成1点伤害；若你没赢，则其对你造成1点伤害。",
+  ["jieming"] = "节命",
+  [":jieming"] = "当你受到1点伤害后，你可令一名角色将手牌补至X张（X为其体力上限且最多为5）。",
+  ["#quhu-choose"] = "驱虎：选择其攻击范围内的一名角色，其对此角色造成1点伤害",
+  ["#jieming-choose"] = "节命：令一名角色将手牌补至X张（X为其体力上限且最多为5）",
+}
+
 local pangde = General(extension, "pangde", "qun", 4)
 local mengjin = fk.CreateTriggerSkill{
   name = "mengjin",
