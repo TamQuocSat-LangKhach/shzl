@@ -144,6 +144,67 @@ Fk:loadTranslationTable{
   ["#jieming-choose"] = "节命：令一名角色将手牌补至X张（X为其体力上限且最多为5）",
 }
 
+local taishici = General(extension, "taishici", "wu", 4)
+local tianyi = fk.CreateActiveSkill{
+  name = "tianyi",
+  anim_type = "offensive",
+  card_num = 0,
+  target_num = 1,
+  can_use = function(self, player)
+    return not player:isKongcheng() and player:usedSkillTimes(self.name) == 0
+  end,
+  card_filter = function(self, to_select, selected)
+    return false
+  end,
+  target_filter = function(self, to_select, selected, selected_cards)
+    return #selected == 0 and not Fk:currentRoom():getPlayerById(to_select):isKongcheng()
+  end,
+  on_use = function(self, room, effect)
+    local player = room:getPlayerById(effect.from)
+    local target = room:getPlayerById(effect.tos[1])
+    local pindian = player:pindian({target}, self.name)
+    if pindian.results[target.id].winner == player then
+      room:addPlayerMark(player, "tianyi_win-turn", 1)
+    else
+      room:addPlayerMark(player, "tianyi_lose-turn", 1)
+    end
+  end,
+}
+local tianyi_targetmod = fk.CreateTargetModSkill{
+  name = "#tianyi_targetmod",
+  residue_func = function(self, player, skill, scope)
+    if skill.trueName == "slash_skill" and player:getMark("tianyi_win-turn") > 0 and scope == Player.HistoryPhase then
+      return 1
+    end
+  end,
+  distance_limit_func =  function(self, player, skill)
+    if skill.trueName == "slash_skill" and player:getMark("tianyi_win-turn") > 0 then
+      return 999
+    end
+  end,
+  extra_target_func = function(self, player, skill)
+    if skill.trueName == "slash_skill" and player:getMark("tianyi_win-turn") > 0 then
+      return 1
+    end
+  end,
+}
+local tianyi_prohibit = fk.CreateProhibitSkill{
+  name = "#tianyi_prohibit",
+  is_prohibited = function()
+  end,
+  prohibit_use = function(self, player, card)
+    return player:getMark("tianyi_lose-turn") > 0 and card.trueName == "slash"
+  end,
+}
+tianyi:addRelatedSkill(tianyi_targetmod)
+tianyi:addRelatedSkill(tianyi_prohibit)
+taishici:addSkill(tianyi)
+Fk:loadTranslationTable{
+  ["taishici"] = "太史慈",
+  ["tianyi"] = "天义",
+  [":tianyi"] = "出牌阶段限一次，你可以与一名角色拼点：若你赢，在本回合结束之前，你可以多使用一张【杀】、使用【杀】无距离限制且可以多选择一个目标；若你没赢，本回合你不能使用【杀】。",
+}
+
 local pangde = General(extension, "pangde", "qun", 4)
 local mengjin = fk.CreateTriggerSkill{
   name = "mengjin",

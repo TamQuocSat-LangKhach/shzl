@@ -232,7 +232,7 @@ local dimeng = fk.CreateActiveSkill{
     room:moveCards(move1, move2)
   end,
 }
-haoshi:addRelatedSkill(haoshi_active)
+Fk:addSkill(haoshi_active)
 lusu:addSkill(haoshi)
 lusu:addSkill(dimeng)
 Fk:loadTranslationTable{

@@ -67,7 +67,7 @@ local zaoxian = fk.CreateTriggerSkill{
     room:handleAddLoseSkills(player, "jixi", nil)
   end,
 }
-local jixi = fk.CreateViewAsSkill{
+local jixi = fk.CreateViewAsSkill{  --FIXME: 用来急袭的那张田不应产生-1距离
   name = "jixi",
   anim_type = "control",
   pattern = "snatch",
