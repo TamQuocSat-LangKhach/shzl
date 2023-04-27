@@ -309,4 +309,189 @@ Fk:loadTranslationTable{
   [":feiying"] = "锁定技，其他角色计算与你的距离时始终+1。",
 }
 
+local goddiaochan = General(extension, "goddiaochan", "god", 3)
+goddiaochan.gender = General.Female
+local meihun = fk.CreateTriggerSkill{
+  name = "meihun",
+  anim_type = "control",
+  mute = true,
+  events = {fk.EventPhaseStart, fk.TargetConfirmed},
+  can_trigger = function(self, event, target, player, data)
+    if not (target == player and player:hasSkill(self.name)) then return end
+    if event == fk.EventPhaseStart then
+      return player.phase == Player.Finish
+    elseif event == fk.TargetConfirmed then
+      return data.card.trueName == "slash"
+    end
+  end,
+  on_cost = function(self, event, target, player, data)
+    local room = player.room
+    local targets = {}
+    for _, p in ipairs(room:getOtherPlayers(player)) do
+      if not p:isNude() then
+        table.insert(targets, p.id)
+      end
+    end
+    if #targets == 0 then return end
+
+    local p = room:askForChoosePlayers(player, targets, 1, 1,
+      "#meihun-choose", self.name, true)
+
+    if p[1] then
+      self.cost_data = p[1]
+      return true
+    end
+  end,
+  on_use = function(self, event, target, player, data)
+    local room = player.room
+    room:notifySkillInvoked(player, self.name)
+    if event == fk.TargetConfirmed then
+      room:broadcastSkillInvoke(self.name, math.random(1, 2))
+    else
+      room:broadcastSkillInvoke(self.name, math.random(3, 4))
+    end
+
+    local choice = room:askForChoice(player,
+      {"spade", "heart", "club", "diamond"}, self.name)
+
+    local to = room:getPlayerById(self.cost_data)
+    local c = table.find(to:getCardIds{ Player.Hand, Player.Equip }, function(id)
+      return Fk:getCardById(id):getSuitString() == choice
+    end)
+
+    if c then
+      local card = room:askForCard(to, 1, 1, true, self.name, false,
+        ".|.|" .. choice, "#meihun-give:" .. player.id .. "::" .. choice)
+
+      room:obtainCard(player, card[1], false, fk.ReasonGive)
+    else
+      local cids = to:getCardIds(Player.Hand)
+      if #cids == 0 then return end
+      room:fillAG(player, cids)
+
+      local id = room:askForAG(player, cids, false, self.name)
+      room:closeAG(player)
+
+      if not id then return false end
+      room:throwCard(id, self.name, to, player)
+    end
+  end,
+}
+local huoxinTrig = fk.CreateTriggerSkill{
+  name = "#huoxin_trig",
+  mute = true,
+  events = {fk.TurnStart},
+  can_trigger = function(self, event, target, player, data)
+    return player:hasSkill(self.name) and
+      target:getMark("@huoxin-meihuo") >= 2 and target.faceup
+  end,
+  on_cost = function() return true end,
+  on_use = function(self, event, target, player, data)
+    local room = player.room
+    room:broadcastSkillInvoke("huoxin")
+    room:notifySkillInvoked(player, "huoxin")
+
+    room:setPlayerMark(target, "@huoxin-meihuo", 0)
+    room:addPlayerMark(target, "huoxincontrolled", 1)
+
+    player:control(target)
+  end,
+
+  refresh_events = {fk.TurnEnd},
+  can_refresh = function(_, _, target, player)
+    return target == player and target:getMark("huoxincontrolled") > 0
+  end,
+  on_refresh = function(_, _, target)
+    local room = target.room
+    room:setPlayerMark(target, "huoxincontrolled", 0)
+    target:control(target)
+  end,
+}
+local huoxin = fk.CreateActiveSkill{
+  name = "huoxin",
+  anim_type = "control",
+  can_use = function(self, player)
+    return player:usedSkillTimes(self.name, Player.HistoryPhase) == 0
+  end,
+  card_num = 2,
+  target_num = 2,
+  target_filter = function(self, to_select, selected)
+    return #selected < 2 and to_select ~= Self.id
+  end,
+  card_filter = function(self, to_select, selected)
+    if #selected == 1 then 
+      return Fk:currentRoom():getCardArea(to_select) ~= Player.Equip and
+        Fk:getCardById(to_select).suit == Fk:getCardById(selected[1]).suit
+
+    elseif #selected == 2 then
+      return false
+    end
+
+    return Fk:currentRoom():getCardArea(to_select) ~= Player.Equip
+  end,
+  on_use = function(self, room, effect)
+    local from = room:getPlayerById(effect.from)
+    local tos = effect.tos
+    local target1 = room:getPlayerById(tos[1])
+    local target2 = room:getPlayerById(tos[2])
+    local cards = effect.cards
+    local cpattern = ".|.|.|.|.|.|" .. table.concat(cards, ",")
+
+    from:showCards(cards)
+
+    local p, cid = room:askForChooseCardAndPlayers(from, tos, 1, 1, cpattern,
+      "#huoxin-choose", self.name, false)
+
+    table.removeOne(cards, cid)
+
+    if p[1] == target1.id then
+      room:obtainCard(target1, cid, true, fk.ReasonGive)
+      room:obtainCard(target2, cards[1], true, fk.ReasonGive)
+    else
+      room:obtainCard(target2, cid, true, fk.ReasonGive)
+      room:obtainCard(target1, cards[1], true, fk.ReasonGive)
+    end
+
+    local pindianData = target1:pindian({ target2 }, self.name)
+    local winner = pindianData.results[target2.id].winner
+    if winner ~= target1 then
+      room:addPlayerMark(target1, "@huoxin-meihuo", 1)
+    end
+    if winner ~= target2 then
+      room:addPlayerMark(target2, "@huoxin-meihuo", 1)
+    end
+  end
+}
+huoxin:addRelatedSkill(huoxinTrig)
+goddiaochan:addSkill(meihun)
+goddiaochan:addSkill(huoxin)
+Fk:loadTranslationTable{
+  ["goddiaochan"] = "神貂蝉",
+  ["meihun"] = "魅魂",
+  [":meihun"] = "结束阶段或当你成为【杀】目标后，你可以令一名其他角色" ..
+    "交给你一张你声明的花色的牌，若其没有则你观看其手牌然后弃置其中一张。",
+  ["#meihun-choose"] = "魅魂：你可以对一名其他角色发动“魅魂”",
+  ["#meihun-give"] = "魅魂：请交给 %src 一张 %arg 牌",
+
+  ["huoxin"] = "惑心",
+  [":huoxin"] = "出牌阶段限一次，你可以展示两张花色相同的手牌并分别交给两名" ..
+    "其他角色，然后令这两名角色拼点，没赢的角色获得1个“魅惑”标记。拥有2个或" ..
+    "更多“魅惑”的角色回合即将开始时，该角色移去其所有“魅惑”，" ..
+    "此回合改为由你操控。",
+  ["@huoxin-meihuo"] = "魅惑",
+  ["#huoxin-choose"] = "惑心：请将一张牌交给其中一名角色，另一张牌自动交给另一名",
+  ["#huoxin-pindian"] = "惑心：请选择拼点牌，拼点没赢会获得1枚魅惑标记",
+  ["#huoxin_trig"] = "惑心",
+
+  -- CV: 桃妮儿
+  ["cv:goddiaochan"] = "桃妮儿",
+  ["~goddiaochan"] = "也许，你们日后的所闻所望，都是我某天的所叹所想…",
+  ["$meihun1"] = "将军还记得那晚的话么？弄疼人家，要赔不是哦~",
+  ["$meihun2"] = "让我看看，将军这次会为我心软，还是耳根子软~",
+  ["$meihun3"] = "眼前皆是身外物，将军所在，即吾心归处…",
+  ["$meihun4"] = "既然你说我是魔鬼中的天使，那我就再任性一次~",
+  ["$huoxin1"] = "今天下大乱，就不能摒弃儿女私情，挺身而出吗！",
+  ["$huoxin2"] = "谁怜九州难救天下人，我有一心只付将军身…",
+}
+
 return extension
