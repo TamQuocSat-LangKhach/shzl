@@ -320,4 +320,55 @@ Fk:loadTranslationTable{
   ["loseHp"] = "失去1点体力",
 }
 
+local juxiang = fk.CreateTriggerSkill{
+  name = "juxiang",
+  anim_type = "defensive",
+  frequency = Skill.Compulsory,
+  events = {fk.PreCardEffect, fk.CardUseFinished},
+  can_trigger = function(self, event, target, player, data)
+    if not (player:hasSkill(self.name) and data.card.trueName == "savage_assault") then return false end
+    if event == fk.PreCardEffect then return data.to == player.id
+    else return data.from ~= player.id
+    end
+  end,
+  on_use = function(self, event, target, player, data)
+    if event == fk.PreCardEffect then
+      return true
+    else
+      local room = player.room
+      room:obtainCard(player.id, data.card, false)
+    end
+  end,
+}
+
+local lieren = fk.CreateTriggerSkill{
+  name = "lieren",
+  anim_type = "offensive",
+  frequency = Skill.NotFrequent,
+  events = {fk.Damage},
+  can_trigger = function(self, event, target, player, data)
+    return target == player and player:hasSkill(self.name) and  data.card and data.card.trueName == "slash" and
+            not data.to.dead and not data.to:isNude()
+  end,
+  on_use = function(self, event, target, player, data)
+    local room = player.room
+    local pindian = player:pindian({data.to}, self.name)
+    if pindian.results[data.to.id].winner == player then
+      local card = room:askForCardChosen(player, data.to, "he", self.name)
+      room:obtainCard(player.id, card, false)
+    end
+  end,
+}
+
+local zhurong = General(extension, "zhurong", "shu", 4, 4, General.Female)
+zhurong:addSkill(juxiang)
+zhurong:addSkill(lieren)
+Fk:loadTranslationTable{
+  ["zhurong"] = "祝融",
+  ["juxiang"] = "巨象",
+  [":juxiang"] = "锁定技，【南蛮入侵】对你无效；其他角色使用的【南蛮入侵】结算结束后，你获得之。",
+  ["lieren"] = "烈刃",
+  [":lieren"] = "当你使用【杀】对一个目标造成伤害后，你可以与其拼点，若你赢，你获得其一张牌。",
+}
+
 return extension
