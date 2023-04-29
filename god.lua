@@ -494,4 +494,100 @@ Fk:loadTranslationTable{
   ["$huoxin2"] = "谁怜九州难救天下人，我有一心只付将军身…",
 }
 
+local wushen = fk.CreateFilterSkill{
+  name = "wushen",
+  card_filter = function(self, to_select, player)
+    return player:hasSkill(self.name) and to_select.suit == Card.Heart
+  end,
+  view_as = function(self, to_select)
+    local card = Fk:cloneCard("slash", Card.Heart, to_select.number)
+    card.skillName = self.name
+    return card
+  end,
+}
+
+local wushen_targetmod = fk.CreateTargetModSkill{
+  name = "#wushen_targetmod",
+  anim_type = "offensive",
+  distance_limit_func =  function(self, player, skill, card)
+    if player:hasSkill("wushen") and skill.trueName == "slash_skill" and card.suit == Card.Heart then
+      return 999
+    end
+    return 0
+  end,
+}
+
+local wuhun = fk.CreateTriggerSkill{
+  name = "wuhun",
+  anim_type = "offensive",
+  frequency = Skill.Compulsory,
+  events = {fk.Damaged, fk.Death},
+  can_trigger = function(self, event, target, player, data)
+    if target == player and player:hasSkill(self.name, false, true) then
+      if event == fk.Damaged then
+        return data.from and not data.from.dead and not player.dead
+      else
+        local availableTargets = {}
+        local n = 0
+        for _, p in ipairs(player.room:getOtherPlayers(player)) do
+          if p:getMark("@nightmare") > n then
+            availableTargets = {}
+            table.insert(availableTargets,p.id)
+            n = p:getMark("@nightmare")
+          elseif p:getMark("@nightmare") == n and n ~= 0 then
+            table.insert(availableTargets,p.id)
+          end
+        end
+        if #availableTargets > 0 then
+          self.availableTargets = availableTargets
+          return true
+        end
+      end
+    end
+    return false
+  end,
+  on_use = function(self, event, target, player, data)
+    local room = player.room
+    if event == fk.Damaged then
+      room:addPlayerMark(data.from, "@nightmare", data.damage)
+    else
+      local p_id
+      if #self.availableTargets > 1 then
+        p_id = room:askForChoosePlayers(player, self.availableTargets, 1, 1, "#wuhun-choose", self.name, false)[1]
+      else
+        p_id = self.availableTargets[1]
+      end
+      local judge = {
+        who = room:getPlayerById(p_id),
+        reason = self.name,
+        pattern = "peach,god_salvation|.",
+      }
+      room:judge(judge)
+      if judge.card.name == "peach" or judge.card.name == "god_salvation" then return false end
+      room:killPlayer({who = p_id})
+    end
+  end,
+}
+
+wushen:addRelatedSkill(wushen_targetmod)
+local godguanyu = General:new(extension, "godguanyu", "god", 5, 5, General.Male)
+godguanyu:addSkill(wushen)
+godguanyu:addSkill(wuhun)
+
+Fk:loadTranslationTable {
+  ["godguanyu"] = "神关羽",
+  ["wushen"] = "武神",
+  [":wushen"] = "锁定技，你的红桃手牌均视为【杀】；你使用红桃【杀】无距离限制。",
+  ["wuhun"] = "武魂",
+  [":wuhun"] = "锁定技，你受到1点伤害后，来源获得1枚“梦魇”标记；你死亡时，你令“梦魇”最多的一名其他角色判定，若不为【桃】或【桃园结义】，其死亡。",
+  ["@nightmare"] = "梦魇",
+  ["#wuhun-choose"] = "武魂：选择一名有“梦魇”最多的其他角色",
+
+  ["~godguanyu"] = "无",
+  ["$wushen1"] = "取汝狗头，犹如探囊取物！",
+  ["$wushen2"] = "还不速速领死！",
+  ["$wuhun1"] = "拿命来！",
+  ["$wuhun2"] = "谁来与我同去？",
+}
+
 return extension
