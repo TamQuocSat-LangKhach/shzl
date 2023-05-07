@@ -61,6 +61,7 @@ Fk:loadTranslationTable{
   ["#shensu2-choose"] = "神速：你可以跳过出牌阶段并弃置一张装备牌，视为使用一张无距离限制的【杀】",
 }
 
+local caoren = General(extension, "caoren", "wei", 4)
 local jushou = fk.CreateTriggerSkill{
   name = "jushou",
   anim_type = "offensive",
@@ -69,12 +70,10 @@ local jushou = fk.CreateTriggerSkill{
     return target == player and player:hasSkill(self.name) and player.phase == Player.Finish
   end,
   on_use = function(self, event, target, player, data)
-    local room = player.room
-    room:drawCards(player, 3, self.name)
+    player.room:drawCards(player, 3, self.name)
     player:turnOver()
   end,
 }
-local caoren = General:new(extension, "caoren", "wei", 4)
 caoren:addSkill(jushou)
 Fk:loadTranslationTable{
   ["caoren"] = "曹仁",
@@ -113,7 +112,7 @@ local kuanggu = fk.CreateTriggerSkill{
   frequency = Skill.Compulsory,
   events = {fk.Damage},
   can_trigger = function(self, event, target, player, data)
-    return player:hasSkill(self.name) and target == player and player:distanceTo(data.to) <= 1 and player:isWounded()
+    return target == player and player:hasSkill(self.name) and player:distanceTo(data.to) <= 1 and player:isWounded()
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room
@@ -132,6 +131,7 @@ Fk:loadTranslationTable{
   [":kuanggu"] = "锁定技，当你对距离1以内的一名角色造成1点伤害后，你回复1点体力。",
 }
 
+local xiaoqiao = General(extension, "xiaoqiao", "wu", 3, 3, General.Female)
 local tianxiang = fk.CreateTriggerSkill{
   name = "tianxiang",
   anim_type = "defensive",
@@ -140,17 +140,8 @@ local tianxiang = fk.CreateTriggerSkill{
     return player:hasSkill(self.name) and target == player
   end,
   on_cost = function(self, event, target, player, data)
-    local room = player.room
-    local other = room:getOtherPlayers(player)
-    local prompt = "#tianxaing-target" 
-    local targets = {}
-
-    for _, p in ipairs(other) do
-      table.insert(targets, p.id)
-    end
-
-    local tar, card = room:askForChooseCardAndPlayers(player, targets, 1, 1, ".|.|heart|hand", prompt, self.name, true)
-
+    local tar, card =  player.room:askForChooseCardAndPlayers(player, table.map(player.room:getOtherPlayers(player), function (p)
+      return p.id end), 1, 1, ".|.|heart|hand", "#tianxaing-choose", self.name, true)
     if #tar > 0 and card then
       self.cost_data = tar[1]
       self.cost_data2 = card
@@ -183,22 +174,21 @@ local hongyan = fk.CreateFilterSkill{
     return Fk:cloneCard(to_select.name, Card.Heart, to_select.number)
   end,
 }
-local xiaoqiao = General:new(extension, "xiaoqiao", "wu", 3, 3, General.Female)
 xiaoqiao:addSkill(tianxiang)
 xiaoqiao:addSkill(hongyan)
 Fk:loadTranslationTable{
   ["xiaoqiao"] = "小乔",
   ["tianxiang"] = "天香",
-  [":tianxiang"] = "当你受到伤害时，你可以弃置一张♥手牌并选择一名其他角色。若如此做，你将此伤害转移给该角色，然后其摸X张牌（X为其已损失体力值）。",
-  ["#tianxaing-target" ] = "天香：弃置一张♥手牌将此伤害转移给一名其他角色，然后其摸X张牌（X为其已损失体力值）",
+  [":tianxiang"] = "当你受到伤害时，你可以弃置一张<font color='red'>♥</font>手牌并选择一名其他角色。若如此做，你将此伤害转移给该角色，然后其摸X张牌（X为其已损失体力值）。",
+  ["#tianxaing-choose" ] = "天香：弃置一张<font color='red'>♥</font>手牌将此伤害转移给一名其他角色，然后其摸X张牌（X为其已损失体力值）",
   ["hongyan"] = "红颜",
-  [":hongyan"] = "锁定技，你的♠牌视为♥牌。",
+  [":hongyan"] = "锁定技，你的♠牌视为<font color='red'>♥</font>牌。",
 }
 
 -- local buqu = fk.CreateTriggerSkill{
 --   name = "buqu",
 -- }
--- local zhoutai = General:new(extension, "zhoutai", "wu", 4)   
+-- local zhoutai = General(extension, "zhoutai", "wu", 4)   
 -- zhoutai:addSkill(buqu)
 
 Fk:loadTranslationTable{
@@ -207,6 +197,7 @@ Fk:loadTranslationTable{
   [":buqu"] = "当你扣减体力时，若你的体力值不大于X，你可以将牌堆顶的X张牌置于武将牌上，称为“创”，若没有与此“创”点数相同的其他“创”，你于此次扣减体力后之后不进行濒死流程（X为你此次扣减的体力点数）。当你回复1点体力后，若“创”数与你的体力之和大于1，你将一张“创”置入弃牌堆。",
 }
 
+local zhangjiao = General(extension, "zhangjiao", "qun", 3)
 local leiji = fk.CreateTriggerSkill{
   name = "leiji",
   anim_type = "offensive",
@@ -215,18 +206,10 @@ local leiji = fk.CreateTriggerSkill{
     return player:hasSkill(self.name) and target == player and data.card.name == "jink"
   end,
   on_cost = function(self, event, target, player, data)
-    local room = player.room
-    local other = room:getOtherPlayers(player)
-    local prompt = "#leiji-target"
-    local targets = {}
-
-    for _, p in ipairs(other) do
-      table.insert(targets, p.id)
-    end
-
-    local p = room:askForChoosePlayers(player, targets, 1, 1, prompt, self.name)
-    if #p > 0 then
-      self.cost_data = p[1]
+    local to = player.room:askForChoosePlayers(player, table.map(player.room:getOtherPlayers(player), function (p)
+      return p.id end), 1, 1, "#leiji-choose", self.name)
+    if #to > 0 then
+      self.cost_data = to[1]
       return true
     end
   end,
@@ -238,7 +221,6 @@ local leiji = fk.CreateTriggerSkill{
       reason = self.name,
       pattern = ".|.|spade",
     }
-
     room:judge(judge)
     if judge.card.suit == Card.Spade then
       room:damage{
@@ -259,30 +241,25 @@ local guidao = fk.CreateTriggerSkill{
     return player:hasSkill(self.name) and not player:isNude()
   end,
   on_cost = function(self, event, target, player, data)
-    local room = player.room
-    local prompt = "#guidao-ask::" .. target.id
-
-    local card = room:askForResponse(player, self.name, ".|.|spade,club|hand,equip", prompt, true)
+    local card = player.room:askForResponse(player, self.name, ".|.|spade,club|hand,equip", "#guidao-ask::" .. target.id, true)
     if card ~= nil then
       self.cost_data = card
       return true
     end
   end,
   on_use = function(self, event, target, player, data)
-    local room = player.room
-    room:retrial(self.cost_data, player, data, self.name, true)
+    player.room:retrial(self.cost_data, player, data, self.name, true)
   end,
 }
-local zhangjiao = General:new(extension, "zhangjiao", "qun", 3)   
 zhangjiao:addSkill(leiji)
 zhangjiao:addSkill(guidao)
 Fk:loadTranslationTable{
   ["zhangjiao"] = "张角",
   ["leiji"] = "雷击",
   [":leiji"] = "当你使用或打出【闪】时，你可以令一名角色进行判定，若结果为♠，你对其造成2点雷电伤害。",
-  ["#leiji-target"] = "雷击：你可以令一名角色进行判定，若为♠，你对其造成2点雷电伤害。",
   ["guidao"] = "鬼道",
   [":guidao"] = "当一名角色的判定牌生效前，你可以打出一张黑色牌替换之。",
+  ["#leiji-choose"] = "雷击：你可以令一名角色进行判定，若为♠，你对其造成2点雷电伤害。",
   ["#guidao-ask"] = "鬼道：你可以打出一张黑色牌替换 %dest 的判定",
 }
 

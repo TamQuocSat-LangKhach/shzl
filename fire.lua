@@ -157,7 +157,7 @@ local tianyi = fk.CreateActiveSkill{
     return false
   end,
   target_filter = function(self, to_select, selected, selected_cards)
-    return #selected == 0 and not Fk:currentRoom():getPlayerById(to_select):isKongcheng()
+    return #selected == 0 and to_select ~= Self.id and not Fk:currentRoom():getPlayerById(to_select):isKongcheng()
   end,
   on_use = function(self, room, effect)
     local player = room:getPlayerById(effect.from)

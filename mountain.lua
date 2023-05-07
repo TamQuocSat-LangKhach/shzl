@@ -158,7 +158,6 @@ local zhiji = fk.CreateTriggerSkill{
     end
     room:changeMaxHp(player, -1)  --yes, lose maxhp after choice
     room:handleAddLoseSkills(player, "guanxing", nil)
-    room.logic:trigger(fk.EventPhaseStart, player, data)  --FIXME: to trigger guanxing!
   end,
 }
 jiangwei:addSkill(tiaoxin)
@@ -202,7 +201,6 @@ local hunzi = fk.CreateTriggerSkill{
     local room = player.room
     room:changeMaxHp(player, -1)
     room:handleAddLoseSkills(player, "yingzi|yinghun", nil)
-    room.logic:trigger(fk.EventPhaseStart, player, data)  --FIXME: to trigger yinghun!
   end,
 }
 sunce:addSkill(jiang)
