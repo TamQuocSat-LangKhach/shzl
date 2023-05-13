@@ -58,8 +58,10 @@ local zaoxian = fk.CreateTriggerSkill{
   can_trigger = function(self, event, target, player, data)
     return target == player and player:hasSkill(self.name) and
       player:usedSkillTimes(self.name, Player.HistoryGame) == 0 and
-      player.phase == Player.Start and
-      #player:getPile("dengai_tian") > 2
+      player.phase == Player.Start
+  end,
+  can_wake = function(self, event, target, player, data)
+    return #player:getPile("dengai_tian") > 2
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room
@@ -136,8 +138,10 @@ local zhiji = fk.CreateTriggerSkill{
   can_trigger = function(self, event, target, player, data)
     return target == player and player:hasSkill(self.name) and
       player:usedSkillTimes(self.name, Player.HistoryGame) == 0 and
-      player.phase == Player.Start and
-      player:isKongcheng()
+      player.phase == Player.Start
+  end,
+  can_wake = function(self, event, target, player, data)
+    return player:isKongcheng()
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room
@@ -158,6 +162,7 @@ local zhiji = fk.CreateTriggerSkill{
     end
     room:changeMaxHp(player, -1)  --yes, lose maxhp after choice
     room:handleAddLoseSkills(player, "guanxing", nil)
+    room.logic:trigger(fk.EventPhaseStart, player, data)  --FIXME: to trigger guanxing!
   end,
 }
 jiangwei:addSkill(tiaoxin)
@@ -194,8 +199,10 @@ local hunzi = fk.CreateTriggerSkill{
   can_trigger = function(self, event, target, player, data)
     return target == player and player:hasSkill(self.name) and
       player:usedSkillTimes(self.name, Player.HistoryGame) == 0 and
-      player.phase == Player.Start and
-      player.hp == 1
+      player.phase == Player.Start
+  end,
+  can_wake = function(self, event, target, player, data)
+    return player.hp == 1
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room
