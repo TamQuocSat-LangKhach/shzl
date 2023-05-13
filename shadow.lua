@@ -49,6 +49,8 @@ Fk:loadTranslationTable{
   ["chenglve"] = "成略",
   [":chenglve"] = "转换技，出牌阶段限一次，阳：你可以摸一张牌，然后弃置两张手牌；阴：你可以摸两张牌，然后弃置一张手牌。若如此做，你于此阶段内使用与你以此法弃置的牌花色相同的牌无距离和次数限制。",
   ["@chenglve"] = "成略",
+  ["$chenglve1"] = "成略在胸，良计速出。",
+  ["$chenglve1"] = "吾有良略在怀，必为阿瞒所需。",
 }
 
 local chenglveBuff = fk.CreateTargetModSkill{
@@ -157,6 +159,8 @@ Fk:loadTranslationTable{
   ["shicai"] = "恃才",
   [":shicai"] = "当你每回合首次使用一种类别的牌结算结束后，你可以将之置于牌堆顶，然后摸一张牌。",
   ["@shicai"] = "恃才",
+  ["$shicai1"] = "吾才满腹，袁本初竟不从之。",
+  ["$shicai1"] = "阿瞒有我良计，取冀州便是易如反掌。",
 }
 
 xuyou:addSkill(shicai)
@@ -176,6 +180,8 @@ local cunmu = fk.CreateTriggerSkill{
 Fk:loadTranslationTable{
   ["cunmu"] = "寸目",
   [":cunmu"] = "锁定技，当你摸牌时，改为从牌堆底摸牌。",
+  ["$shicai1"] = "哼！目光所及，短寸之间。",
+  ["$shicai1"] = "狭目之见，只能窥底。",
 }
 
 xuyou:addSkill(cunmu)
