@@ -222,4 +222,116 @@ Fk:loadTranslationTable{
   [":zhiba"] = "主公技，其他吴势力角色的出牌阶段限一次，该角色可以与你拼点（若你已觉醒，你可以拒绝此拼点），若其没赢，你可以获得拼点的两张牌。",
 }
 
+local erzhang = General(extension, "erzhang", "wu", 3)
+local zhijian = fk.CreateActiveSkill{
+  name = "zhijian",
+  anim_type = "support",
+  card_num = 1,
+  target_num = 1,
+  can_use = function(self, player)
+    return not player:isKongcheng()
+  end,
+  card_filter = function(self, to_select, selected)
+	return #selected == 0 and Fk:getCardById(to_select).type == Card.TypeEquip and Fk:currentRoom():getCardArea(to_select) ~= Card.PlayerEquip
+  end,
+  target_filter = function(self, to_select, selected, cards)
+	return #selected == 0 and #cards == 1 and to_select ~= Self.id 
+	and Fk:currentRoom():getPlayerById(to_select):getEquipment(Fk:getCardById(cards[1]).sub_type) == nil
+  end,
+  on_use = function(self, room, effect)
+    local player = room:getPlayerById(effect.from)
+	room:moveCards({
+      ids = effect.cards,
+      from = effect.from,
+      to = effect.tos[1],
+      toArea = Card.PlayerEquip,
+      moveReason = fk.ReasonPut,
+    })
+	player:drawCards(1, self.name)
+  end,
+}
+
+local guzheng = fk.CreateTriggerSkill{
+  name = "guzheng",
+  anim_type = "support",
+  events = {fk.EventPhaseEnd},
+  can_trigger = function(self, event, target, player, data)
+    return target ~= player and player:hasSkill(self.name) and target.phase == Player.Discard and target:getMark("guzheng_hand-phase") ~= 0
+  end,
+  on_cost = function(self, event, target, player, data)
+    local room = player.room
+    local cards = {}
+    local mark = target:getMark("guzheng_hand-phase")
+    for _, id in ipairs(mark) do
+      if room:getCardArea(id) == Card.DiscardPile then
+        table.insertIfNeed(cards, id)
+      end
+    end
+    if #cards > 0 and room:askForSkillInvoke(player, self.name, nil, "#guzheng-invoke::"..target.id) then
+	  room:fillAG(player, cards)
+      local id = room:askForAG(player, cards, true, self.name)  --TODO: temporarily use AG. AG function need cancelable!
+      room:closeAG(player)
+      if id ~= nil then
+        self.cost_data = id
+        return true
+      end
+    end
+  end,
+  on_use = function(self, event, target, player, data)
+    local room = player.room
+    room:obtainCard(target, self.cost_data, true, fk.ReasonJustMove)
+    room:setPlayerMark(player, "guzheng-round", target.id)
+    local dummy = Fk:cloneCard("dilu")
+    local mark = target:getMark("guzheng_all-phase")
+    for _, id in ipairs(mark) do
+      if room:getCardArea(id) == Card.DiscardPile and id ~= self.cost_data then
+        dummy:addSubcard(id)
+      end
+    end
+    if #dummy.subcards > 0 then
+      room:obtainCard(player, dummy, true, fk.ReasonJustMove)
+    end
+  end,
+  refresh_events = {fk.AfterCardsMove},
+  can_refresh = function(self, event, target, player, data)
+    return player.phase == Player.Discard
+  end,
+  on_refresh = function(self, event, target, player, data)
+    local mark_hand = player:getMark("guzheng_hand-phase")
+    local mark_all = player:getMark("guzheng_all-phase")
+    if mark_hand == 0 then mark_hand = {} end
+    if mark_all == 0 then mark_all = {} end
+    for _, move in ipairs(data) do
+      if move.moveReason == fk.ReasonDiscard then
+        if move.from == player.id then
+          for _, info in ipairs(move.moveInfo) do
+            if info.fromArea == Card.PlayerHand then
+              table.insertIfNeed(mark_hand, info.cardId)
+            end
+          end
+        end
+        for _, info in ipairs(move.moveInfo) do
+          table.insertIfNeed(mark_all, info.cardId)
+        end
+      end
+    end
+    if #mark_hand > 0 then
+      player.room:setPlayerMark(player, "guzheng_hand-phase", mark_hand)
+      player.room:setPlayerMark(player, "guzheng_all-phase", mark_all)
+    elseif #mark_all > 0 then
+      player.room:setPlayerMark(player, "guzheng_all-phase", mark_all)
+    end
+  end,
+}
+erzhang:addSkill(zhijian)
+erzhang:addSkill(guzheng)
+Fk:loadTranslationTable{
+  ["erzhang"] = "张昭＆张纮",
+  ["zhijian"] = "直谏",
+  [":zhijian"] = "出牌阶段，你可以将你手牌中的一张装备牌置于一名其他角色装备区内：若如此做，你摸一张牌。",
+  ["guzheng"] = "固政",
+  [":guzheng"] = "其他角色的弃牌阶段结束时，你可以令其获得一张弃牌堆中此阶段中因弃置而置入弃牌堆的该角色的手牌：若如此做，你获得弃牌堆中其余此阶段因弃置而置入弃牌堆的牌。",
+  ["#guzheng-invoke"] = "固政：你可以令 %dest 获得其弃置的其中一张牌。" ,
+}
+
 return extension
