@@ -3,7 +3,7 @@ extension.extensionName = "shzl"
 Fk:loadTranslationTable{
   ["shadow"] = "阴",
 }
- 
+
 local xuyou = General(extension, "xuyou", "qun", 3)
 Fk:loadTranslationTable{
   ["xuyou"] = "许攸",

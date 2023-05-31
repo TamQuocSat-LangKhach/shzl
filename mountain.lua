@@ -222,7 +222,7 @@ Fk:loadTranslationTable{
   [":zhiba"] = "主公技，其他吴势力角色的出牌阶段限一次，该角色可以与你拼点（若你已觉醒，你可以拒绝此拼点），若其没赢，你可以获得拼点的两张牌。",
 }
 
-local erzhang = General(extension, "erzhang", "wu", 3)
+local zhangzhaozhanghong = General(extension, "zhangzhaozhanghong", "wu", 3)
 local zhijian = fk.CreateActiveSkill{
   name = "zhijian",
   anim_type = "support",
@@ -232,22 +232,22 @@ local zhijian = fk.CreateActiveSkill{
     return not player:isKongcheng()
   end,
   card_filter = function(self, to_select, selected)
-	return #selected == 0 and Fk:getCardById(to_select).type == Card.TypeEquip and Fk:currentRoom():getCardArea(to_select) ~= Card.PlayerEquip
+    return #selected == 0 and Fk:getCardById(to_select).type == Card.TypeEquip and Fk:currentRoom():getCardArea(to_select) ~= Card.PlayerEquip
   end,
   target_filter = function(self, to_select, selected, cards)
-	return #selected == 0 and #cards == 1 and to_select ~= Self.id 
-	and Fk:currentRoom():getPlayerById(to_select):getEquipment(Fk:getCardById(cards[1]).sub_type) == nil
+    return #selected == 0 and #cards == 1 and to_select ~= Self.id and
+      Fk:currentRoom():getPlayerById(to_select):getEquipment(Fk:getCardById(cards[1]).sub_type) == nil
   end,
   on_use = function(self, room, effect)
     local player = room:getPlayerById(effect.from)
-	room:moveCards({
+    room:moveCards({
       ids = effect.cards,
       from = effect.from,
       to = effect.tos[1],
       toArea = Card.PlayerEquip,
       moveReason = fk.ReasonPut,
     })
-	player:drawCards(1, self.name)
+    player:drawCards(1, self.name)
   end,
 }
 
@@ -260,16 +260,28 @@ local guzheng = fk.CreateTriggerSkill{
   end,
   on_cost = function(self, event, target, player, data)
     local room = player.room
-    local cards = {}
-    local mark = target:getMark("guzheng_hand-phase")
-    for _, id in ipairs(mark) do
+    local hand_cards = {}
+    local all_cards = {}
+    local mark_hand = target:getMark("guzheng_hand-phase")
+    local mark_all = target:getMark("guzheng_all-phase")
+    for _, id in ipairs(mark_hand) do
       if room:getCardArea(id) == Card.DiscardPile then
-        table.insertIfNeed(cards, id)
+        table.insertIfNeed(hand_cards, id)
       end
     end
-    if #cards > 0 and room:askForSkillInvoke(player, self.name, nil, "#guzheng-invoke::"..target.id) then
-	  room:fillAG(player, cards)
-      local id = room:askForAG(player, cards, true, self.name)  --TODO: temporarily use AG. AG function need cancelable!
+    if #hand_cards > 0 and room:askForSkillInvoke(player, self.name, nil, "#guzheng-invoke::"..target.id) then
+      for _, id in ipairs(mark_all) do
+        if room:getCardArea(id) == Card.DiscardPile then
+          table.insertIfNeed(all_cards, id)
+        end
+      end
+      room:fillAG(player, all_cards)
+      for i = #cards, 1, -1 do
+        if not table.contains(hand_cards, Fk:getCardById(cards[i])) then
+          room:takeAG(player, cards[i], room.players)
+        end
+      end
+      local id = room:askForAG(player, hand_cards, true, self.name)  --TODO: temporarily use AG. AG function need cancelable!
       room:closeAG(player)
       if id ~= nil then
         self.cost_data = id
@@ -280,7 +292,6 @@ local guzheng = fk.CreateTriggerSkill{
   on_use = function(self, event, target, player, data)
     local room = player.room
     room:obtainCard(target, self.cost_data, true, fk.ReasonJustMove)
-    room:setPlayerMark(player, "guzheng-round", target.id)
     local dummy = Fk:cloneCard("dilu")
     local mark = target:getMark("guzheng_all-phase")
     for _, id in ipairs(mark) do
@@ -323,10 +334,10 @@ local guzheng = fk.CreateTriggerSkill{
     end
   end,
 }
-erzhang:addSkill(zhijian)
-erzhang:addSkill(guzheng)
+zhangzhaozhanghong:addSkill(zhijian)
+zhangzhaozhanghong:addSkill(guzheng)
 Fk:loadTranslationTable{
-  ["erzhang"] = "张昭＆张纮",
+  ["zhangzhaozhanghong"] = "张昭＆张纮",
   ["zhijian"] = "直谏",
   [":zhijian"] = "出牌阶段，你可以将你手牌中的一张装备牌置于一名其他角色装备区内：若如此做，你摸一张牌。",
   ["guzheng"] = "固政",
