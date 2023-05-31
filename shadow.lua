@@ -7,6 +7,7 @@ Fk:loadTranslationTable{
 local xuyou = General(extension, "xuyou", "qun", 3)
 Fk:loadTranslationTable{
   ["xuyou"] = "许攸",
+  ["~xuyou"] = "阿瞒，没有我你得不到冀州啊！",
 }
 
 local chenglve = fk.CreateActiveSkill{
@@ -57,13 +58,13 @@ local chenglveBuff = fk.CreateTargetModSkill{
   name = "#chenglve-buff",
   residue_func = function(self, player, skill, scope, card)
     return
-      table.contains(type(player:getMark("@chenglve")) == "table" and player:getMark("@chenglve") or {}, "log_" .. card:getSuitString()) and
+      (card and table.contains(type(player:getMark("@chenglve")) == "table" and player:getMark("@chenglve") or {}, "log_" .. card:getSuitString())) and
       999 or
       0
   end,
   distance_limit_func = function(self, player, skill, card)
     return
-      table.contains(type(player:getMark("@chenglve")) == "table" and player:getMark("@chenglve") or {}, "log_" .. card:getSuitString()) and
+      (card and table.contains(type(player:getMark("@chenglve")) == "table" and player:getMark("@chenglve") or {}, "log_" .. card:getSuitString())) and
       999 or
       0
   end,
@@ -180,8 +181,8 @@ local cunmu = fk.CreateTriggerSkill{
 Fk:loadTranslationTable{
   ["cunmu"] = "寸目",
   [":cunmu"] = "锁定技，当你摸牌时，改为从牌堆底摸牌。",
-  ["$shicai1"] = "哼！目光所及，短寸之间。",
-  ["$shicai1"] = "狭目之见，只能窥底。",
+  ["$cunmu1"] = "哼！目光所及，短寸之间。",
+  ["$cunmu2"] = "狭目之见，只能窥底。",
 }
 
 xuyou:addSkill(cunmu)
