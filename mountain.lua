@@ -276,9 +276,9 @@ local guzheng = fk.CreateTriggerSkill{
         end
       end
       room:fillAG(player, all_cards)
-      for i = #cards, 1, -1 do
-        if not table.contains(hand_cards, Fk:getCardById(cards[i])) then
-          room:takeAG(player, cards[i], room.players)
+      for i = #all_cards, 1, -1 do
+        if not table.contains(hand_cards, Fk:getCardById(all_cards[i])) then
+          room:takeAG(player, all_cards[i], room.players)
         end
       end
       local id = room:askForAG(player, hand_cards, true, self.name)  --TODO: temporarily use AG. AG function need cancelable!
