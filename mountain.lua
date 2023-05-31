@@ -277,7 +277,7 @@ local guzheng = fk.CreateTriggerSkill{
       end
       room:fillAG(player, all_cards)
       for i = #all_cards, 1, -1 do
-        if not table.contains(hand_cards, Fk:getCardById(all_cards[i])) then
+        if not table.contains(hand_cards, all_cards[i]) then
           room:takeAG(player, all_cards[i], room.players)
         end
       end
