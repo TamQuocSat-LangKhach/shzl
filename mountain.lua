@@ -185,7 +185,7 @@ local jiang = fk.CreateTriggerSkill{
   anim_type = "drawcard",
   events ={fk.TargetSpecified, fk.TargetConfirmed},
   can_trigger = function(self, event, target, player, data)
-    return target == player and player:hasSkill(self.name) and
+    return target == player and player:hasSkill(self.name) and data.firstTarget and
       ((data.card.trueName == "slash" and data.card.color == Card.Red) or data.card.name == "duel")
   end,
   on_use = function(self, event, target, player, data)
@@ -337,7 +337,7 @@ local guzheng = fk.CreateTriggerSkill{
 zhangzhaozhanghong:addSkill(zhijian)
 zhangzhaozhanghong:addSkill(guzheng)
 Fk:loadTranslationTable{
-  ["zhangzhaozhanghong"] = "张昭＆张纮",
+  ["zhangzhaozhanghong"] = "张昭张纮",
   ["zhijian"] = "直谏",
   [":zhijian"] = "出牌阶段，你可以将你手牌中的一张装备牌置于一名其他角色装备区内：若如此做，你摸一张牌。",
   ["guzheng"] = "固政",
