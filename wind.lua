@@ -279,13 +279,14 @@ local guhuo = fk.CreateViewAsSkill{
         table.insertIfNeed(names, card.name)
       end
     end
+    if #names == 0 then return false end
     return UI.ComboBox { choices = names }
   end,
   card_filter = function(self, to_select, selected)
     return #selected == 0 and Fk:currentRoom():getCardArea(to_select) ~= Card.PlayerEquip
   end,
   view_as = function(self, cards)
-    if #cards ~= 1 then return end
+    if #cards ~= 1 or not self.interaction.data then return end
     local card = Fk:cloneCard(self.interaction.data)
     self.cost_data = cards
     card.skillName = self.name
