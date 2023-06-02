@@ -263,4 +263,150 @@ Fk:loadTranslationTable{
   ["#guidao-ask"] = "鬼道：你可以打出一张黑色牌替换 %dest 的判定",
 }
 
+local yuji = General(extension, "yuji", "qun", 3)
+
+local guhuo = fk.CreateViewAsSkill{
+  name = "guhuo",
+  anim_type = "offensive",
+  pattern = ".",
+  interaction = function()
+    local names = {}
+    for _, id in ipairs(Fk:getAllCardIds()) do
+      local card = Fk:getCardById(id)
+      if (card.type == Card.TypeBasic or card:isCommonTrick()) and
+      ((Fk.currentResponsePattern == nil and card.skill:canUse(Self)) or
+      (Fk.currentResponsePattern and Exppattern:Parse(Fk.currentResponsePattern):match(card))) then
+        table.insertIfNeed(names, card.name)
+      end
+    end
+    if #names == 0 then return false end
+    return UI.ComboBox { choices = names }
+  end,
+  card_filter = function(self, to_select, selected)
+    return #selected == 0 and Fk:currentRoom():getCardArea(to_select) ~= Card.PlayerEquip
+  end,
+  view_as = function(self, cards)
+    if #cards ~= 1 or not self.interaction.data then return end
+    local card = Fk:cloneCard(self.interaction.data)
+    self.cost_data = cards
+    card.skillName = self.name
+    return card
+  end,
+  before_use = function(self, player, use)
+    local room = player.room
+    local cards = self.cost_data
+    local guhuo_mark = {}
+    table.insertIfNeed(guhuo_mark, cards[1])
+    room:setPlayerMark(player, "guhuo_use-phase", guhuo_mark)
+    room:moveCardTo(cards, Card.Void, nil, fk.ReasonPut, "guhuo", "", false)  --暂时放到Card.Void,理论上应该是Card.Processing,只要moveVisible可以false
+    local targets = TargetGroup:getRealTargets(use.tos)
+    if targets and #targets > 0 then
+      room:sendLog{
+        type = "#guhuo_use",
+        from = player.id,
+        to = targets,
+        arg = use.card.name,
+        arg2 = self.name
+      }
+    else
+      room:sendLog{
+        type = "#guhuo_no_target",
+        from = player.id,
+        arg = use.card.name,
+        arg2 = self.name
+      }
+    end
+  end,
+  enabled_at_play = function(self, player)
+    return not player:isKongcheng()
+  end,
+  enabled_at_response = function(self, player, response)
+    return not response and not player:isKongcheng()
+  end,
+}
+
+local guhuoResponse = fk.CreateTriggerSkill{
+  name = "#guhuoResponse",
+  events = {fk.PreCardUse, fk.PreCardRespond},
+  mute = true,
+  priority = 10,
+  can_trigger = function(self, event, target, player, data)
+    return target == player and player:hasSkill(self.name, true) and table.contains(data.card.skillNames, "guhuo") and
+    data.card:isVirtual() and #data.card.subcards == 0 and player:getMark("guhuo_use-phase") ~= 0
+  end,
+  on_cost = function(self, event, target, player, data)
+    local room = player.room
+    room:doIndicate(player.id, TargetGroup:getRealTargets(data.tos))
+    return true
+  end,
+  on_use = function(self, event, target, player, data)
+    local room = player.room
+    local guhuo_mark = target:getMark("guhuo_use-phase")
+    local card_id = guhuo_mark[1]
+    if not card_id then return true end
+    local questioned = {}
+    for _, p in ipairs(room:getOtherPlayers(player)) do
+      if p.hp > 0 then
+        local choice = room:askForChoice(p, {"noquestion", "question"}, "guhuo", "", nil)
+        if choice ~= "noquestion" then
+          table.insertIfNeed(questioned, p)
+        end
+        room:sendLog{
+          type = "#guhuo_query",
+          from = p.id,
+          arg = choice
+        }
+      end
+    end
+    local success = false
+    local canuse = false
+    local guhuo_card = Fk:getCardById(card_id)
+    if #questioned > 0 then
+      if data.card.name == guhuo_card.name then
+        success = true
+        if guhuo_card.suit == Card.Heart then
+          canuse = true
+        end
+      end
+    else
+      canuse = true
+    end
+    player:showCards({card_id})
+	--暂时使用setCardArea,当moveVisible可以false之后,不必再移动到Card.Void,也就不必再setCardArea
+    table.removeOne(room.void, card_id)
+    table.insert(room.processing_area, card_id)
+    room:setCardArea(card_id, Card.Processing, nil)
+	--
+    if success then
+      for _, p in ipairs(questioned) do
+        room:loseHp(p, 1, "guhuo")
+      end
+    else
+      for _, p in ipairs(questioned) do
+        p:drawCards(1, "guhuo")
+      end
+    end
+    if canuse then
+      data.card:addSubcard(card_id)
+      return false
+    else
+      room:moveCardTo(card_id, Card.DiscardPile, nil, fk.ReasonPutIntoDiscardPile, "guhuo")
+    end
+    return true
+  end,
+}
+
+guhuo:addRelatedSkill(guhuoResponse)
+yuji:addSkill(guhuo)
+Fk:loadTranslationTable{
+  ["yuji"] = "于吉",
+  ["guhuo"] = "蛊惑",
+  ["guhuo:"] = "你可以扣置一张手牌当做一张基本牌或非延时锦囊牌使用或打出，体力值大于0的其他角色选择是否质疑，然后你展示此牌；若无角色质疑，此牌按你所述继续结算；"..
+  "若有角色质疑：若此牌为真，质疑角色各失去1点体力，否则质疑角色各摸一张牌，且若此牌为♥且为真，则按你所述继续结算，否则将之置入弃牌堆。",
+  ["question"] = "质疑",
+  ["noquestion"] = "不质疑",
+  ["#guhuo_use"] = "%from 发动了“%arg2”，声明此牌为 【%arg】，指定的目标为 %to",
+  ["#guhuo_no_target"] = "%from 发动了“%arg2”，声明此牌为 【%arg】",
+  ["#guhuo_query"] = "%from 表示 %arg",
+}
 return extension
