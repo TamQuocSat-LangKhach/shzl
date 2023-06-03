@@ -289,6 +289,7 @@ local buqu = fk.CreateTriggerSkill{
   on_refresh = function(self, event, target, player, data)
     local room = player.room
     if event == fk.AskForPeachesDone then
+      room:setPlayerMark(player, self.name, 0)
       local buqu_chuang = player:getPile("zhoutai_chuang")
       local duplicate_numbers = {}
       local numbers = {}
