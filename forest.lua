@@ -216,7 +216,8 @@ local haoshi_active = fk.CreateActiveSkill{
         num = #p.player_cards[Player.Hand]
       end
     end
-    return #selected_cards == Self:getMark("haoshi") and #selected == 0 and #Fk:currentRoom():getPlayerById(to_select).player_cards[Player.Hand] == num
+    return #selected_cards == Self:getMark("haoshi") and #selected == 0 and
+      #Fk:currentRoom():getPlayerById(to_select).player_cards[Player.Hand] == num
   end,
   on_use = function(self, room, effect)
     room:setPlayerMark(room:getPlayerById(effect.from), "haoshi", 0)
@@ -247,25 +248,25 @@ local haoshi = fk.CreateTriggerSkill{
 local dimeng = fk.CreateActiveSkill{
   name = "dimeng",
   anim_type = "control",
-  target_num = 2,
   min_card_num = 0,
+  target_num = 2,
   can_use = function(self, player)
     return player:usedSkillTimes(self.name) == 0 and #Fk:currentRoom().alive_players > 2
   end,
-  card_filter = function(self, to_select, selected)
+  card_filter = function(self, to_select, selected, selected_targets)
     return true
   end,
   target_filter = function(self, to_select, selected, selected_cards)
-    if to_select ~= Self.id or #selected > 1 then return false end
+    if to_select == Self.id or #selected > 1 then return false end
     if #selected == 0 then
       return true
     else
       local target1 = Fk:currentRoom():getPlayerById(to_select)
       local target2 = Fk:currentRoom():getPlayerById(selected[1])
-      if #target1.player_cards[Player.Hand] == 0 and #target2.player_cards[Player.Hand] == 0 then
+      if target1:isKongcheng() and #target2:isKongcheng() then
         return false
       end
-      return math.abs(#target1.player_cards[Player.Hand] - #target2.player_cards[Player.Hand]) == #selected_cards
+      return math.abs(#target1.player_cards[Player.Hand] - #target2.player_cards[Player.Hand]) <= #selected_cards
     end
   end,
   on_use = function(self, room, effect)

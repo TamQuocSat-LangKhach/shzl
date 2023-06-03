@@ -345,4 +345,92 @@ Fk:loadTranslationTable{
   ["#guzheng-invoke"] = "固政：你可以令 %dest 获得其弃置的其中一张牌。" ,
 }
 
+local caiwenji = General(extension, "caiwenji", "qun", 3, 3, General.Female)
+local beige = fk.CreateTriggerSkill{
+  name = "beige",
+  anim_type = "masochism",
+  events = {fk.Damaged},
+  can_trigger = function(self, event, target, player, data)
+    return player:hasSkill(self.name) and data.card and data.card.trueName == "slash" and not data.to.dead and not player:isNude()
+  end,
+  on_cost = function(self, event, target, player, data)
+    local card = player.room:askForDiscard(player, 1, 1, true, self.name, true, ".", "#beige-invoke::"..target.id, true)
+    if #card > 0 then
+      self.cost_data = card
+      return true
+    end
+  end,
+  on_use = function(self, event, target, player, data)
+    local room = player.room
+    room:throwCard(self.cost_data, self.name, player, player)
+    local judge = {
+      who = target,
+      reason = self.name,
+      pattern = ".",
+    }
+    room:judge(judge)
+    if judge.card.suit == Card.Heart then
+      if target:isWounded() then
+        room:recover{
+          who = target,
+          num = 1,
+          recoverBy = player,
+          skillName = self.name
+        }
+      end
+    elseif judge.card.suit == Card.Diamond then
+      target:drawCards(2, self.name)
+    elseif judge.card.suit == Card.Club then
+      if data.from and not data.from.dead then
+        if #data.from:getCardIds{Player.Hand, Player.Equip} < 3 then
+          data.from:throwAllCards("he")
+        else
+          room:askForDiscard(target, 2, 2, true, self.name, false, ".")
+        end
+      end
+    elseif judge.card.suit == Card.Spade then
+      if data.from and not data.from.dead then
+        data.from:turnOver()
+      end
+    end
+  end,
+}
+local duanchang = fk.CreateTriggerSkill{
+  name = "duanchang",
+  anim_type = "control",
+  frequency = Skill.Compulsory,
+  events = {fk.Death},
+  can_trigger = function(self, event, target, player, data)
+    return target == player and player:hasSkill(self.name, false, true) and data.damage and data.damage.from and not data.damage.from.dead
+  end,
+  on_use = function(self, event, target, player, data)
+    local room = player.room
+    local to = data.damage.from
+    local skills = {}
+    for _, s in ipairs(to.player_skills) do
+      if not (s.attached_equip or s.name[#s.name] == "&") then
+        table.insertIfNeed(skills, s.name)
+      end
+    end
+    if room.settings.gameMode == "m_1v2_mode" and to.role == "lord" then
+      table.removeOne(skills, "m_feiyang")
+      table.removeOne(skills, "m_bahu")
+    end
+    if #skills > 0 then
+      room:handleAddLoseSkills(to, "-"..table.concat(skills, "|-"), nil, true, false)
+    end
+  end,
+}
+caiwenji:addSkill(beige)
+caiwenji:addSkill(duanchang)
+Fk:loadTranslationTable{
+  ["caiwenji"] = "蔡文姬",
+  ["beige"] = "悲歌",
+  [":beige"] = "当一名角色受到【杀】造成的伤害后，你可以弃置一张牌，然后令其进行判定，若结果为：<font color='red'>♥</font>，其回复1点体力；"..
+  "<font color='red'>♦</font>，其摸两张牌；♣，伤害来源弃置两张牌；♠，伤害来源翻面。",
+  ["duanchang"] = "断肠",
+  [":duanchang"] = "锁定技，当你死亡时，杀死你的角色失去所有武将技能。",
+  ["#beige-invoke"] = "悲歌：%dest 受到伤害，你可以弃置一张牌令其判定，根据花色执行效果",
+}
+
 return extension
