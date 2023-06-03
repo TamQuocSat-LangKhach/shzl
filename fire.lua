@@ -326,12 +326,31 @@ local luanji = fk.CreateViewAsSkill{
     return c
   end,
 }
+local xueyi = fk.CreateMaxCardsSkill{
+  name = "xueyi$",
+  correct_func = function(self, player)
+    if player:hasSkill(self.name) then
+      local hmax = 0
+      for _, p in ipairs(Fk:currentRoom().alive_players) do
+        if p ~= player and p.kingdom == "qun" then 
+          hmax = hmax + 1
+        end
+      end
+      return hmax *2
+    else
+      return 0
+    end
+  end,
+}
 local yuanshao = General:new(extension, "yuanshao", "qun", 4)
 yuanshao:addSkill(luanji)
+yuanshao:addSkill(xueyi)
 Fk:loadTranslationTable{
   ["yuanshao"] = "袁绍",
   ["luanji"] = "乱击",
   [":luanji"] = "出牌阶段，你可以将任意两张相同花色的手牌当【万箭齐发】使用。",
+  ["xueyi"] = "血裔",
+  [":xueyi"] = "主公技，锁定技，你的手牌上限+2X(X为场上其他群势力角色数)。",
 }
 
 return extension
