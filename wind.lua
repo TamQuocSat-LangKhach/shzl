@@ -185,16 +185,177 @@ Fk:loadTranslationTable{
   [":hongyan"] = "锁定技，你的♠牌视为<font color='red'>♥</font>牌。",
 }
 
--- local buqu = fk.CreateTriggerSkill{
---   name = "buqu",
--- }
--- local zhoutai = General(extension, "zhoutai", "wu", 4)   
--- zhoutai:addSkill(buqu)
+local zhoutai = General(extension, "zhoutai", "wu", 4)
+local buqu = fk.CreateTriggerSkill{
+  name = "buqu",
+  anim_type = "defensive",
+  events = {fk.BeforeHpChanged, fk.HpRecover},
+  can_trigger = function(self, event, target, player, data)
+    if target == player and player:hasSkill(self.name) then
+      if event == fk.BeforeHpChanged then
+        return data.num < 0 and player.hp <= math.abs(data.num) and (math.abs(data.num) - math.max(player.hp , 1) + 1) > 0
+      elseif event == fk.HpRecover then
+        return #player:getPile("zhoutai_chuang") > 0 and #player:getPile("zhoutai_chuang") + player.hp > 1
+      end
+    end
+  end,
+  on_cost = function(self, event, target, player, data)
+    if event == fk.BeforeHpChanged then
+      local n = math.abs(data.num) - math.max(player.hp , 1) + 1
+      if player.room:askForSkillInvoke(player, self.name, nil, "#buqu-invoke:::"..n) then
+        self.cost_data = n
+        return true
+      end
+    elseif event == fk.HpRecover then
+      return true
+    end
+  end,
+  on_use = function(self, event, target, player, data)
+    local room = player.room
+    if event == fk.BeforeHpChanged then
+      local dummy = Fk:cloneCard("dilu")
+      dummy:addSubcards(room:getNCards(self.cost_data))
+      player:addToPile("zhoutai_chuang", dummy, true, self.name)
+      room:setPlayerMark(player, self.name, 1)--预备终止濒死结算
+      local buqu_chuang = player:getPile("zhoutai_chuang")
+      local duplicate_numbers = {}
+      local numbers = {}
+      for _, id in ipairs(buqu_chuang) do
+        local number = Fk:getCardById(id).number
+        if table.contains(numbers, number) then
+          table.insert(duplicate_numbers, number)
+        else
+          table.insert(numbers, number)
+        end
+      end
+      if #duplicate_numbers == 0 then--不进行濒死流程
+        room:setPlayerMark(player, self.name, 0)
+        data.preventDying = true
+      end
+    elseif event == fk.HpRecover then
+      if player.hp >= 1 then
+        local buqu_chuang = player:getPile("zhoutai_chuang")
+        for _, id in ipairs(buqu_chuang) do
+          local buqu_card = Fk:getCardById(id)
+          room:sendLog{
+            type = "#buqu_remove",
+            from = player.id,
+            arg = buqu_card:toLogString()
+          }
+          room:moveCards({
+            from = player.id,
+            ids = { id },
+            toArea = Card.DiscardPile,
+            moveReason = fk.ReasonPutIntoDiscardPile,
+            skillName = self.name,
+          })
+          player:removeCards(Player.Special, buqu_card, self.name)
+        end
+      else
+        while #player:getPile("zhoutai_chuang") > 0 and #player:getPile("zhoutai_chuang") + player.hp > 1 do
+          local buqu_chuang = player:getPile("zhoutai_chuang")
+          room:fillAG(player, buqu_chuang)
+          local id = room:askForAG(player, buqu_chuang, false, self.name)
+          local buqu_card = Fk:getCardById(id)
+          room:sendLog{
+            type = "#buqu_remove",
+            from = player.id,
+            arg = buqu_card:toLogString()
+          }
+          room:moveCards({
+            from = player.id,
+            ids = { id },
+            toArea = Card.DiscardPile,
+            moveReason = fk.ReasonPutIntoDiscardPile,
+            skillName = self.name,
+          })
+          player:removeCards(Player.Special, buqu_card, self.name)
+          room:closeAG(player)
+        end
+      end
+    end
+  end,
 
+  refresh_events = {fk.AskForPeachesDone, fk.EventLoseSkill},
+  can_refresh = function(self, event, target, player, data)
+    if event == fk.AskForPeachesDone then--濒死结算流程结束后
+      if target == player and player:hasSkill(self.name) then
+        return player.hp <= 0 and player.dying and player:getMark(self.name) > 0
+      end
+    elseif event == fk.EventLoseSkill then
+      return data == self
+    end
+  end,
+  on_refresh = function(self, event, target, player, data)
+    local room = player.room
+    if event == fk.AskForPeachesDone then
+      local buqu_chuang = player:getPile("zhoutai_chuang")
+      local duplicate_numbers = {}
+      local numbers = {}
+      for _, id in ipairs(buqu_chuang) do
+        local number = Fk:getCardById(id).number
+        if table.contains(numbers, number) then
+          table.insert(duplicate_numbers, number)
+        else
+          table.insert(numbers, number)
+        end
+      end
+      if #duplicate_numbers == 0 then--终止濒死结算
+        data.ignoreDeath = true
+      else
+        room:sendLog{
+          type = "#buqu_duplicate",
+          from = player.id,
+          arg = #duplicate_numbers,
+          arg2 = self.name
+        }
+        for i = 1, #duplicate_numbers , 1 do
+          local number = duplicate_numbers[i]
+          --getNumberStr(number)
+          local number_string = "A23456789-JQK"
+          local str = number_string[number]
+          if number == 10 then str = "10" end
+          --
+          room:sendLog{
+            type = "#buqu_duplicate_group",
+            from = player.id,
+            arg = i ,
+            arg2 = str
+          }
+          for _, id in ipairs(buqu_chuang) do
+            local buqu_card = Fk:getCardById(id)
+            if buqu_card.number == number then
+              room:sendLog{
+                type = "#buqu_duplicate_item",
+                from = player.id,
+                arg = buqu_card:toLogString()
+              }
+            end
+          end
+        end
+      end
+    elseif event == fk.EventLoseSkill then
+      if player.hp <= 0 then
+        local dyingStruct = {
+          who = player.id,
+        }
+        room:enterDying(dyingStruct)
+      end
+    end
+  end,
+}
+zhoutai:addSkill(buqu)
 Fk:loadTranslationTable{
   ["zhoutai"] = "周泰",
   ["buqu"] = "不屈",
-  [":buqu"] = "当你扣减体力时，若你的体力值不大于X，你可以将牌堆顶的X张牌置于武将牌上，称为“创”，若没有与此“创”点数相同的其他“创”，你于此次扣减体力后之后不进行濒死流程（X为你此次扣减的体力点数）。当你回复1点体力后，若“创”数与你的体力之和大于1，你将一张“创”置入弃牌堆。",
+  [":buqu"] = "①当你扣减体力时，若你的体力值不大于X，你可将牌堆顶的(X-Y+1)张牌置于武将牌上（均称为“创”）（X为你此次扣减的体力点数，Y=max{你的体力值,1}）▶"..
+  "若所有“创”点数均不同，你于此次扣减体力后之后不进行濒死流程。②当你回复1点体力后，若“创”数与你的体力之和大于1，你将一张“创”置入弃牌堆。",
+  ["#buqu-invoke"] = "不屈：你可以将牌堆顶%arg张牌作为“创”置于武将牌上",
+  ["#buqu_duplicate"] = "%from 发动“%arg2”失败，其“创”中有 %arg 组重复点数",
+  ["#buqu_duplicate_group"] = "第 %arg 组重复点数为 %arg2",
+  ["#buqu_duplicate_item"] = "重复“创”牌: %arg",
+  ["#buqu_remove"] = "%from 移除了“创”牌：%arg",
+  ["zhoutai_chuang"] = "创",
 }
 
 local zhangjiao = General(extension, "zhangjiao", "qun", 3)
