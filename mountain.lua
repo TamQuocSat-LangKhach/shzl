@@ -5,6 +5,70 @@ Fk:loadTranslationTable{
   ["mountain"] = "山",
 }
 
+local zhanghe = General(extension, "zhanghe", "wei", 4)
+local qiaobian = fk.CreateTriggerSkill{
+  name = "qiaobian",
+  anim_type = "offensive",
+  events = {fk.EventPhaseChanging},
+  can_trigger = function(self, event, target, player, data)
+    return target == player and player:hasSkill(self.name) and not player:isKongcheng() and
+    data.to > Player.Start and data.to < Player.Finish
+  end,
+  on_cost = function(self, event, target, player, data)
+    local phase_name_table = {
+      [3] = "phase_judge",
+      [4] = "phase_draw",
+      [5] = "phase_play",
+      [6] = "phase_discard",
+    }
+    local card = player.room:askForDiscard(player, 1, 1, false, self.name, true, ".", "#qiaobian-invoke:::" .. phase_name_table[data.to], true)
+    if #card > 0 then
+      self.cost_data = card
+      return true
+    end
+  end,
+  on_use = function(self, event, target, player, data)
+    local room = player.room
+    room:throwCard(self.cost_data, self.name, player, player)
+    player:skip(data.to)
+    if data.to == Player.Draw then
+      local targets = table.map(table.filter(room:getOtherPlayers(player), function(p)
+        return not p:isKongcheng() end), function(p) return p.id end)
+      if #targets > 0 then
+        local n = math.min(2, #targets)
+        local tos = room:askForChoosePlayers(player, targets, 1, n, "#qiaobian-choose:::"..n, self.name, true)
+        if #tos > 0 then
+          for _, id in ipairs(tos) do
+            local p = room:getPlayerById(id)
+            if not p:isKongcheng() then
+              local card_id = room:askForCardChosen(player, p, "h", self.name)
+              room:obtainCard(player, card_id, false, fk.ReasonPrey)
+            end
+          end
+        end
+      end
+    elseif data.to == Player.Play then
+      local targets = room:askForChooseToMoveCardInBoard(player, "#qiaobian-move", self.name)
+      if #targets ~= 0 then
+        targets = table.map(targets, function(pId)
+          return room:getPlayerById(pId)
+        end)
+        room:askForMoveCardInBoard(player, targets[1], targets[2], self.name)
+      end
+    end
+    return true
+  end,
+}
+zhanghe:addSkill(qiaobian)
+Fk:loadTranslationTable{
+  ["zhanghe"] = "张郃",
+  ["qiaobian"] = "巧变",
+  [":qiaobian"] = "除准备阶段和结束阶段的阶段开始前，你可以弃置一张手牌：若如此做，你跳过该阶段。若以此法跳过摸牌阶段，你可以依次获得一至两名其他角色的各一张手牌；若以此法跳过出牌阶段，你可以将场上的一张牌置于另一名角色相应的区域内。",
+  ["#qiaobian-invoke"] = "巧变：你可以弃一张手牌，跳过 %arg",
+  ["#qiaobian-choose"] = "巧变：你可以依次获得%arg名角色的各一张手牌",
+  ["#qiaobian-move"] = "巧变：请选择两名角色，移动其场上的一张牌",
+}
+
 local dengai = General(extension, "dengai", "wei", 4)
 local tuntian = fk.CreateTriggerSkill{
   name = "tuntian",
