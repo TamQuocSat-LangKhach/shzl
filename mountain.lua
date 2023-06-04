@@ -288,7 +288,7 @@ local fangquan = fk.CreateTriggerSkill{
   end,
 }
 local ruoyu = fk.CreateTriggerSkill{
-  name = "ruoyu",
+  name = "ruoyu$",
   frequency = Skill.Wake,
   events = {fk.EventPhaseStart},
   can_trigger = function(self, event, target, player, data)
