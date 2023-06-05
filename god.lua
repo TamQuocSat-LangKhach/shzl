@@ -9,7 +9,7 @@ local godguanyu = General(extension, "godguanyu", "god", 5)
 local wushen = fk.CreateFilterSkill{
   name = "wushen",
   card_filter = function(self, to_select, player)
-    return player:hasSkill(self.name) and to_select.suit == Card.Heart
+    return player:hasSkill(self.name) and to_select.suit == Card.Heart and table.contains(player.player_cards[Player.Hand], to_select.id)
   end,
   view_as = function(self, to_select)
     local card = Fk:cloneCard("slash", Card.Heart, to_select.number)
@@ -357,6 +357,157 @@ Fk:loadTranslationTable{
   ["yeyan"] = "业炎",
   [":yeyan"] = "限定技，出牌阶段，你可以指定一至三名角色，你分别对这些角色造成至多共计3点火焰伤害；若你对一名角色分配2点或更多的火焰伤害，你须先弃置四张不同花色的手牌并失去3点体力。",
   ["#yeyan-choose"] = "业炎：选择第%arg点伤害的目标",
+
+  ["$qinyin1"] = "（急促的琴声、燃烧声）",
+  ["$qinyin2"] = "（舒缓的琴声）",
+  ["$yeyan1"] = "（燃烧声）聆听吧，这献给你的镇魂曲！",
+  ["$yeyan2"] = "（燃烧声）让这熊熊业火，焚尽你的罪恶！",
+  ["~godzhouyu"] = "逝者不死，浴火重生。",
+}
+
+local godlvbu = General(extension, "godlvbu", "god", 5)
+local kuangbao = fk.CreateTriggerSkill{
+  name = "kuangbao",
+  events = {fk.GameStart, fk.Damage, fk.Damaged},
+  frequency = Skill.Compulsory,
+  can_trigger = function(self, event, target, player, data)
+    return (event == fk.GameStart or target == player) and player:hasSkill(self.name) and not player.dead
+  end,
+  on_use = function(self, event, target, player, data)
+    player.room:addPlayerMark(player, "@baonu", event == fk.GameStart and 2 or data.damage)
+  end,
+}
+local wumou = fk.CreateTriggerSkill{
+  name = "wumou",
+  anim_type = "negative",
+  events = {fk.CardUsing},
+  frequency = Skill.Compulsory,
+  can_trigger = function(self, event, target, player, data)
+    return target == player and player:hasSkill(self.name) and data.card:isCommonTrick()
+  end,
+  on_use = function(self, event, target, player, data)
+    local room = player.room
+    local choices = {"loseHp"}
+    if player:getMark("@baonu") > 0 then table.insert(choices, "wumouBaonu") end
+    if room:askForChoice(player, choices, self.name) == "loseHp" then
+      room:loseHp(player, 1, self.name)
+    else
+      room:removePlayerMark(player, "@baonu", 1)
+    end
+  end,
+}
+local wuqian = fk.CreateActiveSkill{
+  name = "wuqian",
+  anim_type = "offensive",
+  can_use = function(self, player)
+    return player:getMark("@baonu") > 1
+  end,
+  card_num = 0,
+  target_num = 1,
+  target_filter = function(self, to_select, selected)
+    return #selected < 1 and to_select ~= Self.id and Fk:currentRoom():getPlayerById(to_select):getMark("@wuqian-turn") == 0
+  end,
+  card_filter = function(self, to_select, selected)
+    return false
+  end,
+  on_use = function(self, room, effect)
+    local player = room:getPlayerById(effect.from)
+    local target = room:getPlayerById(effect.tos[1])
+    room:removePlayerMark(player, "@baonu", 2)
+    room:addPlayerMark(target, "@wuqian-turn")
+    room:handleAddLoseSkills(player, "wushuang", nil, true, false)
+    room:addPlayerMark(target, fk.MarkArmorNullified)
+  end
+}
+local wuqianCleaner = fk.CreateTriggerSkill{
+  name = "#wuqianCleaner",
+  mute = true,
+  refresh_events = {fk.TurnEnd},
+  can_refresh = function(_, _, target, player)
+    return target == player and target:usedSkillTimes("wuqian") > 0
+  end,
+  on_refresh = function(_, _, target)
+    local room = target.room
+    room:handleAddLoseSkills(target, "-wushuang", nil, true, false)
+    table.forEach(room.alive_players, function(p)
+      if p:getMark("@wuqian-turn") > 0 then room:removePlayerMark(p, fk.MarkArmorNullified) end
+    end)
+  end,
+}
+wuqian:addRelatedSkill(wuqianCleaner)
+local shenfen = fk.CreateActiveSkill{
+  name = "shenfen",
+  anim_type = "offensive",
+  can_use = function(self, player)
+    return player:usedSkillTimes(self.name, Player.HistoryPhase) == 0 and player:getMark("@baonu") > 5
+  end,
+  card_num = 0,
+  target_num = 0,
+  card_filter = function(self, to_select, selected)
+    return false
+  end,
+  on_use = function(self, room, effect)
+    local player = room:getPlayerById(effect.from)
+    room:removePlayerMark(player, "@baonu", 6)
+    local targets = room:getOtherPlayers(player, true)
+    table.forEach(targets, function(p)
+      room:damage{ from = player, to = p, damage = 1, skillName = self.name }
+    end)
+    table.forEach(targets, function(p)
+      p:throwAllCards("e")
+    end)
+    table.forEach(targets, function(p)
+      local canDiscards = table.filter(
+        p:getCardIds{ Player.Hand }, function(id)
+          local card = Fk:getCardById(id)
+          local status_skills = room.status_skills[ProhibitSkill] or {}
+          for _, skill in ipairs(status_skills) do
+            if skill:prohibitDiscard(p, card) then
+              return false
+            end
+          end
+          return true
+        end
+      )
+      if #canDiscards <= 4 then
+        room:throwCard(canDiscards, self.name, p, p)
+      else
+        room:askForDiscard(p, 4, 4, false, self.name, false)
+      end
+    end)
+    player:turnOver()
+  end
+}
+godlvbu:addSkill(kuangbao)
+godlvbu:addSkill(wumou)
+godlvbu:addSkill(wuqian)
+godlvbu:addSkill(shenfen)
+godlvbu:addRelatedSkill("wushuang")
+Fk:loadTranslationTable{
+  ["godlvbu"] = "神吕布",
+  ["kuangbao"] = "狂暴",
+  [":kuangbao"] = "锁定技，游戏开始时，你获得2枚“暴怒”；当你造成或受到1点伤害后，你获得1枚“暴怒”。",
+  ["wumou"] = "无谋",
+  [":wumou"] = "锁定技，当你使用普通锦囊牌时，你选择：1.弃1枚“暴怒”；2.失去1点体力。",
+  ["wuqian"] = "无前",
+  [":wuqian"] = "出牌阶段，你可以弃2枚“暴怒”并选择一名此回合内未以此法选择过的其他角色，你于此回合内拥有〖无双〗且其防具技能于此回合内无效。",
+  ["shenfen"] = "神愤",
+  [":shenfen"] = "出牌阶段限一次，你可以弃6枚“暴怒”并选择所有其他角色，对这些角色各造成1点伤害，然后这些角色各弃置其装备区里的所有牌，各弃置四张手牌，最后你翻面。",
+
+  ["@baonu"] = "暴怒",
+  ["wumouBaonu"] = "弃1枚“暴怒”",
+  ["@wuqian-turn"] = "无前",
+  ["#wuqianCleaner"] = "无前",
+
+  ["$kuangbao1"] = "嗯→↗↑↑↑↓……",
+  ["$kuangbao2"] = "哼！",
+  ["$wumou1"] = "哪个说我有勇无谋？!",
+  ["$wumou2"] = "不管这些了！",
+  ["$wuqian1"] = "看我神威，无坚不摧！",
+  ["$wuqian2"] = "天王老子也保不住你！",
+  ["$shenfen1"] = "凡人们，颤抖吧！这是神之怒火！	",
+  ["$shenfen2"] = "	这，才是活生生的地狱！",
+  ["~godlvbu"] = "我在修罗炼狱，等着你们，呃哈哈哈哈哈~",
 }
 
 local godcaocao = General(extension, "godcaocao", "god", 3)
@@ -406,6 +557,10 @@ Fk:loadTranslationTable{
   [":guixin"] = "每当你受到1点伤害后，可分别从每名其他角色的区域获得一张牌，然后将你的武将牌翻面。",
   ["feiying"] = "飞影",
   [":feiying"] = "锁定技，其他角色计算与你的距离时始终+1。",
+
+  ["$guixin1"] = "周公吐哺，天下归心！",
+  ["$guixin2"] = "山不厌高，海不厌深！",
+  ["~godcaocao"] = "腾蛇乘物，终为土灰。",
 }
 
 local goddiaochan = General(extension, "goddiaochan", "god", 3, 3, General.Female)
