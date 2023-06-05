@@ -405,7 +405,7 @@ local wuqian = fk.CreateActiveSkill{
   card_num = 0,
   target_num = 1,
   target_filter = function(self, to_select, selected)
-    return #selected < 1 and to_select ~= Self.id and Fk:currentRoom():getPlayerById(to_select):getMark("@wuqian-turn") == 0
+    return #selected < 1 and to_select ~= Self.id and Fk:currentRoom():getPlayerById(to_select):getMark("@@wuqian-turn") == 0
   end,
   card_filter = function(self, to_select, selected)
     return false
@@ -414,7 +414,7 @@ local wuqian = fk.CreateActiveSkill{
     local player = room:getPlayerById(effect.from)
     local target = room:getPlayerById(effect.tos[1])
     room:removePlayerMark(player, "@baonu", 2)
-    room:addPlayerMark(target, "@wuqian-turn")
+    room:addPlayerMark(target, "@@wuqian-turn")
     room:handleAddLoseSkills(player, "wushuang", nil, true, false)
     room:addPlayerMark(target, fk.MarkArmorNullified)
   end
@@ -430,7 +430,7 @@ local wuqianCleaner = fk.CreateTriggerSkill{
     local room = target.room
     room:handleAddLoseSkills(target, "-wushuang", nil, true, false)
     table.forEach(room.alive_players, function(p)
-      if p:getMark("@wuqian-turn") > 0 then room:removePlayerMark(p, fk.MarkArmorNullified) end
+      if p:getMark("@@wuqian-turn") > 0 then room:removePlayerMark(p, fk.MarkArmorNullified) end
     end)
   end,
 }
@@ -496,7 +496,7 @@ Fk:loadTranslationTable{
 
   ["@baonu"] = "暴怒",
   ["wumouBaonu"] = "弃1枚“暴怒”",
-  ["@wuqian-turn"] = "无前",
+  ["@@wuqian-turn"] = "无前",
   ["#wuqianCleaner"] = "无前",
 
   ["$kuangbao1"] = "嗯→↗↑↑↑↓……",
