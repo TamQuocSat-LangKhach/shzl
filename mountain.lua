@@ -48,11 +48,9 @@ local qiaobian = fk.CreateTriggerSkill{
         end
       end
     elseif data.to == Player.Play then
-      local targets = room:askForChooseToMoveCardInBoard(player, "#qiaobian-move", self.name)
+      local targets = room:askForChooseToMoveCardInBoard(player, "#qiaobian-move", self.name, true, nil)
       if #targets ~= 0 then
-        targets = table.map(targets, function(pId)
-          return room:getPlayerById(pId)
-        end)
+        targets = table.map(targets, function(id) return room:getPlayerById(id) end)
         room:askForMoveCardInBoard(player, targets[1], targets[2], self.name)
       end
     end
@@ -63,10 +61,11 @@ zhanghe:addSkill(qiaobian)
 Fk:loadTranslationTable{
   ["zhanghe"] = "张郃",
   ["qiaobian"] = "巧变",
-  [":qiaobian"] = "除准备阶段和结束阶段的阶段开始前，你可以弃置一张手牌：若如此做，你跳过该阶段。若以此法跳过摸牌阶段，你可以依次获得一至两名其他角色的各一张手牌；若以此法跳过出牌阶段，你可以将场上的一张牌置于另一名角色相应的区域内。",
+  [":qiaobian"] = "你的阶段开始前（准备阶段和结束阶段除外），你可以弃置一张手牌跳过该阶段。若以此法跳过摸牌阶段，"..
+  "你可以获得至多两名其他角色的各一张手牌；若以此法跳过出牌阶段，你可以将场上的一张牌移动至另一名角色相应的区域内。",
   ["#qiaobian-invoke"] = "巧变：你可以弃一张手牌，跳过 %arg",
   ["#qiaobian-choose"] = "巧变：你可以依次获得%arg名角色的各一张手牌",
-  ["#qiaobian-move"] = "巧变：请选择两名角色，移动其场上的一张牌",
+  ["#qiaobian-move"] = "巧变：请选择两名角色，移动场上的一张牌",
 }
 
 local dengai = General(extension, "dengai", "wei", 4)
@@ -130,7 +129,7 @@ local zaoxian = fk.CreateTriggerSkill{
   on_use = function(self, event, target, player, data)
     local room = player.room
     room:changeMaxHp(player, -1)
-    room:handleAddLoseSkills(player, "jixi", nil)
+    room:handleAddLoseSkills(player, "jixi", nil, true, false)
   end,
 }
 local jixi = fk.CreateViewAsSkill{  --FIXME: 用来急袭的那张田不应产生-1距离
@@ -154,7 +153,7 @@ local jixi = fk.CreateViewAsSkill{  --FIXME: 用来急袭的那张田不应产�
 tuntian:addRelatedSkill(tuntian_distance)
 dengai:addSkill(tuntian)
 dengai:addSkill(zaoxian)
-Fk:addSkill(jixi)
+dengai:addRelatedSkill(jixi)
 Fk:loadTranslationTable{
   ["dengai"] = "邓艾",
   ["tuntian"] = "屯田",
@@ -226,11 +225,12 @@ local zhiji = fk.CreateTriggerSkill{
       })
     end
     room:changeMaxHp(player, -1)  --yes, lose maxhp after choice
-    room:handleAddLoseSkills(player, "guanxing", nil)
+    room:handleAddLoseSkills(player, "guanxing", nil, true, false)
   end,
 }
 jiangwei:addSkill(tiaoxin)
 jiangwei:addSkill(zhiji)
+jiangwei:addRelatedSkill("guanxing")
 Fk:loadTranslationTable{
   ["jiangwei"] = "姜维",
   ["tiaoxin"] = "挑衅",
@@ -310,12 +310,13 @@ local ruoyu = fk.CreateTriggerSkill{
         skillName = self.name,
       })
     end
-    room:handleAddLoseSkills(player, "jijiang", nil)
+    room:handleAddLoseSkills(player, "jijiang", nil, true, false)
   end,
 }
 liushan:addSkill(xiangle)
 liushan:addSkill(fangquan)
 liushan:addSkill(ruoyu)
+liushan:addRelatedSkill("jijiang")
 Fk:loadTranslationTable{
   ["liushan"] = "刘禅",
   ["xiangle"] = "享乐",
@@ -356,11 +357,13 @@ local hunzi = fk.CreateTriggerSkill{
   on_use = function(self, event, target, player, data)
     local room = player.room
     room:changeMaxHp(player, -1)
-    room:handleAddLoseSkills(player, "yingzi|yinghun", nil)
+    room:handleAddLoseSkills(player, "yingzi|yinghun", nil, true, false)
   end,
 }
 sunce:addSkill(jiang)
 sunce:addSkill(hunzi)
+sunce:addRelatedSkill("yingzi")
+sunce:addRelatedSkill("yinghun")
 Fk:loadTranslationTable{
   ["sunce"] = "孙策",
   ["jiang"] = "激昂",
