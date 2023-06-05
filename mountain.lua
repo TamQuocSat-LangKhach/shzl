@@ -158,7 +158,8 @@ Fk:addSkill(jixi)
 Fk:loadTranslationTable{
   ["dengai"] = "邓艾",
   ["tuntian"] = "屯田",
-  [":tuntian"] = "当你于回合外失去牌后，你可以进行判定：若结果不为♥，你将生效后的判定牌置于你的武将牌上，称为“田”；你计算与其他角色的距离-X（X为“田”的数量）。",
+  [":tuntian"] = "当你于回合外失去牌后，你可以进行判定：若结果不为<font color='red'>♥</font>，你将生效后的判定牌置于你的武将牌上，称为“田”；"..
+  "你计算与其他角色的距离-X（X为“田”的数量）。",
   ["zaoxian"] = "凿险",
   [":zaoxian"] = "觉醒技，准备阶段，若“田”的数量不少于3张，你减1点体力上限，然后获得〖急袭〗。",
   ["jixi"] = "急袭",
@@ -226,7 +227,6 @@ local zhiji = fk.CreateTriggerSkill{
     end
     room:changeMaxHp(player, -1)  --yes, lose maxhp after choice
     room:handleAddLoseSkills(player, "guanxing", nil)
-    room.logic:trigger(fk.EventPhaseStart, player, data)  --FIXME: to trigger guanxing!
   end,
 }
 jiangwei:addSkill(tiaoxin)
@@ -242,6 +242,7 @@ Fk:loadTranslationTable{
   ["draw2"] = "摸两张牌",
   ["recover"] = "回复1点体力",
 }
+
 local liushan = General(extension, "liushan", "shu", 3)
 local xiangle = fk.CreateTriggerSkill{
   name = "xiangle",
@@ -253,7 +254,7 @@ local xiangle = fk.CreateTriggerSkill{
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room
-    if #room:askForDiscard(room:getPlayerById(data.from), 1, 1, false, self.name, true, ".|.|.|.|.|basic", "#xiangle-discard") == 0 then
+    if #room:askForDiscard(room:getPlayerById(data.from), 1, 1, false, self.name, true, ".|.|.|.|.|basic", "#xiangle-discard:"..player.id) == 0 then
       table.insertIfNeed(data.nullifiedTargets, player.id)
     end
   end,
@@ -279,8 +280,7 @@ local fangquan = fk.CreateTriggerSkill{
     local room = player.room
     room:setPlayerMark(player, "fangquan_extra", 0)
     local tos, id = room:askForChooseCardAndPlayers(player, table.map(room:getOtherPlayers(player), function(p)
-      return p.id
-    end), 1, 1, ".|.|.|hand", "#fangquan-give", self.name, true)
+      return p.id end), 1, 1, ".|.|.|hand", "#fangquan-give", self.name, true)
     if #tos > 0 then
       room:throwCard({id}, self.name, player, player)
       room:getPlayerById(tos[1]):gainAnExtraTurn()
@@ -302,12 +302,14 @@ local ruoyu = fk.CreateTriggerSkill{
   on_use = function(self, event, target, player, data)
     local room = player.room
     room:changeMaxHp(player, 1)
-    room:recover({
-      who = player,
-      num = 1,
-      recoverBy = player,
-      skillName = self.name,
-    })
+    if player:isWounded() then  --小心王衍
+      room:recover({
+        who = player,
+        num = 1,
+        recoverBy = player,
+        skillName = self.name,
+      })
+    end
     room:handleAddLoseSkills(player, "jijiang", nil)
   end,
 }
@@ -318,7 +320,7 @@ Fk:loadTranslationTable{
   ["liushan"] = "刘禅",
   ["xiangle"] = "享乐",
   [":xiangle"] = "锁定技，每当你成为【杀】的目标时，【杀】的使用者须弃置一张基本牌，否则此【杀】对你无效。",
-  ["#xiangle-discard"] = "你须再弃置一张基本牌使此【杀】生效",
+  ["#xiangle-discard"] = "享乐：你须弃置一张基本牌，否则此【杀】对 %src 无效",
   ["fangquan"] = "放权",
   [":fangquan"] = "你可以跳过你的出牌阶段，然后此回合结束时，你可以弃置一张手牌并选择一名其他角色：若如此做，该角色进行一个额外的回合。",
   ["#fangquan-give"] = "你可以弃置一张手牌令一名其他角色进行一个额外的回合",
@@ -532,7 +534,7 @@ local beige = fk.CreateTriggerSkill{
         if #data.from:getCardIds{Player.Hand, Player.Equip} < 3 then
           data.from:throwAllCards("he")
         else
-          room:askForDiscard(target, 2, 2, true, self.name, false, ".")
+          room:askForDiscard(data.from, 2, 2, true, self.name, false, ".")
         end
       end
     elseif judge.card.suit == Card.Spade then

@@ -31,24 +31,28 @@ local shensu = fk.CreateTriggerSkill{
     if data.to == Player.Judge then
       local to = room:askForChoosePlayers(player, targets, 1, 1, "#shensu1-choose", self.name, true)
       if #to > 0 then
-        self.cost_data = to[1]
-        player:skip(Player.Judge)
-        player:skip(Player.Draw)
+        self.cost_data = {to[1]}
         return true
       end
     elseif data.to == Player.Play then
       --FIXME: 这个方法在没有装备牌的时候不会询问！会暴露手牌信息！
       local tos, id = room:askForChooseCardAndPlayers(player, targets, 1, 1, ".|.|.|.|.|equip", "#shensu2-choose", self.name, true)
       if #tos > 0 then
-        self.cost_data = tos[1]
-        player:skip(Player.Play)
-        room:throwCard({id}, self.name, player, player)
+        self.cost_data = {tos[1], id}
         return true
       end
     end
   end,
   on_use = function(self, event, target, player, data)
-    player.room:useVirtualCard("slash", nil, player, player.room:getPlayerById(self.cost_data), self.name, true)
+    local room = player.room
+    if data.to == Player.Judge then
+      player:skip(Player.Judge)
+      player:skip(Player.Draw)
+    elseif data.to == Player.Play then
+      player:skip(Player.Play)
+      room:throwCard({self.cost_data[2]}, self.name, player, player)
+    end
+    room:useVirtualCard("slash", nil, player, player.room:getPlayerById(self.cost_data[1]), self.name, true)
     return true
   end,
 }
@@ -95,7 +99,8 @@ local liegong = fk.CreateTriggerSkill{
     return data.card.trueName == "slash" and filter and player.phase == Player.Play
   end,
   on_use = function(self, event, target, player, data)
-    data.disresponsive = true -- FIXME: use disreponseList. this is FK's bug
+    data.disresponsiveList = data.disresponsiveList or {}
+    table.insert(data.disresponsiveList, data.to)
   end,
 }
 huangzhong:addSkill(liegong)
@@ -426,7 +431,6 @@ Fk:loadTranslationTable{
 }
 
 local yuji = General(extension, "yuji", "qun", 3)
-
 local guhuo = fk.CreateViewAsSkill{
   name = "guhuo",
   anim_type = "offensive",
@@ -563,7 +567,7 @@ yuji:addSkill(guhuo)
 Fk:loadTranslationTable{
   ["yuji"] = "于吉",
   ["guhuo"] = "蛊惑",
-  ["guhuo:"] = "你可以扣置一张手牌当做一张基本牌或非延时锦囊牌使用或打出，体力值大于0的其他角色选择是否质疑，然后你展示此牌："..
+  [":guhuo"] = "你可以扣置一张手牌当做一张基本牌或非延时锦囊牌使用或打出，体力值大于0的其他角色选择是否质疑，然后你展示此牌："..
   "若无角色质疑，此牌按你所述继续结算；若有角色质疑：若此牌为真，质疑角色各失去1点体力，否则质疑角色各摸一张牌，"..
   "且若此牌为<font color='red'>♥</font>且为真，则按你所述继续结算，否则将之置入弃牌堆。",
   ["question"] = "质疑",
