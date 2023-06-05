@@ -113,14 +113,7 @@ local jieming = fk.CreateTriggerSkill{
   end,
   on_cost = function(self, event, target, player, data)
     local room = player.room
-    local targets = {}
-    for _, p in ipairs(room:getAlivePlayers()) do
-      if #p.player_cards[Player.Hand] < math.min(p.maxHp, 5) then
-        table.insert(targets, p.id)
-      end
-    end
-    if #targets == 0 then return end
-    local to = room:askForChoosePlayers(player, targets, 1, 1, "#jieming-choose", self.name, true)
+    local to = room:askForChoosePlayers(player, table.map(room.alive_players, function(p) return p.id end), 1, 1, "#jieming-choose", self.name, true)
     if #to > 0 then
       self.cost_data = to[1]
       return true

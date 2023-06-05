@@ -159,7 +159,7 @@ local yinghun = fk.CreateTriggerSkill{
   end,
   on_cost = function(self, event, target, player, data)
     local to = player.room:askForChoosePlayers(player, table.map(player.room:getOtherPlayers(player), function (p)
-      return p.id end), 1, 1, "#yinghun-choose:::"..player:getLostHp()..":"..player:getLostHp(), self.name)
+      return p.id end), 1, 1, "#yinghun-choose:::"..player:getLostHp()..":"..player:getLostHp(), self.name, true)
     if #to > 0 then
       self.cost_data = to[1]
       return true

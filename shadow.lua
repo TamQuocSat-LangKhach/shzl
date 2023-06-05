@@ -19,7 +19,7 @@ local qizhi = fk.CreateTriggerSkill{
   end,
   on_cost = function(self, event, target, player, data)
     local room = player.room
-    local alivePlayers = room:getAlivePlayers()
+    local alivePlayers = room.alive_players
     local availableTargets = {}
     for _, p in ipairs(alivePlayers) do
       if not p:isNude() and not table.contains(AimGroup:getAllTargets(data.tos), p.id) then
@@ -31,7 +31,7 @@ local qizhi = fk.CreateTriggerSkill{
       return false
     end
 
-    local result = room:askForChoosePlayers(player, availableTargets, 1, 1, "#qizhi-ask", self.name)
+    local result = room:askForChoosePlayers(player, availableTargets, 1, 1, "#qizhi-ask", self.name, true)
     if #result > 0 then
       self.cost_data = result
       return true
