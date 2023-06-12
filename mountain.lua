@@ -102,7 +102,7 @@ local tuntian = fk.CreateTriggerSkill{
   end,
   on_refresh = function(self, event, target, player, data)
     if data.card.suit ~= Card.Heart and player.room:getCardArea(data.card) == Card.Processing then
-      player:addToPile("dengai_tian", data.card, true, self.name)
+      player:addToPile("dengai_field", data.card, true, self.name)
     end
   end,
 }
@@ -110,7 +110,7 @@ local tuntian_distance = fk.CreateDistanceSkill{
   name = "#tuntian_distance",
   correct_func = function(self, from, to)
     if from:hasSkill(self.name) then
-      return -#from:getPile("dengai_tian")
+      return -#from:getPile("dengai_field")
     end
   end,
 }
@@ -124,7 +124,7 @@ local zaoxian = fk.CreateTriggerSkill{
       player.phase == Player.Start
   end,
   can_wake = function(self, event, target, player, data)
-    return #player:getPile("dengai_tian") > 2
+    return #player:getPile("dengai_field") > 2
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room
@@ -136,9 +136,9 @@ local jixi = fk.CreateViewAsSkill{  --FIXME: 用来急袭的那张田不应产�
   name = "jixi",
   anim_type = "control",
   pattern = "snatch",
-  expand_pile = "dengai_tian",
+  expand_pile = "dengai_field",
   card_filter = function(self, to_select, selected)
-    return #selected == 0 and Self:getPileNameOfId(to_select) == "dengai_tian"
+    return #selected == 0 and Self:getPileNameOfId(to_select) == "dengai_field"
   end,
   view_as = function(self, cards)
     if #cards ~= 1 then
@@ -163,7 +163,7 @@ Fk:loadTranslationTable{
   [":zaoxian"] = "觉醒技，准备阶段，若“田”的数量不少于3张，你减1点体力上限，然后获得〖急袭〗。",
   ["jixi"] = "急袭",
   [":jixi"] = "你可以将一张“田”当【顺手牵羊】使用。",
-  ["dengai_tian"] = "田",
+  ["dengai_field"] = "田",
 }
 
 local jiangwei = General(extension, "jiangwei", "shu", 4)
@@ -241,6 +241,12 @@ Fk:loadTranslationTable{
   ["draw1"] = "摸一张牌",
   ["draw2"] = "摸两张牌",
   ["recover"] = "回复1点体力",
+
+  ["$tiaoxin1"] = "汝等小儿，可敢杀我？",
+  ["$tiaoxin2"] = "贼将早降，可免一死。",
+  ["$zhiji1"] = "先帝之志，丞相之托，不可忘也！",
+  ["$zhiji2"] = "丞相厚恩，维万死不能相报。",
+  ["~jiangwei"] = "我计不成，乃天命也……",
 }
 
 local liushan = General(extension, "liushan", "shu", 3)

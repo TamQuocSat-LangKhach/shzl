@@ -427,34 +427,95 @@ Fk:loadTranslationTable{
   ["~dongzhuo"] = "汉室衰弱，非我一人之罪。",
 }
 
---local jiaxu = General(extension, "jiaxu", "qun", 3)
+local jiaxu = General(extension, "jiaxu", "qun", 3)
 local wansha = fk.CreateTriggerSkill{
   name = "wansha",
   anim_type = "offensive",
   frequency = Skill.Compulsory,
-  events = {fk.EnterDying},
-  can_trigger = function(self, event, target, player, data)
+  refresh_events = {fk.EnterDying},
+  can_refresh = function(self, event, target, player, data)
     return player:hasSkill(self.name) and player.phase ~= Player.NotActive
   end,
-  on_use = function(self, event, target, player, data)
+  on_refresh = function(self, event, target, player, data)
+    player.room:notifySkillInvoked(player, self.name)
+    player.room:broadcastSkillInvoke(self.name)
+  end,
+}
+local wansha_prohibit = fk.CreateProhibitSkill{
+  name = "#wansha_prohibit",
+  prohibit_use = function(self, player, card)
+    if card.name == "peach" and not player.dying then
+      return table.find(Fk:currentRoom().alive_players, function(p)
+        return p.phase ~= Player.NotActive and p:hasSkill(wansha.name) and p ~= player
+      end)
+    end
+  end,
+}
+wansha:addRelatedSkill(wansha_prohibit)
+local luanwu = fk.CreateActiveSkill{
+  name = "luanwu",
+  anim_type = "offensive",
+  card_num = 0,
+  target_num = 0,
+  frequency = Skill.Limited,
+  can_use = function(self, player)
+    return player:usedSkillTimes(self.name, Player.HistoryGame) == 0
+  end,
+  card_filter = function() return false end,
+  on_use = function(self, room, effect)
+    local player = room:getPlayerById(effect.from)
+    local targets = room:getOtherPlayers(player)
+    room:doIndicate(player.id, table.map(targets, function (p) return p.id end))
+    for _, target in ipairs(targets) do
+      local other_players = room:getOtherPlayers(target)
+      local luanwu_targets = table.map(table.filter(other_players, function(p2)
+        return table.every(other_players, function(p1)
+          return target:distanceTo(p1) >= target:distanceTo(p2)
+        end)
+      end), function (p)
+        return p.id
+      end)
+      if #luanwu_targets > 1 then
+        local tos = room:askForChoosePlayers(target, luanwu_targets, 1, 1, "#luanwu-slash", self.name, false)
+        if #tos == 1 then
+          luanwu_targets = tos
+        else
+          luanwu_targets = {luanwu_targets[1]}
+          room:doIndicate(target.id, luanwu_targets)
+        end
+      end
+      local use = room:askForUseCard(target, "slash", "slash", "#luanwu-use::" .. luanwu_targets[1], true, {must_targets = luanwu_targets})
+      if use then
+        room:useCard(use)
+      else
+        room:loseHp(target, 1, self.name)
+      end
+    end
   end,
 }
 local weimu = fk.CreateProhibitSkill{
   name = "weimu",
+  frequency = Skill.Compulsory,
   is_prohibited = function(self, from, to, card)
     return to:hasSkill(self.name) and card.type == Card.TypeTrick and card.color == Card.Black
   end,
 }
---jiaxu:addSkill(wansha)
---jiaxu:addSkill(weimu)
+
+jiaxu:addSkill(wansha)
+jiaxu:addSkill(luanwu)
+jiaxu:addSkill(weimu)
+
 Fk:loadTranslationTable{
   ["jiaxu"] = "贾诩",
   ["wansha"] = "完杀",
-  [":wansha"] = "锁定技，你的回合内，只有你和处于濒死状态的角色才能使用【桃】。",
+  [":wansha"] = "锁定技，除进行濒死流程的角色以外的其他角色于你的回合内不能使用【桃】。",
   ["luanwu"] = "乱武",
-  [":luanwu"] = "限定技，出牌阶段，你可以令所有其他角色依次选择一项：1.对距离最近的另一名角色使用【杀】；2.失去1点体力。",
+  [":luanwu"] = "限定技，出牌阶段，你可选择所有其他角色，这些角色各需对包括距离最小的另一名角色在内的角色使用【杀】，否则失去1点体力。",
   ["weimu"] = "帷幕",
-  [":weimu"] = "锁定技，你不能成为黑色锦囊牌的目标。",
+  [":weimu"] = "锁定技，你不是黑色锦囊牌的合法目标。",
+
+  ["#luanwu-slash"] = "乱武：选择距离最近的一名角色，然后对其使用一张【杀】",
+  ["#luanwu-use"] = "乱武：你需要对包含%dest在内的角色使用一张【杀】，否则失去1点体力",
 
   ["$wansha1"] = "我要你三更死，谁敢留你到五更！",
   ["$wansha2"] = "神仙难救，神仙难救啊",
