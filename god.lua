@@ -3,7 +3,7 @@ extension.extensionName = "shzl"
 
 Fk:loadTranslationTable{
   ["god"] = "神",
-  ["gundam"] = "高达",
+  --["gundam"] = "高达",
 }
 
 local godguanyu = General(extension, "godguanyu", "god", 5)
@@ -838,16 +838,149 @@ Fk:loadTranslationTable{
   ["~godzhaoyun"] = "龙身虽死，魂魄不灭！",
 }
 
-local gundam = General(extension, "gundam__godzhaoyun", "god", 1)
-gundam.total_hidden = true
+local gundam = General(extension, "gundam", "god", 1)
+gundam.hidden = true
+local gundam__juejing = fk.CreateTriggerSkill{
+  name = "gundam__juejing",
+  events = {fk.AfterCardsMove, fk.EventPhaseChanging},
+  anim_type = "drawcard",
+  frequency = Skill.Compulsory,
+  mute = true,
+  can_trigger = function(self, event, target, player, data)
+    if not player:hasSkill(self.name) then return false end
+    if event == fk.EventPhaseChanging then
+      return target == player and data.to == Player.Draw
+    elseif player:getHandcardNum() ~= 4 then
+      for _, move in ipairs(data) do
+        if move.to == player.id and move.toArea == Card.PlayerHand then
+          return true
+        elseif move.from == player.id then
+          for _, info in ipairs(move.moveInfo) do
+            if info.fromArea == Card.PlayerHand then
+              return true
+            end
+          end
+        end
+      end
+    end
+  end,
+  on_use = function(self, event, target, player, data)
+    local room = player.room
+    room:broadcastSkillInvoke(self.name)
+    if event == fk.EventPhaseChanging then
+      room:notifySkillInvoked(player, self.name, "negative")
+      return true
+    else
+      local num = 4 - player:getHandcardNum()
+      if num > 0 then
+        room:notifySkillInvoked(player, self.name, "drawcard")
+        player:drawCards(num, self.name)
+      elseif num < 0 then
+        room:notifySkillInvoked(player, self.name, "negative")
+        room:askForDiscard(player, -num, -num, false, self.name, false)
+      end
+    end
+  end,
+}
+local gundam__longhun = fk.CreateViewAsSkill{
+  name = "gundam__longhun",
+  pattern = "peach,slash,jink,nullification",
+  card_filter = function(self, to_select, selected)
+    if #selected == 1 then
+      return false
+    else
+      local suit = Fk:getCardById(to_select).suit
+      local c
+      if suit == Card.Heart then
+        c = Fk:cloneCard("peach")
+      elseif suit == Card.Diamond then
+        c = Fk:cloneCard("fire__slash")
+      elseif suit == Card.Club then
+        c = Fk:cloneCard("jink")
+      elseif suit == Card.Spade then
+        c = Fk:cloneCard("nullification")
+      else
+        return false
+      end
+      return (Fk.currentResponsePattern == nil and c.skill:canUse(Self)) or (Fk.currentResponsePattern and Exppattern:Parse(Fk.currentResponsePattern):match(c))
+    end
+  end,
+  view_as = function(self, cards)
+    if #cards ~= 1 then
+      return nil
+    end
+    local suit = Fk:getCardById(cards[1]).suit
+    local c
+    if suit == Card.Heart then
+      c = Fk:cloneCard("peach")
+    elseif suit == Card.Diamond then
+      c = Fk:cloneCard("fire__slash")
+    elseif suit == Card.Club then
+      c = Fk:cloneCard("jink")
+    elseif suit == Card.Spade then
+      c = Fk:cloneCard("nullification")
+    else
+      return nil
+    end
+    c.skillName = self.name
+    c:addSubcards(cards)
+    return c
+  end,
+}
+local gundam__longhun_qinggang = fk.CreateTriggerSkill{
+  name = "#gundam__longhun_qinggang",
+  events = {fk.EventPhaseStart},
+  mute = true,
+  can_trigger = function(self, event, target, player, data)
+    if target ~= player or not player:hasSkill(gundam__longhun.name) or player.phase ~= Player.Start then return false end  
+    for _, id in ipairs(Fk:getAllCardIds()) do
+      if Fk:getCardById(id).name == "qinggang_sword" and table.contains({Card.PlayerEquip, Card.PlayerJudge}, player.room:getCardArea(id)) then
+        return true
+      end
+    end
+  end,
+  on_cost = function(self, event, target, player, data)
+    local room = player.room
+    local cids, target = {}, nil
+    for _, id in ipairs(Fk:getAllCardIds()) do
+      if Fk:getCardById(id).name == "qinggang_sword" and table.contains({Card.PlayerEquip, Card.PlayerJudge}, room:getCardArea(id)) then
+        table.insert(cids, id)
+        target = target or room:getCardOwner(id).id
+      end
+    end
+    if #cids == 0 then
+      return false
+    else
+      local prompt = #cids == 1 and "#gundam__longhun_qinggang-target:" .. target or "#gundam__longhun_qinggang-targets:" .. target
+      if room:askForSkillInvoke(player, self.name, data, prompt) then
+        self.cost_data = cids
+        return true
+      end
+    end
+  end,
+  on_use = function(self, event, target, player, data)
+    local room = player.room
+    room:notifySkillInvoked(player, gundam__longhun.name, "control")
+    room:broadcastSkillInvoke(gundam__longhun.name)
+    table.forEach(self.cost_data, function(id)
+      room:obtainCard(player, id, true, fk.ReasonPrey)
+    end)
+  end,
+}
+gundam__longhun:addRelatedSkill(gundam__longhun_qinggang)
+gundam:addSkill(gundam__juejing)
+gundam:addSkill(gundam__longhun)
 Fk:loadTranslationTable{
-  ["gundam__godzhaoyun"] = "高达一号",
+  --["gundam__godzhaoyun"] = "高达一号",
+  ["gundam"] = "高达一号",
   ["gundam__juejing"] = "绝境",
   [":gundam__juejing"] = "锁定技，你跳过摸牌阶段；当你的手牌数大于4/小于4时，你将手牌弃置至4/摸至4张。",
   ["gundam__longhun"] = "龙魂",
-  [":gundam__longhun"] = "你可以将你的牌按以下规则使用或打出：红桃当【桃】，方块当火【杀】，梅花当【闪】，黑桃当【无懈可击】。",
-  ["gundam__zhanjiang"] = "斩将",
-  [":gundam__zhanjiang"] = "准备阶段开始时，如果场上有【青釭剑】，你可以获得之。",
+  [":gundam__longhun"] = "你可以将你的牌按以下规则使用或打出：红桃当【桃】，方块当火【杀】，梅花当【闪】，黑桃当【无懈可击】。准备阶段开始时，如果场上有【青釭剑】，你可以获得之。",
+
+  ["#gundam__longhun_qinggang"] = "龙魂",
+  ["#gundam__longhun_qinggang-target"] = "龙魂：你可夺走 %src 的【青釭剑】！",
+  ["#gundam__longhun_qinggang-targets"] = "龙魂：你可夺走 %src 等的【青釭剑】！",
 }
 
 local goddiaochan = General(extension, "goddiaochan", "god", 3, 3, General.Female)
