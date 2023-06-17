@@ -1270,12 +1270,30 @@ local poxi = fk.CreateActiveSkill{
   on_use = function(self, room, effect)
     local player = room:getPlayerById(effect.from)
     local target = room:getPlayerById(effect.tos[1])
-    local cards1, cards2 = {}, {}
+    local player_hands = player:getCardIds(Player.Hand)
+    local target_hands = target:getCardIds(Player.Hand)
+
+    local result = room:askForCustomDialog(player, self.name,
+      "packages/shzl/qml/PoxiBox.qml", {
+        player.general, player_hands,
+        target.general, target_hands,
+      })
+
+    if result == "" then return end
+    local cards = json.decode(result)
+
+    local cards1 = table.filter(cards, function(id)
+      return table.contains(player_hands, id)
+    end)
+    local cards2 = table.filter(cards, function(id)
+      return table.contains(target_hands, id)
+    end)
     if #cards1 == 0 and #cards2 == 0 then return false end
+
     local moveInfos = {}
     if #cards1 > 0 then
       table.insert(moveInfos, {
-        from = player,
+        from = player.id,
         ids = cards1,
         toArea = Card.DiscardPile,
         moveReason = fk.ReasonDiscard,
@@ -1285,7 +1303,7 @@ local poxi = fk.CreateActiveSkill{
     end
     if #cards2 > 0 then
       table.insert(moveInfos, {
-        from = target,
+        from = target.id,
         ids = cards2,
         toArea = Card.DiscardPile,
         moveReason = fk.ReasonDiscard,
@@ -1295,16 +1313,17 @@ local poxi = fk.CreateActiveSkill{
     end
     room:moveCards(table.unpack(moveInfos))
     if player.dead then return false end
+
     if #cards1 == 0 then
       room:changeMaxHp(player, -1)
-    elseif #cards1 == 1 then
+    elseif #cards1 == 3 then
       room:recover({
         who = player,
         num = 1,
         recoverBy = player,
         skillName = self.name
       })
-    elseif #cards1 == 3 then
+    elseif #cards1 == 1 then
       room:addPlayerMark(player, MarkEnum.MinusMaxCardsInTurn)
       room.logic:getCurrentEvent():findParent(GameEvent.Phase):shutdown()
     elseif #cards1 == 4 then
@@ -1394,7 +1413,7 @@ Fk:loadTranslationTable{
   [":gn_jieying"] = "游戏开始时，你获得一个“营”标记。结束阶段，你可以将“营”标记置于一名角色的武将牌旁；有“营”的角色摸牌阶段多摸一张牌、出牌阶段可多使用一张【杀】、手牌上限+1。有“营”的其他角色结束阶段，你获得其所有手牌。",
 
   ["@@jieying_camp"] = "营",
-  ["#poxi-choose"] = "魄袭：从你和%dest的手牌中选出四张不同花色的牌弃置",
+  ["#poxi-choose"] = "魄袭：从双方的手牌中选出四张不同花色的牌弃置，或者点取消",
   ["#gn_jieying-choose"] = "劫营：你可将营标记交给其他角色",
 
   ["$poxi1"] = "夜袭敌军，挫其锐气。",
