@@ -11,7 +11,9 @@ local godguanyu = General(extension, "godguanyu", "god", 5)
 local wushen = fk.CreateFilterSkill{
   name = "wushen",
   card_filter = function(self, to_select, player)
-    return player:hasSkill(self.name) and to_select.suit == Card.Heart and table.contains(player.player_cards[Player.Hand], to_select.id)
+    return player:hasSkill(self.name) and to_select.suit == Card.Heart and
+    not table.contains(player.player_cards[Player.Equip], to_select.id) and
+    not table.contains(player.player_cards[Player.Judge], to_select.id)
   end,
   view_as = function(self, to_select)
     local card = Fk:cloneCard("slash", Card.Heart, to_select.number)
