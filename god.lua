@@ -462,7 +462,7 @@ local kuangfeng = fk.CreateTriggerSkill{
     if event == fk.EventPhaseChanging then
       return target == player and player:hasSkill(self.name, true) and data.from == Player.NotActive and player:getMark("_kuangfeng") ~= 0
     else
-      return player:hasSkill(self.name, true, true)
+      return player:getMark("_kuangfeng") ~= 0
     end
   end,
   on_refresh = function(self, event, target, player, data)
@@ -514,7 +514,7 @@ local dawu = fk.CreateTriggerSkill{
     if event == fk.EventPhaseChanging then
       return target == player and player:hasSkill(self.name, true) and data.from == Player.NotActive and player:getMark("_dawu") ~= 0
     else
-      return player:hasSkill(self.name, true, true)
+      return player:getMark("_dawu") ~= 0
     end
   end,
   on_refresh = function(self, event, target, player, data)
