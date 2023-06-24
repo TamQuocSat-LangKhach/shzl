@@ -11,7 +11,9 @@ local godguanyu = General(extension, "godguanyu", "god", 5)
 local wushen = fk.CreateFilterSkill{
   name = "wushen",
   card_filter = function(self, to_select, player)
-    return player:hasSkill(self.name) and to_select.suit == Card.Heart and table.contains(player.player_cards[Player.Hand], to_select.id)
+    return player:hasSkill(self.name) and to_select.suit == Card.Heart and
+    not table.contains(player.player_cards[Player.Equip], to_select.id) and
+    not table.contains(player.player_cards[Player.Judge], to_select.id)
   end,
   view_as = function(self, to_select)
     local card = Fk:cloneCard("slash", Card.Heart, to_select.number)
@@ -1250,14 +1252,137 @@ Fk:loadTranslationTable{
   ["~godliubei"] = "桃园依旧，来世再结……",
 }
 
+local godluxun = General(extension, "godluxun", "god", 4)
+local junlue = fk.CreateTriggerSkill{
+  name = "junlue",
+  events = {fk.Damage, fk.Damaged},
+  frequency = Skill.Compulsory,
+  can_trigger = function(self, event, target, player, data)
+    return target == player and player:hasSkill(self.name) and not player.dead
+  end,
+  on_use = function(self, event, target, player, data)
+    player.room:addPlayerMark(player, "@junlue", data.damage)
+  end,
+}
+godluxun:addSkill(junlue)
+local cuike = fk.CreateTriggerSkill{
+  name = "cuike",
+  anim_type = "offensive",
+  events = {fk.EventPhaseStart},
+  can_trigger = function(self, event, target, player, data)
+    return target == player and player:hasSkill(self.name) and player.phase == Player.Play
+  end,
+  on_cost = function(self, event, target, player, data)
+    local is_dmg = player:getMark("@junlue") % 2 == 1
+    local room = player.room
+    local targets
+    if is_dmg then
+      targets = table.map(room.alive_players, Util.IdMapper)
+    else
+      targets = table.map(table.filter(room.alive_players, function(p)
+        return not p:isAllNude()
+      end), Util.IdMapper)
+    end
+
+    if #targets == 0 then return end
+    local tos = room:askForChoosePlayers(player, targets, 1, 1,
+      is_dmg and "#cuike-damage" or "#cuike-discard", self.name, true)
+
+    if tos[1] then
+      self.cost_data = tos[1]
+      return true
+    end
+  end,
+  on_use = function(self, event, target, player, data)
+    local is_dmg = player:getMark("@junlue") % 2 == 1
+    local room = player.room
+    local to = room:getPlayerById(self.cost_data)
+
+    if is_dmg then
+      room:damage {
+        from = player, to = to,
+        damage = 1, skillName = self.name
+      }
+    else
+      local cid = room:askForCardChosen(player, to, "hej", self.name)
+      room:throwCard(cid, self.name, to, player)
+      if not to.chained then
+        to:setChainState(true)
+      end
+    end
+
+    if player:getMark("@junlue") > 7 then
+      if room:askForSkillInvoke(player, self.name, nil, "#cuike-shenfen") then
+        room:setPlayerMark(player, "@junlue", 0)
+        for _, p in ipairs(room:getOtherPlayers(player)) do
+          room:damage {
+            from = player, to = p,
+            damage = 1, skillName = self.name
+          }
+        end
+      end
+    end
+  end,
+}
+godluxun:addSkill(cuike)
+local zhanhuo = fk.CreateActiveSkill{
+  name = "zhanhuo",
+  anim_type = "offensive",
+  min_target_num = 1,
+  max_target_num = function()
+    return math.max(Self:getMark("@junlue"), 1)
+  end,
+  card_num = 0,
+  frequency = Skill.Limited,
+  card_filter = function() return false end,
+  can_use = function(self, player)
+    return player:usedSkillTimes(self.name, Player.HistoryGame) == 0 and
+      player:getMark("@junlue") > 0
+  end,
+  target_filter = function(self, to_select, selected, selected_cards)
+    return #selected < Self:getMark("@junlue") and Fk:currentRoom():getPlayerById(to_select).chained
+  end,
+  on_use = function(self, room, effect)
+    local player = room:getPlayerById(effect.from)
+    room:setPlayerMark(player, "@junlue", 0)
+
+    for _, pid in ipairs(effect.tos) do
+      local to = room:getPlayerById(pid)
+      room:throwCard(to:getCardIds(Player.Equip), self.name, to, to)
+    end
+
+    local tos = room:askForChoosePlayers(player, effect.tos, 1, 1, "#zhanhuo-damage", self.name, false)
+    room:damage {
+      from = player, to = room:getPlayerById(tos[1]),
+      damage = 1, damageType = fk.FireDamage, skillName = self.name
+    }
+  end,
+
+  prompt = "#zhanhuo-prompt",
+}
+godluxun:addSkill(zhanhuo)
 Fk:loadTranslationTable{
   ["godluxun"] = "神陆逊",
   ["junlue"] = "军略",
   [":junlue"] = "锁定技，当你造成或受到1点伤害后，你获得一枚“军略”。",
+  ["@junlue"] = "军略",
   ["cuike"] = "摧克",
-  [":cuike"] = "出牌阶段开始时，若你的“军略”数为：奇数，你可以对一名角色造成1点伤害；偶数，你可以弃置一名角色区域里的一张牌，令其横置。若“军略”数大于7，你可弃全部“军略”，对所有其他角色各造成1点伤害。",
+  [":cuike"] = "出牌阶段开始时，若你的“军略”数为：奇数，你可以对一名角色造成1点伤害；偶数，你可以弃置一名角色区域里的一张牌，令其横置。然后若“军略”数大于7，你可弃全部“军略”，对所有其他角色各造成1点伤害。",
+  ["#cuike-damage"] = "摧克：你可以对一名角色造成1点伤害",
+  ["#cuike-discard"] = "摧克：你可以弃置一名角色区域里的一张牌并横置之",
+  ["#cuike-shenfen"] = "摧克：你可以弃置所有“军略”对所有其他角色各造成1点伤害",
   ["zhanhuo"] = "绽火",
   [":zhanhuo"] = "限定技，出牌阶段，你可以弃全部“军略”，令至多等量的处于连环状态的角色弃置所有装备区里的牌，然后对其中一名角色造成1点火焰伤害。",
+  ["#zhanhuo-damage"] = "绽火：对其中一名角色造成一点火焰伤害",
+  ["#zhanhuo-prompt"] = "绽火：弃置全部“军略”并选择至多等量处于连环状态中的角色",
+
+  ["$junlue1"] = "军略绵腹，制敌千里。",
+  ["$junlue2"] = "文韬武略兼备，方可破敌如破竹。",
+  ["$cuike1"] = "克险摧难，军略当先。",
+  ["$cuike2"] = "摧敌心神，克敌计谋。",
+  ["$zhanhuo1"] = "业火映东水，吴志绽敌营！",
+  ["$zhanhuo2"] = "绽东吴业火，烧敌军数千！",
+  ["~godluxun"] = "东吴业火，终究熄灭…",
 }
 
 local godganning = General(extension, "godganning", "god", 3, 6)
