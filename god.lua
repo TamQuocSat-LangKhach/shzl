@@ -464,7 +464,7 @@ local kuangfeng = fk.CreateTriggerSkill{
     if event == fk.EventPhaseChanging then
       return target == player and player:hasSkill(self.name, true) and data.from == Player.NotActive and player:getMark("_kuangfeng") ~= 0
     else
-      return player:hasSkill(self.name, true, true)
+      return player:getMark("_kuangfeng") ~= 0
     end
   end,
   on_refresh = function(self, event, target, player, data)
@@ -516,7 +516,7 @@ local dawu = fk.CreateTriggerSkill{
     if event == fk.EventPhaseChanging then
       return target == player and player:hasSkill(self.name, true) and data.from == Player.NotActive and player:getMark("_dawu") ~= 0
     else
-      return player:hasSkill(self.name, true, true)
+      return player:getMark("_dawu") ~= 0
     end
   end,
   on_refresh = function(self, event, target, player, data)
@@ -1142,7 +1142,6 @@ Fk:loadTranslationTable{
   [":jilue"] = "你可以弃置1枚“忍”，发动下列一项技能：〖鬼才〗、〖放逐〗、〖集智〗、〖制衡〗、〖完杀〗。",
 }
 
---[[ 关于分块注释建议改成这种格式，这样在本行开头添加一个横杠即可一键解除
 local godliubei = General(extension, "godliubei", "god", 6)
 local longnu = fk.CreateTriggerSkill{
   name = "longnu",
@@ -1169,11 +1168,11 @@ local longnu = fk.CreateTriggerSkill{
 local longnu_filter = fk.CreateFilterSkill{
   name = "#longnu_filter",
   card_filter = function(self, to_select, player)
-    if not table.contains(player.player_cards[Player.Hand], to_select.id) or player:getMark("_longnu-phase") == 0 then return false end
+    if player:getMark("_longnu-phase") == 0 or table.contains(player.player_cards[Player.Equip], to_select.id) or table.contains(player.player_cards[Player.Judge], to_select.id) then return false end
     return (player:getMark("_longnu-phase") == "yang" and to_select.color == Card.Red) or (player:getMark("_longnu-phase") == "yin" and to_select.type == Card.TypeTrick)
   end,
   view_as = function(self, to_select, player)
-    local card = Fk:cloneCard(player:getMark("_longnu-phase") == 1 and "fire__slash" or "thunder__slash", to_select.suit, to_select.number)
+    local card = Fk:cloneCard(player:getMark("_longnu-phase") == "yang" and "fire__slash" or "thunder__slash", to_select.suit, to_select.number)
     card.skillName = self.name
     return card
   end,
@@ -1183,7 +1182,7 @@ local longnu_targetmod = fk.CreateTargetModSkill{
   distance_limit_func =  function(self, player, skill, card)
     return (player:getMark("_longnu-phase") == "yang" and skill.trueName == "slash_skill" and card.name == "fire__slash") and 999 or 0
   end,
-  residue_func = function(self, player, skill, scope, 2)
+  residue_func = function(self, player, skill, scope, card)
     return (player:getMark("_longnu-phase") == "yin" and skill.trueName == "slash_skill" and scope == Player.HistoryPhase and card.name == "thunder__slash") and 999 or 0
   end,
 }
@@ -1243,9 +1242,15 @@ Fk:loadTranslationTable{
   ["jieying"] = "结营",
   [":jieying"] = "锁定技，你始终处于横置状态；处于连环状态的角色手牌上限+2；结束阶段开始时，你横置一名其他角色。",
 
+  ["#longnu_filter"] = "龙怒",
   ["#jieying-target"] = "结营：选择一名其他角色，令其横置",
+
+  ["$longnu1"] = "损身熬心，誓报此仇！",
+  ["$longnu2"] = "兄弟疾难，血债血偿！",
+  ["$jieying1"] = "桃园结义，营一世之交。",
+  ["$jieying2"] = "结草衔环，报兄弟大恩。",
+  ["~godliubei"] = "桃园依旧，来世再结……",
 }
---]]
 
 local godluxun = General(extension, "godluxun", "god", 4)
 local junlue = fk.CreateTriggerSkill{
