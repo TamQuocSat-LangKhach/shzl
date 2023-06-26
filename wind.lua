@@ -433,7 +433,7 @@ Fk:loadTranslationTable{
 local yuji = General(extension, "yuji", "qun", 3)
 local guhuo = fk.CreateViewAsSkill{
   name = "guhuo",
-  anim_type = "offensive",
+  anim_type = "special",
   pattern = ".",
   interaction = function()
     local names = {}
@@ -567,6 +567,9 @@ yuji:addSkill(guhuo)
 Fk:loadTranslationTable{
   ["yuji"] = "于吉",
   ["guhuo"] = "蛊惑",
+  ["$guhuo1"] = "你信吗？",
+  ["$guhuo2"] = "猜猜看呐~",
+  ["~yuji"] = "竟然…被猜到了…",
   [":guhuo"] = "你可以扣置一张手牌当做一张基本牌或非延时锦囊牌使用或打出，体力值大于0的其他角色选择是否质疑，然后你展示此牌："..
   "若无角色质疑，此牌按你所述继续结算；若有角色质疑：若此牌为真，质疑角色各失去1点体力，否则质疑角色各摸一张牌，"..
   "且若此牌为<font color='red'>♥</font>且为真，则按你所述继续结算，否则将之置入弃牌堆。",
