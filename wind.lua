@@ -63,6 +63,10 @@ Fk:loadTranslationTable{
   [":shensu"] = "你可以做出如下选择：1.跳过判定阶段和摸牌阶段；2.跳过出牌阶段并弃置一张装备牌。你每选择一项，便视为你使用一张无距离限制的【杀】。",
   ["#shensu1-choose"] = "神速：你可以跳过判定阶段和摸牌阶段，视为使用一张无距离限制的【杀】",
   ["#shensu2-choose"] = "神速：你可以跳过出牌阶段并弃置一张装备牌，视为使用一张无距离限制的【杀】",
+
+  ["$shensu1"] = "吾善于千里袭人！",
+  ["$shensu2"] = "取汝首级，有如探囊取物！",
+  ["~xiahouyuan"] = "竟然…比我还…快…",
 }
 
 local caoren = General(extension, "caoren", "wei", 4)
@@ -83,6 +87,10 @@ Fk:loadTranslationTable{
   ["caoren"] = "曹仁",
   ["jushou"] = "据守",
   [":jushou"] = "结束阶段，你可以摸三张牌，然后翻面。",
+
+  ["$jushou1"] = "我先休息一会！",
+  ["$jushou2"] = "尽管来吧！",
+  ["~caoren"] = "实在是守不住！",
 }
 
 local huangzhong = General(extension, "huangzhong", "shu", 4)
@@ -108,6 +116,10 @@ Fk:loadTranslationTable{
   ["huangzhong"] = "黄忠",
   ["liegong"] = "烈弓",
   [":liegong"] = "当你于出牌阶段内使用【杀】指定一个目标后，若该角色的手牌数不小于你的体力值或不大于你的攻击范围，则你可以令其不能使用【闪】响应此【杀】。",
+
+  ["$liegong1"] = "百步穿杨！",
+  ["$liegong2"] = "中！",
+  ["~huangzhong"] = "不得不服老啦~",
 }
 
 local weiyan = General(extension, "weiyan", "shu", 4)
@@ -134,6 +146,10 @@ Fk:loadTranslationTable{
   ["weiyan"] = "魏延",
   ["kuanggu"] = "狂骨",
   [":kuanggu"] = "锁定技，当你对距离1以内的一名角色造成1点伤害后，你回复1点体力。",
+
+  ["$kuanggu1"] = "我会怕你吗！",
+  ["$kuanggu2"] = "真是美味啊！",
+  ["~weiyan"] = "谁敢杀我！饿啊！",
 }
 
 local xiaoqiao = General(extension, "xiaoqiao", "wu", 3, 3, General.Female)
@@ -188,6 +204,11 @@ Fk:loadTranslationTable{
   ["#tianxaing-choose" ] = "天香：弃置一张<font color='red'>♥</font>手牌将此伤害转移给一名其他角色，然后其摸X张牌（X为其已损失体力值）",
   ["hongyan"] = "红颜",
   [":hongyan"] = "锁定技，你的♠牌视为<font color='red'>♥</font>牌。",
+
+  ["$tianxiang2"] = "接着哦~",
+  ["$tianxiang1"] = "替我挡着~",
+  ["$hongyan"] = "（红颜）",
+  ["~xiaoqiao"] = "公瑾，我先走一步…",
 }
 
 local zhoutai = General(extension, "zhoutai", "wu", 4)
@@ -362,6 +383,10 @@ Fk:loadTranslationTable{
   ["#buqu_duplicate_item"] = "重复“创”牌: %arg",
   ["#buqu_remove"] = "%from 移除了“创”牌：%arg",
   ["zhoutai_chuang"] = "创",
+
+  ["$buqu2"] = "我绝不会倒下！",
+  ["$buqu1"] = "还不够！",
+  ["~zhoutai"] = "已经，尽力了…",
 }
 
 local zhangjiao = General(extension, "zhangjiao", "qun", 3)
@@ -428,6 +453,12 @@ Fk:loadTranslationTable{
   [":guidao"] = "当一名角色的判定牌生效前，你可以打出一张黑色牌替换之。",
   ["#leiji-choose"] = "雷击：你可以令一名角色进行判定，若为♠，你对其造成2点雷电伤害。",
   ["#guidao-ask"] = "鬼道：你可以打出一张黑色牌替换 %dest 的判定",
+
+  ["$leiji1"] = "以我之真气，合天地之造化！",
+  ["$leiji2"] = "雷公助我！",
+  ["$guidao1"] = "天下大势，为我所控。",
+  ['$guidao2'] = "哼哼哼哼~",
+  ['~zhangjiao'] = '黄天，也死了…',
 }
 
 local yuji = General(extension, "yuji", "qun", 3)
