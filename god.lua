@@ -1390,6 +1390,7 @@ local godganning = General(extension, "godganning", "god", 3, 6)
 local poxi = fk.CreateActiveSkill{
   name = "poxi",
   anim_type = "control",
+  prompt = "#poxi-prompt",
   card_num = 0,
   target_num = 1,
   can_use = function(self, player)
@@ -1448,7 +1449,7 @@ local poxi = fk.CreateActiveSkill{
 
     if #cards1 == 0 then
       room:changeMaxHp(player, -1)
-    elseif #cards1 == 3 then
+    elseif #cards1 == 3 and player:isWounded() then
       room:recover({
         who = player,
         num = 1,
@@ -1467,7 +1468,6 @@ local poxi = fk.CreateActiveSkill{
 local gn_jieying = fk.CreateTriggerSkill{
   name = "gn_jieying",
   anim_type = "drawcard",
-  frequency = Skill.Compulsory,
   events = {fk.DrawNCards, fk.EventPhaseStart, fk.EventPhaseChanging},
   can_trigger = function(self, event, target, player, data)
     if not player:hasSkill(self.name) then return false end
@@ -1514,6 +1514,17 @@ local gn_jieying = fk.CreateTriggerSkill{
     end
     return false
   end,
+
+  refresh_events = {fk.BuryVictim, fk.EventLoseSkill},
+  can_refresh = function(self, event, target, player, data)
+    return (event == fk.BuryVictim or data == self) and player:getMark("@@jieying_camp") > 0
+  end,
+  on_refresh = function(self, event, target, player, data)
+    local room = player.room
+    if table.every(room.alive_players, function (p) return not p:hasSkill(self.name, true) end) then
+      room:setPlayerMark(player, "@@jieying_camp", 0)
+    end
+  end,
 }
 local gn_jieying_targetmod = fk.CreateTargetModSkill{
   name = "#gn_jieying_targetmod",
@@ -1542,16 +1553,17 @@ Fk:loadTranslationTable{
   ["poxi"] = "魄袭",
   [":poxi"] = "出牌阶段限一次，你可以观看一名其他角色的手牌，然后你可以弃置你与其手里共计四张不同花色的牌。若如此做，根据此次弃置你的牌数量执行以下效果：没有，体力上限减1；一张，结束出牌阶段且本回合手牌上限-1；三张，回复1点体力；四张，摸四张牌。",
   ["gn_jieying"] = "劫营",
-  [":gn_jieying"] = "游戏开始时，你获得一个“营”标记。结束阶段，你可以将“营”标记置于一名角色的武将牌旁；有“营”的角色摸牌阶段多摸一张牌、出牌阶段可多使用一张【杀】、手牌上限+1。有“营”的其他角色结束阶段，你获得其所有手牌。",
+  [":gn_jieying"] = "回合开始时，若没有角色有“营”标记，你获得一个“营”标记；结束阶段你可以将“营”标记交给一名其他角色；有“营”的角色摸牌阶段多摸一张牌、使用【杀】的次数上限+1、手牌上限+1。有“营”的其他角色的结束阶段，你获得其“营”标记及所有手牌。",
 
+  ["#poxi-prompt"] = "魄袭：选择一名有手牌的其他角色，并可弃置你与其手牌中共计四张花色各不相同的牌",
   ["@@jieying_camp"] = "营",
   ["#poxi-choose"] = "魄袭：从双方的手牌中选出四张不同花色的牌弃置，或者点取消",
   ["#gn_jieying-choose"] = "劫营：你可将营标记交给其他角色",
-
+  
   ["$poxi1"] = "夜袭敌军，挫其锐气。",
   ["$poxi2"] = "受主知遇，袭敌不惧。",
   ["$gn_jieying1"] = "裹甲衔枚，劫营如入无人之境。",
-  ["$gn_jieying2"] = "劫营速战，措手不及。~",
+  ["$gn_jieying2"] = "劫营速战，措手不及。",
   ["~godganning"] = "吾不能奉主，谁辅主基业？",
 }
 
