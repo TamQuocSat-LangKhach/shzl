@@ -461,11 +461,8 @@ local kuangfeng = fk.CreateTriggerSkill{
 
   refresh_events = {fk.EventPhaseChanging, fk.Death},
   can_refresh = function(self, event, target, player, data)
-    if event == fk.EventPhaseChanging then
-      return target == player and player:hasSkill(self.name, true) and data.from == Player.NotActive and player:getMark("_kuangfeng") ~= 0
-    else
-      return player:getMark("_kuangfeng") ~= 0
-    end
+    if target ~= player or player:getMark("_kuangfeng") == 0 then return false end
+    return event == fk.Death or data.from == Player.NotActive
   end,
   on_refresh = function(self, event, target, player, data)
     local room = player.room
@@ -513,11 +510,8 @@ local dawu = fk.CreateTriggerSkill{
 
   refresh_events = {fk.EventPhaseChanging, fk.Death},
   can_refresh = function(self, event, target, player, data)
-    if event == fk.EventPhaseChanging then
-      return target == player and player:hasSkill(self.name, true) and data.from == Player.NotActive and player:getMark("_dawu") ~= 0
-    else
-      return player:getMark("_dawu") ~= 0
-    end
+    if target ~= player or player:getMark("_dawu") == 0 then return false end
+    return event == fk.Death or data.from == Player.NotActive
   end,
   on_refresh = function(self, event, target, player, data)
     local room = player.room
