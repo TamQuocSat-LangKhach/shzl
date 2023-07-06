@@ -1705,11 +1705,12 @@ local huoxin = fk.CreateActiveSkill{
 
     local pindianData = target1:pindian({ target2 }, self.name)
     local winner = pindianData.results[target2.id].winner
+    local fix = math.abs(pindianData.results[target2.id].toCard.number - pindianData.fromCard.number) >= 5 and 1 or 0
     if winner ~= target1 then
-      room:addPlayerMark(target1, "@huoxin-meihuo", 1)
+      room:addPlayerMark(target1, "@huoxin-meihuo", 1 + fix)
     end
     if winner ~= target2 then
-      room:addPlayerMark(target2, "@huoxin-meihuo", 1)
+      room:addPlayerMark(target2, "@huoxin-meihuo", 1 + fix)
     end
   end
 }
@@ -1726,7 +1727,8 @@ Fk:loadTranslationTable{
 
   ["huoxin"] = "惑心",
   [":huoxin"] = "出牌阶段限一次，你可以展示两张花色相同的手牌并分别交给两名" ..
-    "其他角色，然后令这两名角色拼点，没赢的角色获得1个“魅惑”标记。拥有2个或" ..
+    "其他角色，然后令这两名角色拼点，没赢的角色获得1个“魅惑”标记；若双方拼点点数" ..
+    "相差5或更多，改为获得2个“魅惑”标记。拥有2个或" ..
     "更多“魅惑”的角色回合即将开始时，该角色移去其所有“魅惑”，" ..
     "此回合改为由你操控。",
   ["@huoxin-meihuo"] = "魅惑",
