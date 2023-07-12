@@ -19,7 +19,7 @@ local thunder__yongsi = fk.CreateTriggerSkill{
       end, Player.HistoryTurn)
     if target == player and player:hasSkill(self.name) then
       if event == fk.EventPhaseEnd then
-        return player.phase == Player.Play and (num == 0 or num > 1)
+                   return player.phase == Player.Play and (num == 0 and player:getHandcardNum() < player.hp) or num > 1
       end
       return true
     end
@@ -71,7 +71,7 @@ local cd_wanglie = fk.CreateTriggerSkill{
     return target == player and player.phase == Player.Play and player:hasSkill(self.name) and (data.card:isCommonTrick() or data.card.trueName == "slash")and player:getMark("@wanglie__debuff-phase") == 0
   end,
   on_cost = function(self, event, target, player, data)
-    return player.room:askForSkillInvoke(player, self.name, nil, "#wanglie-invoke:::"..data.card.name)
+    return player.room:askForSkillInvoke(player, self.name, nil, "#wanglie-invoke:::"..data.card:toLogString())
   end, 
   on_use = function(self, event, target, player, data)
     data.disresponsiveList = data.disresponsiveList or {}
@@ -109,8 +109,8 @@ chendao:addSkill(cd_wanglie)
 Fk:loadTranslationTable{
   ["chendao"] = "陈到",
   ["cd_wanglie"] = "往烈",
-  [":wanglie"] = "①锁定技，你于出牌阶段使用的第一张牌无距离限制。②你于出牌阶段使用一张【杀】或普通锦囊牌时，你可以令此牌无法响应，然后本阶段你不能再使用牌。",
-  ["#wanglie-invoke"] = "往烈:是否令%arg无法响应?然后你本阶段无法再使用牌。",
+  [":cd_wanglie"] = "①锁定技，你于出牌阶段使用的第一张牌无距离限制。②你于出牌阶段使用一张【杀】或普通锦囊牌时，你可以令此牌无法响应，然后本阶段你不能再使用牌。",
+  ["#wanglie-invoke"] = "往烈:是否令【%arg】无法响应?然后你本阶段无法再使用牌。",
   ["@wanglie__debuff-phase"] = "往烈",
 }
 local haozhao = General(extension, "haozhao", "wei", 4)
@@ -119,10 +119,7 @@ local zhengu = fk.CreateTriggerSkill{
   anim_type = "masochism",
   events = {fk.EventPhaseEnd},
   can_trigger = function(self, event, target, player, data)
-     local mark = player:getMark("zhengupy")
     if target == player and player:hasSkill(self.name) and player.phase == Player.Finish then
-      return true
-    elseif target:getMark("@zhengu") > 0 and  player:hasSkill(self.name)and table.contains(mark, target.id) and target.phase == Player.Finish then
       return true
     end
   end,
@@ -134,39 +131,71 @@ local zhengu = fk.CreateTriggerSkill{
          self.cost_data = to[1]
          return true
        end
-     elseif target:getMark("@zhengu") > 0 then
-       self.cost_data = target.id
-       return true
      end
   end,
   on_use = function(self, event, target, player, data)
     local to = player.room:getPlayerById(self.cost_data)
     local mark = player:getMark("zhengupy")
-    if to:getMark("@zhengu") == 0 then
-      player.room:addPlayerMark(to, "@zhengu", 1)
+    if to:getMark("@@zhengu") == 0 then
+      player.room:addPlayerMark(to, "@@zhengu")
       if mark == 0 then mark = {} end
        table.insert(mark, to.id)
        player.room:setPlayerMark(player, "zhengupy", mark)
-    else
-      player.room:setPlayerMark(to, "@zhengu", 0)
-      table.removeOne(mark, to.id)
-      player.room:setPlayerMark(player, "zhengupy", mark)
     end
     local num1 = math.abs(#player.player_cards[Player.Hand] - #to.player_cards[Player.Hand])
     if #player.player_cards[Player.Hand] >#to.player_cards[Player.Hand] then
-       to:drawCards(math.min(num1, 5))
+       to:drawCards(math.min(num1, 5)- to:getHandcardNum())
     else
        player.room:askForDiscard(to, num1, num1, false, self.name, false)
+    end
+  end,
+  
+  refresh_events = {fk.Death, fk.EventPhaseEnd},
+  can_refresh = function(self, event, target, player, data)
+     local mark = player:getMark("zhengupy")
+    if mark ~= 0 then
+      if event == fk.Death then
+        return target == player
+      else
+        if target:getMark("@@zhengu") > 0 and target.phase == Player.Finish  and table.contains(mark, target.id) then
+           self.cost_data = target.id
+          return  true
+        end
+      end
+    end
+  end,
+  on_refresh = function(self, event, target, player, data)
+    local room = player.room
+    if event == fk.Death then
+      room:setPlayerMark(player, "zhengupy", 0)
+      local targets = room:getOtherPlayers(player, true)
+      table.forEach(targets, function(p)
+         if target:getMark("@@zhengu") > 0 then  
+           room:setPlayerMark(p, "@@zhengu", 0) 
+         end
+      end)
+    else
+       local to = player.room:getPlayerById(self.cost_data) 
+       local mark = player:getMark("zhengupy")
+        room:setPlayerMark(to, "@@zhengu", 0)
+       table.removeOne(mark, to.id)
+        room:setPlayerMark(player, "zhengupy", mark)
+       local num1 = math.abs(#player.player_cards[Player.Hand] - #to.player_cards[Player.Hand])
+      if #player.player_cards[Player.Hand] >#to.player_cards[Player.Hand] then
+        to:drawCards(math.min(num1, 5)- to:getHandcardNum())
+      else
+         player.room:askForDiscard(to, num1, num1, false, self.name, false)
+      end
     end
   end,
 }
 haozhao:addSkill(zhengu)
 Fk:loadTranslationTable{
   ["haozhao"] = "郝昭",
-  ["@zhengu"] = "镇骨",
+  ["@@zhengu"] = "镇骨",
   ["zhengu"] = "镇骨",
-  [":zhengu"] = "结束阶段，你可以选择一名其他角色，你的回合结束后和该角色的下个回合结束时，其将手牌摸至或弃至X张。（X为你的手牌数且至多为5）。",
-  ["#zhengu-choose"] = "镇骨:是否选择一名其他角色?，你的回合结束后和该角色的下个回合结束时，其将手牌摸至或弃至X张。（X为你的手牌数且至多为5）。",
+  [":zhengu"] = "结束阶段，你可以选择一名其他角色，你的回合结束后和该角色的下个回合结束时，其将手牌摸至或弃至与你手牌数量相同。(至多摸至五张)。",
+  ["#zhengu-choose"] = "镇骨:是否选择一名其他角色?，你的回合结束后和该角色的下个回合结束时，其将手牌摸至或弃至与你手牌数量相同。（至多摸至五张）。",
 }
 
 return extension
