@@ -37,6 +37,10 @@ Fk:loadTranslationTable{
   ["xuhuang"] = "徐晃",
   ["duanliang"] = "断粮",
   [":duanliang"] = "你可以将一张黑色基本牌或黑色装备牌当【兵粮寸断】使用；你可以对距离为2的角色使用【兵粮寸断】。",
+
+  ["$duanliang1"] = "截其源，断其粮，贼可擒也。",
+  ["$duanliang2"] = "人是铁，饭是钢。",
+  ["~xuhuang"] = "一顿不吃饿得慌。",
 }
 
 local caopi = General(extension, "caopi", "wei", 3)
@@ -64,7 +68,7 @@ local fangzhu = fk.CreateTriggerSkill{
   end,
   on_cost = function(self, event, target, player, data)
     local to = player.room:askForChoosePlayers(player, table.map(player.room:getOtherPlayers(player), function(p)
-      return p.id end), 1, 1, "#fangzhu-choose", self.name, true)
+      return p.id end), 1, 1, "#fangzhu-choose:::"..player:getLostHp(), self.name, true)
     if #to > 0 then
       self.cost_data = to[1]
       return true
@@ -84,7 +88,7 @@ Fk:loadTranslationTable{
   [":xingshang"] = "当其他角色死亡时，你可以获得其所有牌。",
   ["fangzhu"] = "放逐",
   [":fangzhu"] = "当你受到伤害后，你可以令一名其他角色翻面，然后该角色摸X张牌（X为你已损失的体力值）。",
-  ["#fangzhu-target"] = "放逐：你可以令一名其他角色翻面，然后该角色摸X张牌（X为你已损失的体力值）",
+  ["#fangzhu-choose"] = "放逐：你可以令一名其他角色翻面，然后其摸%arg张牌",
 
   ["$xingshang1"] = "我的是我的，你的还是我的。",
   ["$xingshang2"] = "来，管杀还管埋！",
@@ -517,12 +521,12 @@ Fk:loadTranslationTable{
   ["#luanwu-slash"] = "乱武：选择距离最近的一名角色，然后对其使用一张【杀】",
   ["#luanwu-use"] = "乱武：你需要对包含%dest在内的角色使用一张【杀】，否则失去1点体力",
 
-  ["$wansha1"] = "我要你三更死，谁敢留你到五更！",
-  ["$wansha2"] = "神仙难救，神仙难救啊",
-  ["$luanwu1"] = "哭喊吧，哀求吧，挣扎吧，然后，死吧！",
-  ["$luanwu2"] = "哼哼哼……坐山观虎斗！",
-  ["$weimu1"] = "你奈我何？",
-  ["$weimu2"] = "此计伤不到我。",
+  ["$wansha1"] = "神仙难救，神仙难救啊。",
+  ["$wansha2"] = "我要你三更死，谁敢留你到五更！",
+  ["$luanwu1"] = "哼哼哼……坐山观虎斗！",
+  ["$luanwu2"] = "哭喊吧，哀求吧，挣扎吧，然后，死吧！",
+  ["$weimu1"] = "此计伤不到我。",
+  ["$weimu2"] = "你奈我何？",
   ["~jiaxu"] = "我的时辰……也到了……",
 }
 

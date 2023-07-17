@@ -59,8 +59,8 @@ yuanshu:addSkill(thunder__yongsi)
 Fk:loadTranslationTable{
   ["thunder__yuanshu"] = "袁术",
   ["thunder__yongsi"] = "庸肆",
-  [":thunder__yongsi"] = "锁定技，摸牌阶段，你改为摸X张牌，X为场上现存势力数。出牌阶段结束时，若你没有造成过伤害，你将手牌补至当前体力值，若造成过伤害且＞1，你本回合手牌上限改为已损失的体力值。",
-  
+  [":thunder__yongsi"] = "锁定技，摸牌阶段，你改为摸X张牌（X为场上现存势力数）。出牌阶段结束时，若你没有造成过伤害，你将手牌补至当前体力值，"..
+  "若造成过伤害且大于1点，你本回合手牌上限改为已损失的体力值。",
 }
 local chendao = General(extension, "chendao", "shu", 4)
 local cd_wanglie = fk.CreateTriggerSkill{
@@ -109,8 +109,8 @@ chendao:addSkill(cd_wanglie)
 Fk:loadTranslationTable{
   ["chendao"] = "陈到",
   ["cd_wanglie"] = "往烈",
-  [":cd_wanglie"] = "①锁定技，你于出牌阶段使用的第一张牌无距离限制。②你于出牌阶段使用一张【杀】或普通锦囊牌时，你可以令此牌无法响应，然后本阶段你不能再使用牌。",
-  ["#wanglie-invoke"] = "往烈:是否令【%arg】无法响应?然后你本阶段无法再使用牌。",
+  [":cd_wanglie"] = "锁定技，你于出牌阶段使用的第一张牌无距离限制。你于出牌阶段使用【杀】或普通锦囊牌时，你可以令此牌无法响应，然后本阶段你不能再使用牌。",
+  ["#wanglie-invoke"] = "往烈：你可以令%arg无法响应，然后你本阶段无法再使用牌",
   ["@wanglie__debuff-phase"] = "往烈",
 }
 local haozhao = General(extension, "haozhao", "wei", 4)
@@ -194,8 +194,8 @@ Fk:loadTranslationTable{
   ["haozhao"] = "郝昭",
   ["@@zhengu"] = "镇骨",
   ["zhengu"] = "镇骨",
-  [":zhengu"] = "结束阶段，你可以选择一名其他角色，你的回合结束后和该角色的下个回合结束时，其将手牌摸至或弃至与你手牌数量相同。(至多摸至五张)。",
-  ["#zhengu-choose"] = "镇骨:是否选择一名其他角色?，你的回合结束后和该角色的下个回合结束时，其将手牌摸至或弃至与你手牌数量相同。（至多摸至五张）。",
+  [":zhengu"] = "结束阶段，你可以选择一名其他角色，你的回合结束后和该角色的下个回合结束时，其将手牌摸至或弃至与你手牌数量相同。（至多摸至五张）",
+  ["#zhengu-choose"] = "镇骨：选择一名其他角色，你和其下个回合结束时其将手牌调整与你数量相同。",
 }
 
 return extension

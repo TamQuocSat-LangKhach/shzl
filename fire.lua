@@ -47,6 +47,10 @@ Fk:loadTranslationTable{
   ["dianwei"] = "典韦",
   ["qiangxi"] = "强袭",
   [":qiangxi"] = "出牌阶段限一次，你可以失去1点体力或弃置一张武器牌，并选择你攻击范围内的一名其他角色，对其造成1点伤害。",
+
+  ["$qiangxi1"] = "吃我一戟！",
+  ["$qiangxi2"] = "看我三步之内取你小命！",
+  ["~dianwei"] = "主公，快走……！",
 }
 
 local xunyu = General(extension, "xunyu", "wei", 3)
@@ -113,7 +117,8 @@ local jieming = fk.CreateTriggerSkill{
   end,
   on_cost = function(self, event, target, player, data)
     local room = player.room
-    local to = room:askForChoosePlayers(player, table.map(room.alive_players, function(p) return p.id end), 1, 1, "#jieming-choose", self.name, true)
+    local to = room:askForChoosePlayers(player, table.map(room.alive_players, function(p)
+      return p.id end), 1, 1, "#jieming-choose", self.name, true)
     if #to > 0 then
       self.cost_data = to[1]
       return true
@@ -130,11 +135,112 @@ xunyu:addSkill(jieming)
 Fk:loadTranslationTable{
   ["xunyu"] = "荀彧",
   ["quhu"] = "驱虎",
-  [":quhu"] = "出牌阶段限一次，你可以与一名体力值大于你的角色拼点。若你赢，则该角色对其攻击范围内你指定的另一名角色造成1点伤害；若你没赢，则其对你造成1点伤害。",
+  [":quhu"] = "出牌阶段限一次，你可以与一名体力值大于你的角色拼点。若你赢，该角色对其攻击范围内你指定的另一名角色造成1点伤害；若你没赢，其对你造成1点伤害。",
   ["jieming"] = "节命",
   [":jieming"] = "当你受到1点伤害后，你可令一名角色将手牌补至X张（X为其体力上限且最多为5）。",
   ["#quhu-choose"] = "驱虎：选择其攻击范围内的一名角色，其对此角色造成1点伤害",
   ["#jieming-choose"] = "节命：令一名角色将手牌补至X张（X为其体力上限且最多为5）",
+
+  ["$quhu1"] = "此乃驱虎吞狼之计。",
+  ["$quhu2"] = "借你之手，与他一搏吧。",
+  ["$jieming1"] = "秉忠贞之志，守谦退之节。",
+  ["$jieming2"] = "我，永不背弃。",
+  ["~xunyu"] = "主公要臣死，臣不得不死。",
+}
+
+local wolong = General(extension, "wolong", "shu", 3)
+local bazhen = fk.CreateTriggerSkill{
+  name = "bazhen",
+  mute = true,
+  frequency = Skill.Compulsory,
+  events = {fk.GameStart, fk.AfterCardsMove},
+  can_trigger = function(self, event, target, player, data)
+    if player:hasSkill(self.name) then
+      if event == fk.GameStart then
+        return true
+      else
+        for _, move in ipairs(data) do
+          if move.from == player.id then
+            for _, info in ipairs(move.moveInfo) do
+              if info.fromArea == Card.PlayerEquip then
+                return true
+              end
+            end
+          end
+          if move.to == player.id and move.toArea == Player.Equip then
+            return true
+          end
+        end
+      end
+    end
+  end,
+  on_use = function(self, event, target, player, data)  --FIXME: 虚拟装备技能应该用statusSkill而非triggerSkill
+    if player:getEquipment(Card.SubtypeArmor) == nil and not player:hasSkill("#eight_diagram_skill", true) then
+      player.room:handleAddLoseSkills(player, "#eight_diagram_skill", self.name, false, true)
+    elseif player:getEquipment(Card.SubtypeArmor) ~= nil and player:hasSkill("#eight_diagram_skill", true) then
+      player.room:handleAddLoseSkills(player, "-#eight_diagram_skill", nil, false, true)
+    end
+  end,
+
+  refresh_events = {fk.AfterCardUseDeclared, fk.PreCardRespond},
+  can_refresh = function(self, event, target, player, data)
+    return target == player and player:hasSkill(self.name) and table.contains(data.card.skillNames, "eight_diagram") and
+    player:getEquipment(Card.SubtypeArmor) == nil
+  end,
+  on_refresh = function(self, event, target, player, data)
+    player.room:broadcastSkillInvoke(self.name)
+    player.room:notifySkillInvoked(player, self.name, "defensive")
+  end,
+}
+local huoji = fk.CreateViewAsSkill{
+  name = "huoji",
+  anim_type = "offensive",
+  pattern = "fire_attack",
+  card_filter = function(self, to_select, selected)
+    return #selected == 0 and Fk:getCardById(to_select).color == Card.Red and Fk:currentRoom():getCardArea(to_select) ~= Player.Equip
+  end,
+  view_as = function(self, cards)
+    if #cards ~= 1 then return end
+    local card = Fk:cloneCard("fire_attack")
+    card.skillName = self.name
+    card:addSubcard(cards[1])
+    return card
+  end,
+}
+local kanpo = fk.CreateViewAsSkill{
+  name = "kanpo",
+  anim_type = "control",
+  pattern = "nullification",
+  card_filter = function(self, to_select, selected)
+    return #selected == 0 and Fk:getCardById(to_select).color == Card.Black and Fk:currentRoom():getCardArea(to_select) ~= Player.Equip
+  end,
+  view_as = function(self, cards)
+    if #cards ~= 1 then return end
+    local card = Fk:cloneCard("nullification")
+    card.skillName = self.name
+    card:addSubcard(cards[1])
+    return card
+  end,
+}
+wolong:addSkill(bazhen)
+wolong:addSkill(huoji)
+wolong:addSkill(kanpo)
+Fk:loadTranslationTable{
+  ["wolong"] = "卧龙诸葛亮",
+  ["bazhen"] = "八阵",
+  [":bazhen"] = "锁定技，当你没有装备防具时，视为你装备着【八卦阵】。",
+  ["huoji"] = "火计",
+  [":huoji"] = "你可以将一张红色手牌当【火攻】使用。",
+  ["kanpo"] = "看破",
+  [":kanpo"] = "你可以将一张黑色手牌当【无懈可击】使用。",
+
+  ["$bazhen1"] = "你可识得此阵？",
+  ["$bazhen2"] = "太极生两仪，两仪生四象，四象生八卦。",
+  ["$huoji1"] = "此火可助我军大获全胜。",
+  ["$huoji2"] = "燃烧吧！",
+  ["$kanpo1"] = "雕虫小技。",
+  ["$kanpo2"] = "你的计谋被识破了。",
+  ["~wolong"] = "我的计谋竟被……",
 }
 
 local taishici = General(extension, "taishici", "wu", 4)
@@ -195,7 +301,12 @@ taishici:addSkill(tianyi)
 Fk:loadTranslationTable{
   ["taishici"] = "太史慈",
   ["tianyi"] = "天义",
-  [":tianyi"] = "出牌阶段限一次，你可以与一名角色拼点：若你赢，在本回合结束之前，你可以多使用一张【杀】、使用【杀】无距离限制且可以多选择一个目标；若你没赢，本回合你不能使用【杀】。",
+  [":tianyi"] = "出牌阶段限一次，你可以与一名角色拼点：若你赢，在本回合结束之前，你可以多使用一张【杀】、使用【杀】无距离限制且可以多选择一个目标；"..
+  "若你没赢，本回合你不能使用【杀】。",
+
+  ["$tianyi1"] = "请助我一臂之力！",
+  ["$tianyi2"] = "我当要替天行道！",
+  ["~taishici"] = "大丈夫，当带三尺之剑，立不世之功！",
 }
 
 local pangde = General(extension, "pangde", "qun", 4)
@@ -221,6 +332,10 @@ Fk:loadTranslationTable{
   ["pangde"] = "庞德",
   ["mengjin"] = "猛进",
   [":mengjin"] = "每当你使用的【杀】被目标角色使用的【闪】抵消时，你可以弃置其一张牌。",
+
+  ["$mengjin1"] = "我要杀你们个片甲不留！",
+  ["$mengjin2"] = "你，可敢挡我？",
+  ["~pangde"] = "四面都是水，我命休矣……",
 }
 
 local shuangxiongJudge = fk.CreateTriggerSkill{
@@ -294,6 +409,10 @@ Fk:loadTranslationTable{
   [":shuangxiong"] = "摸牌阶段，你可以选择放弃摸牌并进行一次判定：你获得此判定牌并且此回合可以将任意一张与该判定牌不同颜色的手牌当【决斗】使用。",
   ["@shuangxiong"] = "双雄",
   ["#shuangxiongJude"] = "双雄",
+
+  ["$shuangxiong1"] = "吾乃河北上将颜良文丑是也！",
+  ["$shuangxiong2"] = "快来与我等决一死战！",
+  ["~yanliangwenchou"] = "这红脸长须大将是……",
 }
 
 local luanji = fk.CreateViewAsSkill{
@@ -344,6 +463,10 @@ Fk:loadTranslationTable{
   [":luanji"] = "出牌阶段，你可以将任意两张相同花色的手牌当【万箭齐发】使用。",
   ["xueyi"] = "血裔",
   [":xueyi"] = "主公技，锁定技，你的手牌上限+2X(X为场上其他群势力角色数)。",
+
+  ["$luanji1"] = "弓箭手，准备放箭！",
+  ["$luanji2"] = "全都去死吧！",
+  ["~yuanshao"] = "老天不助我袁家啊！……",
 }
 
 return extension

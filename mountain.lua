@@ -66,6 +66,10 @@ Fk:loadTranslationTable{
   ["#qiaobian-invoke"] = "巧变：你可以弃一张手牌，跳过 %arg",
   ["#qiaobian-choose"] = "巧变：你可以依次获得%arg名角色的各一张手牌",
   ["#qiaobian-move"] = "巧变：请选择两名角色，移动场上的一张牌",
+
+  ["$qiaobian1"] = "兵无常势，水无常形。",
+  ["$qiaobian2"] = "用兵之道，变化万千。",
+  ["~zhanghe"] = "啊……膝盖……中箭了……",
 }
 
 local dengai = General(extension, "dengai", "wei", 4)
@@ -164,6 +168,14 @@ Fk:loadTranslationTable{
   ["jixi"] = "急袭",
   [":jixi"] = "你可以将一张“田”当【顺手牵羊】使用。",
   ["dengai_field"] = "田",
+
+  ["$tuntian1"] = "休养生息，备战待敌。",
+  ["$tuntian2"] = "锄禾日当午，汗滴禾下土。",
+  ["$zaoxian1"] = "屯田日久，当建奇功！",
+  ["$zaoxian2"] = "开辟险路，奇袭敌军！",
+  ["$jixi1"] = "偷渡阴平，直取蜀汉！",
+  ["$jixi2"] = "攻其无备，出其不意！",
+  ["~dengai"] = "吾破蜀克敌，竟葬于奸贼之手！",
 }
 
 local jiangwei = General(extension, "jiangwei", "shu", 4)
@@ -333,6 +345,16 @@ Fk:loadTranslationTable{
   ["#fangquan-give"] = "你可以弃置一张手牌令一名其他角色进行一个额外的回合",
   ["ruoyu"] = "若愚",
   [":ruoyu"] = "主公技，觉醒技，准备阶段开始时，若你的体力值为场上最少（或之一），你增加1点体力上限，回复1点体力，然后获得“激将”。",
+
+  ["$xiangle1"] = "打打杀杀，真没意思。",
+  ["$xiangle2"] = "我爸爸是刘备！",
+  ["$fangquan1"] = "唉，这可如何是好啊！",
+  ["$fangquan2"] = "哎，你办事儿，我放心~",
+  ["$ruoyu1"] = "不装疯卖傻，岂能安然无恙？",
+  ["$ruoyu2"] = "世人皆错看我，唉！",
+  --["$jijiang1"] = "我蜀汉岂无人乎！",
+  --["$jijiang2"] = "匡扶汉室，谁敢出战！",
+  ["~liushan"] = "哎，别打脸，我投降还不行吗？",
 }
 
 local sunce = General(extension, "sunce", "wu", 4)
@@ -378,6 +400,18 @@ Fk:loadTranslationTable{
   [":hunzi"] = "觉醒技，准备阶段，若你的体力值为1，你减1点体力上限，然后获得〖英姿〗和〖英魂〗。",
   ["zhiba"] = "制霸",
   [":zhiba"] = "主公技，其他吴势力角色的出牌阶段限一次，该角色可以与你拼点（若你已觉醒，你可以拒绝此拼点），若其没赢，你可以获得拼点的两张牌。",
+
+  ["$jiang1"] = "吾乃江东小霸王孙伯符！",
+  ["$jiang2"] = "江东子弟，何惧于天下！",
+  ["$hunzi1"] = "父亲在上，魂佑江东；公瑾在旁，智定天下！",
+  ["$hunzi2"] = "愿承父志，与公瑾共谋天下！",
+  ["$zhiba1"] = "我若怕你，非孙伯符也！",
+  ["$zhiba2"] = "是友是敌，一探便知。",
+  --["$yingzi1"] = "公瑾，助我决一死战！",
+  --["$yingzi2"] = "尔等看好了！",
+  --["$yinghun1"] = "父亲，助我背水一战！",
+  --["$yinghun2"] = "孙氏英烈，庇佑江东！",
+  ["~sunce"] = "内事不决问张昭，外事不决问周瑜……",
 }
 
 local zhangzhaozhanghong = General(extension, "zhangzhaozhanghong", "wu", 3)
@@ -499,8 +533,15 @@ Fk:loadTranslationTable{
   ["zhijian"] = "直谏",
   [":zhijian"] = "出牌阶段，你可以将你手牌中的一张装备牌置于一名其他角色装备区内：若如此做，你摸一张牌。",
   ["guzheng"] = "固政",
-  [":guzheng"] = "其他角色的弃牌阶段结束时，你可以令其获得一张弃牌堆中此阶段中因弃置而置入弃牌堆的该角色的手牌：若如此做，你获得弃牌堆中其余此阶段因弃置而置入弃牌堆的牌。",
+  [":guzheng"] = "其他角色的弃牌阶段结束时，你可以令其获得一张弃牌堆中此阶段中因弃置而置入弃牌堆的该角色的手牌："..
+  "若如此做，你获得弃牌堆中其余此阶段因弃置而置入弃牌堆的牌。",
   ["#guzheng-invoke"] = "固政：你可以令 %dest 获得其弃置的其中一张牌。" ,
+
+  ["$zhijian1"] = "请恕老臣直言！",
+  ["$zhijian2"] = "为臣者，当冒死以谏！",
+  ["$guzheng1"] = "固国安邦，居当如是。",
+  ["$guzheng2"] = "今当稳固内政，以御外患。",
+  ["~zhangzhaozhanghong"] = "竭力尽智，死而无憾……",
 }
 
 local caiwenji = General(extension, "caiwenji", "qun", 3, 3, General.Female)
@@ -589,6 +630,12 @@ Fk:loadTranslationTable{
   ["duanchang"] = "断肠",
   [":duanchang"] = "锁定技，当你死亡时，杀死你的角色失去所有武将技能。",
   ["#beige-invoke"] = "悲歌：%dest 受到伤害，你可以弃置一张牌令其判定，根据花色执行效果",
+
+  ["$beige1"] = "悲歌可以当泣，远望可以当归。",
+  ["$beige2"] = "制兹八拍兮拟排忧，何知曲成兮心转愁。",
+  ["$duanchang1"] = "流落异乡愁断肠。",
+  ["$duanchang2"] = "日东月西兮徒相望，不得相随兮空断肠。",
+  ["~caiwenji"] = "人生几何时，怀忧终年岁。",
 }
 
 return extension
