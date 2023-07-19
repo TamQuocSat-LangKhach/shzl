@@ -144,7 +144,7 @@ local zhengu = fk.CreateTriggerSkill{
     end
     local num1 = math.abs(#player.player_cards[Player.Hand] - #to.player_cards[Player.Hand])
     if #player.player_cards[Player.Hand] >#to.player_cards[Player.Hand] then
-       to:drawCards(math.min(num1, 5)- to:getHandcardNum())
+       to:drawCards(math.min(player:getHandcardNum(), 5)- to:getHandcardNum())
     else
        player.room:askForDiscard(to, num1, num1, false, self.name, false)
     end
@@ -182,7 +182,7 @@ local zhengu = fk.CreateTriggerSkill{
         room:setPlayerMark(player, "zhengupy", mark)
        local num1 = math.abs(#player.player_cards[Player.Hand] - #to.player_cards[Player.Hand])
       if #player.player_cards[Player.Hand] >#to.player_cards[Player.Hand] then
-        to:drawCards(math.min(num1, 5)- to:getHandcardNum())
+        to:drawCards(math.min(to:getHandcardNum(), 5)- to:getHandcardNum())
       else
          player.room:askForDiscard(to, num1, num1, false, self.name, false)
       end
