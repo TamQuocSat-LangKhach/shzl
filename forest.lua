@@ -80,20 +80,40 @@ local fangzhu = fk.CreateTriggerSkill{
     to:turnOver()
   end,
 }
+local songwei = fk.CreateTriggerSkill{
+  name = "songwei$",
+  events = {fk.FinishJudge},
+  can_trigger = function(self, event, target, player, data)
+    return player:hasSkill(self.name) and target ~= player and target.kingdom == "wei" and data.card.color == Card.Black
+  end,
+  on_cost = function(self, event, target, player, data)
+    return player.room:askForSkillInvoke(target, self.name, nil, "#songwei-invoke:"..player.id)
+  end,
+  on_use = function(self, event, target, player, data)
+    player:drawCards(1, self.name)
+  end,
+}
 caopi:addSkill(xingshang)
 caopi:addSkill(fangzhu)
+caopi:addSkill(songwei)
 Fk:loadTranslationTable{
   ["caopi"] = "曹丕",
   ["xingshang"] = "行殇",
   [":xingshang"] = "当其他角色死亡时，你可以获得其所有牌。",
   ["fangzhu"] = "放逐",
-  [":fangzhu"] = "当你受到伤害后，你可以令一名其他角色翻面，然后该角色摸X张牌（X为你已损失的体力值）。",
+  [":fangzhu"] = "当你受到伤害后，你可以令一名其他角色翻面，然后其摸X张牌（X为你已损失的体力值）。",
+  ["songwei"] = "颂威",
+  [":songwei"] = "主公技，当其他魏势力角色的判定结果确定后，若为黑色，其可令你摸一张牌。",
+
   ["#fangzhu-choose"] = "放逐：你可以令一名其他角色翻面，然后其摸%arg张牌",
+  ["#songwei-invoke"] = "颂威：你可以令 %src 摸一张牌",
 
   ["$xingshang1"] = "我的是我的，你的还是我的。",
   ["$xingshang2"] = "来，管杀还管埋！",
   ["$fangzhu1"] = "死罪可免，活罪难赦！",
   ["$fangzhu2"] = "给我翻过来！",
+  ["$songwei1"] = "千秋万载，一统江山！",
+  ["$songwei2"] = "仙福永享，寿与天齐！",
   ["~caopi"] = "子建，子建……",
 }
 
@@ -173,8 +193,8 @@ local yinghun = fk.CreateTriggerSkill{
     local room = player.room
     local to = room:getPlayerById(self.cost_data)
     local n = player:getLostHp()
-    local choice = room:askForChoice(player, {"#yinghun-draw",  "#yinghun-discard"}, self.name)
-    if choice == "#yinghun-draw" then
+    local choice = room:askForChoice(player, {"#yinghun-draw:::" .. n,  "#yinghun-discard:::" .. n}, self.name)
+    if choice:startsWith("#yinghun-draw") then
       room:broadcastSkillInvoke(self.name, 1)
       room:notifySkillInvoked(player, self.name, "support")
       to:drawCards(n, self.name)
@@ -193,11 +213,11 @@ Fk:loadTranslationTable{
   ["sunjian"] = "孙坚",
   ["yinghun"] = "英魂",
   [":yinghun"] = "准备阶段，若你已受伤，你可以选择一名其他角色并选择一项：1.令其摸X张牌，然后弃置一张牌；2.令其摸一张牌，然后弃置X张牌（X为你已损失的体力值）。",
-  ["#yinghun-choose"] = "英魂：你可以令一名其他角色：摸%arg张牌然后弃一张牌，或摸一张牌然后弃%arg2张牌",
-  ["#yinghun-draw"] = "摸X弃一",
-  ["#yinghun-discard"] = "摸一弃X",
+  ["#yinghun-choose"] = "英魂：你可以令一名其他角色：摸%arg张牌然后弃置一张牌，或摸一张牌然后弃置%arg2张牌",
+  ["#yinghun-draw"] = "摸%arg张牌，弃置1张牌",
+  ["#yinghun-discard"] = "摸1张牌，弃置%arg张牌",
 
-  ["$yinghun1"] = "以吾魂魄，保佑吾儿之基业",
+  ["$yinghun1"] = "以吾魂魄，保佑吾儿之基业。",
   ["$yinghun2"] = "不诛此贼三族，则吾死不瞑目！",
   ["~sunjian"] = "有埋伏，啊……",
 }

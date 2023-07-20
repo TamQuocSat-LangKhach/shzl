@@ -164,15 +164,14 @@ local tianxiang = fk.CreateTriggerSkill{
     local tar, card =  player.room:askForChooseCardAndPlayers(player, table.map(player.room:getOtherPlayers(player), function (p)
       return p.id end), 1, 1, ".|.|heart|hand", "#tianxaing-choose", self.name, true)
     if #tar > 0 and card then
-      self.cost_data = tar[1]
-      self.cost_data2 = card
+      self.cost_data = {tar[1], card}
       return true
     end
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room
-    local to = room:getPlayerById(self.cost_data)
-    room:throwCard(self.cost_data2, self.name, player, player)
+    local to = room:getPlayerById(self.cost_data[1])
+    room:throwCard(self.cost_data[2], self.name, player, player)
     room:damage{
       from = data.from,
       to = to,
@@ -393,7 +392,7 @@ local zhangjiao = General(extension, "zhangjiao", "qun", 3)
 local leiji = fk.CreateTriggerSkill{
   name = "leiji",
   anim_type = "offensive",
-  events = {fk.AfterCardUseDeclared, fk.CardResponding},
+  events = {fk.CardUsing, fk.CardResponding},
   can_trigger = function(self, event, target, player, data)
     return player:hasSkill(self.name) and target == player and data.card.name == "jink"
   end,
@@ -433,7 +432,7 @@ local guidao = fk.CreateTriggerSkill{
     return player:hasSkill(self.name) and not player:isNude()
   end,
   on_cost = function(self, event, target, player, data)
-    local card = player.room:askForResponse(player, self.name, ".|.|spade,club|hand,equip", "#guidao-ask::" .. target.id, true)
+    local card = player.room:askForResponse(player, self.name, ".|.|spade,club|hand,equip", "#guidao-ask::" .. target.id .. ":" .. data.reason, true)
     if card ~= nil then
       self.cost_data = card
       return true
@@ -443,21 +442,97 @@ local guidao = fk.CreateTriggerSkill{
     player.room:retrial(self.cost_data, player, data, self.name, true)
   end,
 }
+
+local huangtian = fk.CreateTriggerSkill{
+  name = "huangtian$",
+  mute = true,
+  frequency = Skill.Compulsory,
+  events = {fk.GameStart, fk.EventAcquireSkill, fk.EventLoseSkill, fk.Deathed},
+  can_trigger = function(self, event, target, player, data)
+    if event == fk.GameStart then
+      return player:hasSkill(self.name, true)
+    elseif event == fk.EventAcquireSkill or event == fk.EventLoseSkill then
+      return data == self
+    else
+      return target == player and player:hasSkill(self.name, true, true)
+    end
+  end,
+  on_use = function(self, event, target, player, data)
+    local room = player.room
+    local targets = table.filter(room:getOtherPlayers(player), function(p)
+      return (p.kingdom == "qun")
+    end)
+    if event == fk.GameStart or event == fk.EventAcquireSkill then
+      if player:hasSkill(self.name, true) then
+        table.forEach(targets, function(p)
+          room:handleAddLoseSkills(p, "huangtian_other&", nil, false, true)
+        end)
+      end
+    elseif event == fk.EventLoseSkill or event == fk.Deathed then
+      table.forEach(targets, function(p)
+        room:handleAddLoseSkills(p, "-huangtian_other&", nil, false, true)
+      end)
+    end
+  end,
+}
+local huangtian_other = fk.CreateActiveSkill{
+  name = "huangtian_other&",
+  anim_type = "support",
+  mute = true,
+  can_use = function(self, player)
+    if player:usedSkillTimes(self.name, Player.HistoryPhase) < 1 and player.kingdom == "qun" then
+      return table.find(Fk:currentRoom().alive_players, function(p) return p:hasSkill("huangtian") end)
+    end
+    return false
+  end,
+  card_num = 1,
+  card_filter = function(self, to_select, selected)
+    return #selected < 1 and (Fk:getCardById(to_select).name == "jink" or Fk:getCardById(to_select).name == "lightning")
+  end,
+  target_num = 0,
+  on_use = function(self, room, effect)
+    local player = room:getPlayerById(effect.from)
+    room:notifySkillInvoked(player, "huangtian")
+    room:broadcastSkillInvoke("huangtian")
+    local targets = table.filter(room.alive_players, function(p) return p:hasSkill("huangtian") end)
+    local target
+    if #targets == 1 then
+      target = targets[1]
+    else
+      target = room:getPlayerById(room:askForChoosePlayers(player, table.map(targets, function(p) return p.id end), 1, 1, nil, self.name, false)[1])
+    end
+    if not target then return false end
+    room:doIndicate(effect.from, { target.id })
+    room:moveCardTo(effect.cards, Player.Hand, target, fk.ReasonGive, self.name, nil, true)
+  end,
+}
+
 zhangjiao:addSkill(leiji)
 zhangjiao:addSkill(guidao)
+zhangjiao:addSkill(huangtian)
+Fk:addSkill(huangtian_other)
+
 Fk:loadTranslationTable{
   ["zhangjiao"] = "张角",
   ["leiji"] = "雷击",
   [":leiji"] = "当你使用或打出【闪】时，你可以令一名角色进行判定，若结果为♠，你对其造成2点雷电伤害。",
   ["guidao"] = "鬼道",
   [":guidao"] = "当一名角色的判定牌生效前，你可以打出一张黑色牌替换之。",
+  ["huangtian"] = "黄天",
+  [":huangtian"] = "主公技，其他群势力角色的出牌阶段限一次，其可将一张【闪】或【闪电】（正面朝上移动）交给你。",
+
   ["#leiji-choose"] = "雷击：你可以令一名角色进行判定，若为♠，你对其造成2点雷电伤害。",
-  ["#guidao-ask"] = "鬼道：你可以打出一张黑色牌替换 %dest 的判定",
+  ["#guidao-ask"] = "鬼道：你可以打出一张黑色牌替换 %dest 的 “%arg” 判定",
+
+  ["huangtian_other&"] = "黄天",
+  [":huangtian_other&"] = "出牌阶段限一次，你可将一张【闪】或【闪电】（正面朝上移动）交给张角。",
 
   ["$leiji1"] = "以我之真气，合天地之造化！",
   ["$leiji2"] = "雷公助我！",
   ["$guidao1"] = "天下大势，为我所控。",
   ['$guidao2'] = "哼哼哼哼~",
+  ["$huangtian1"] = "苍天已死，黄天当立！",
+  ['$huangtian2'] = "岁在甲子，天下大吉！",
   ['~zhangjiao'] = '黄天，也死了…',
 }
 
