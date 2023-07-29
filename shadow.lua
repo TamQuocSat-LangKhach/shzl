@@ -8,65 +8,45 @@ local wangji = General(extension, "wangji", "wei", 3)
 local qizhi = fk.CreateTriggerSkill{
   name = "qizhi",
   anim_type = "control",
-  events = { fk.TargetSpecified },
+  events = {fk.TargetSpecified},
   can_trigger = function(self, event, target, player, data)
-    return 
-      target == player and
-      player:hasSkill(self.name) and
-      player.phase < Player.NotActive and 
-      data.firstTarget and
-      table.contains({ Card.TypeBasic, Card.TypeTrick }, data.card.type)
+    return target == player and player:hasSkill(self.name) and player.phase ~= Player.NotActive and
+      data.firstTarget and data.card.type ~= Card.TypeEquip
   end,
   on_cost = function(self, event, target, player, data)
     local room = player.room
-    local alivePlayers = room.alive_players
-    local availableTargets = {}
-    for _, p in ipairs(alivePlayers) do
-      if not p:isNude() and not table.contains(AimGroup:getAllTargets(data.tos), p.id) then
-        table.insert(availableTargets, p.id)
-      end
-    end
-
-    if #availableTargets == 0 then
-      return false
-    end
-
-    local result = room:askForChoosePlayers(player, availableTargets, 1, 1, "#qizhi-ask", self.name, true)
-    if #result > 0 then
-      self.cost_data = result
+    local targets = table.map(table.filter(room.alive_players, function(p)
+      return not p:isNude() and not table.contains(AimGroup:getAllTargets(data.tos), p.id) end), function(p) return p.id end)
+    if #targets == 0 then return end
+    local tos = room:askForChoosePlayers(player, targets, 1, 1, "#qizhi-choose", self.name, true)
+    if #tos > 0 then
+      self.cost_data = tos[1]
       return true
     end
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room
-    local skillTarget = room:getPlayerById(self.cost_data[1])
-    local card = room:askForCardChosen(player, skillTarget, "he", self.name)
-    room:throwCard(card, self.name, skillTarget, skillTarget)
-    skillTarget:drawCards(1, self.name)
-    room:addPlayerMark(player, "@" .. self.name)
-  end,
-
-  refresh_events = {fk.EventPhaseStart},
-  can_refresh = function(self, event, target, player, data)
-    if not (target == player and player:hasSkill(self.name)) then return end
-    return player.phase == Player.NotActive
-  end,
-  on_refresh = function(self, event, target, player, data)
-    player.room:setPlayerMark(player, "@" .. self.name, 0)
+    room:addPlayerMark(player, "@qizhi-turn", 1)
+    local to = room:getPlayerById(self.cost_data)
+    local id = room:askForCardChosen(player, to, "he", self.name)
+    room:throwCard({id}, self.name, to, player)
+    if not to.dead then
+      to:drawCards(1, self.name)
+    end
   end,
 }
 local jinqu = fk.CreateTriggerSkill{
   name = "jinqu",
   anim_type = "drawcard",
-  events = { fk.EventPhaseStart },
+  events = {fk.EventPhaseStart},
   can_trigger = function(self, event, target, player, data)
     return target == player and player:hasSkill(self.name) and player.phase == Player.Finish
   end,
   on_use = function(self, event, target, player, data)
     player:drawCards(2, self.name)
-    local diff = #player:getCardIds(Player.Hand) - player:getMark("@" .. qizhi.name)
-    if diff > 0 then
-      player.room:askForDiscard(player, diff, diff, false, self.name)
+    local n = #player:getCardIds("h") - player:usedSkillTimes("qizhi", Player.HistoryTurn)
+    if n > 0 then
+      player.room:askForDiscard(player, n, n, false, self.name)
     end
   end,
 }
@@ -75,11 +55,11 @@ wangji:addSkill(jinqu)
 Fk:loadTranslationTable{
   ["wangji"] = "王基",
   ["qizhi"] = "奇制",
-  [":qizhi"] = "当你使用基本牌或锦囊牌指定第一个目标后，你可以弃置一名不为目标的角色的一张牌，然后令其摸一张牌。",
+  [":qizhi"] = "当你于回合内使用非装备牌指定目标后，你可以弃置一名不为目标的角色的一张牌，然后令其摸一张牌。",
   ["jinqu"] = "进趋",
-  [":jinqu"] = "结束阶段开始时，你可以摸两张牌，然后将手牌弃置至X张（X为你于本回合内发动过“奇制”的次数。",
-  ["@qizhi"] = "奇制",
-  ["#qizhi-ask"] = "奇制：你可以弃置一名非目标角色的一张牌，然后令其摸一张牌",
+  [":jinqu"] = "结束阶段，你可以摸两张牌，然后将手牌弃至X张（X为你本回合发动〖奇制〗的次数）。",
+  ["@qizhi-turn"] = "奇制",
+  ["#qizhi-choose"] = "奇制：你可以弃置一名角色一张牌，然后其摸一张牌",
 
   ["$qizhi1"] = "声东击西，敌寇一网成擒。",
   ["$qizhi2"] = "吾意不在此地，已遣别部出发。",
@@ -88,12 +68,53 @@ Fk:loadTranslationTable{
   ["~wangji"] = "天下之势，必归大魏，可恨，未能得见呐！",
 }
 
-local xuyou = General(extension, "xuyou", "qun", 3)
 Fk:loadTranslationTable{
-  ["xuyou"] = "许攸",
-  ["~xuyou"] = "阿瞒，没有我你得不到冀州啊！",
+  ["kuailiangkuaiyue"] = "蒯良蒯越",
+  ["jianxiang"] = "荐降",
+  [":jianxiang"] = "当你成为其他角色使用牌的目标后，你可以令手牌数最少的一名角色摸一张牌。",
+  ["shenshi"] = "审时",
+  [":shenshi"] = "转换技，阳：出牌阶段限一次，你可以交给手牌数最多的其他角色一张牌，并对其造成1点伤害。若其因此死亡，你可以令一名角色将手牌摸至四张。"..
+  "阴：当其他角色对你造成伤害后，你可以观看其手牌，并交给其一张牌；当前回合结束阶段，若其未失去此牌，你将手牌摸至四张。",
 }
 
+Fk:loadTranslationTable{
+  ["yanyan"] = "严颜",
+  ["juzhan"] = "拒战",
+  [":juzhan"] = "转换技，阳：当你成为其他角色使用【杀】的目标后，你可以与其各摸一张牌，然后其本回合不能再对你使用牌。"..
+  "阴：当你使用【杀】指定一名角色为目标后，你可以获得其一张牌，然后你本回合不能再对其使用牌。",
+}
+
+Fk:loadTranslationTable{
+  ["wangping"] = "王平",
+  ["feijun"] = "飞军",
+  [":feijun"] = "出牌阶段限一次，你可以弃置一张牌，然后选择一项：1.令一名手牌数大于你的角色交给你一张牌；"..
+  "2.令一名装备区里牌数大于你的角色弃置一张装备区里的牌。",
+  ["binglve"] = "兵略",
+  [":binglve"] = "锁定技，当你首次对一名角色发动〖飞军〗时，你摸两张牌。",
+}
+
+Fk:loadTranslationTable{
+  ["luji"] = "陆绩",
+  ["huaiju"] = "怀橘",
+  [":huaiju"] = "锁定技，游戏开始时，你获得3枚“橘”标记。当有“橘”的角色受到伤害时，防止此伤害并移除1枚“橘”。有“橘”的角色摸牌阶段多摸一张牌。",
+  ["yili"] = "遗礼",
+  [":yili"] = "出牌阶段开始时，你可以失去1点体力或移除1枚“橘”，然后令一名其他角色获得1枚“橘”。",
+  ["zhenglun"] = "整论",
+  [":zhenglun"] = "摸牌阶段开始前，若你没有“橘”，你可以跳过摸牌阶段并获得1枚“橘”。",
+}
+
+Fk:loadTranslationTable{
+  ["sunliang"] = "孙亮",
+  ["kuizhu"] = "溃诛",
+  [":kuizhu"] = "弃牌阶段结束时，你可以选择一项：1.令至多X名角色各摸一张牌；2.对任意名体力值之和为X的角色各造成1点伤害（X为你本阶段弃置的牌数）。",
+  ["chezheng"] = "掣政",
+  [":chezheng"] = "锁定技，你的出牌阶段你对攻击范围内不包含你的角色造成伤害时，防止之。出牌阶段结束时，若你本阶段使用的牌数小于这些角色数，"..
+  "你弃置其中一名角色一张牌。",
+  ["lijun"] = "立军",
+  [":lijun"] = "主公技，其他吴势力角色出牌阶段限一次，当其使用【杀】后，其可以令你获得之，然后你可以令其摸一张牌且本回合使用【杀】次数上限+1。",
+}
+
+local xuyou = General(extension, "xuyou", "qun", 3)
 local chenglve = fk.CreateActiveSkill{
   name = "chenglve",
   anim_type = "switch",
@@ -122,53 +143,23 @@ local chenglve = fk.CreateActiveSkill{
         return "log_" .. Fk:getCardById(id):getSuitString()
       end)
 
-      local suitsRecorded = type(from:getMark("@chenglve")) == "table" and from:getMark("@chenglve") or {}
+      local suitsRecorded = type(from:getMark("@chenglve-phase")) == "table" and from:getMark("@chenglve-phase") or {}
       for _, suit in ipairs(suitsToRecord) do
         table.insertIfNeed(suitsRecorded, suit)
       end
-      room:setPlayerMark(from, "@chenglve", suitsRecorded)
+      room:setPlayerMark(from, "@chenglve-phase", suitsRecorded)
     end
   end,
 }
-Fk:loadTranslationTable{
-  ["chenglve"] = "成略",
-  [":chenglve"] = "转换技，出牌阶段限一次，阳：你可以摸一张牌，然后弃置两张手牌；阴：你可以摸两张牌，然后弃置一张手牌。若如此做，你于此阶段内使用与你以此法弃置的牌花色相同的牌无距离和次数限制。",
-  ["@chenglve"] = "成略",
-  ["$chenglve1"] = "成略在胸，良计速出。",
-  ["$chenglve2"] = "吾有良略在怀，必为阿瞒所需。",
-}
-
-local chenglveBuff = fk.CreateTargetModSkill{
-  name = "#chenglve-buff",
-  residue_func = function(self, player, skill, scope, card)
-    return
-      (card and table.contains(type(player:getMark("@chenglve")) == "table" and player:getMark("@chenglve") or {}, "log_" .. card:getSuitString())) and
-      999 or
-      0
+local chenglve_targetmod = fk.CreateTargetModSkill{
+  name = "#chenglve_targetmod",
+  bypass_times = function(self, player, skill, scope, card, to)
+    return card and player:getMark("@chenglve-phase") ~= 0 and table.contains(player:getMark("@chenglve-phase"), "log_"..card:getSuitString())
   end,
-  distance_limit_func = function(self, player, skill, card)
-    return
-      (card and table.contains(type(player:getMark("@chenglve")) == "table" and player:getMark("@chenglve") or {}, "log_" .. card:getSuitString())) and
-      999 or
-      0
+  bypass_distances = function(self, player, skill, card, to)
+    return card and player:getMark("@chenglve-phase") ~= 0 and table.contains(player:getMark("@chenglve-phase"), "log_"..card:getSuitString())
   end,
 }
-chenglve:addRelatedSkill(chenglveBuff)
-
-local shicaiClear = fk.CreateTriggerSkill{
-  name = "#shicai-clear",
-  refresh_events = {fk.EventPhaseChanging},
-  can_refresh = function(self, event, target, player, data)
-    return target == player and data.from == Player.Play and type(player:getMark("@chenglve")) == "table"
-  end,
-  on_refresh = function(self, event, target, player, data)
-    player.room:setPlayerMark(player, "@chenglve", 0)
-  end,
-}
-chenglve:addRelatedSkill(shicaiClear)
-
-xuyou:addSkill(chenglve)
-
 local shicai = fk.CreateTriggerSkill{
   name = "shicai",
   events = {fk.CardUseFinished, fk.TargetConfirmed},
@@ -240,16 +231,6 @@ local shicai = fk.CreateTriggerSkill{
     end
   end,
 }
-Fk:loadTranslationTable{
-  ["shicai"] = "恃才",
-  [":shicai"] = "当你每回合首次使用一种类别的牌结算结束后，你可以将之置于牌堆顶，然后摸一张牌。",
-  ["@shicai"] = "恃才",
-  ["$shicai1"] = "吾才满腹，袁本初竟不从之。",
-  ["$shicai2"] = "阿瞒有我良计，取冀州便是易如反掌。",
-}
-
-xuyou:addSkill(shicai)
-
 local cunmu = fk.CreateTriggerSkill{
   name = "cunmu",
   events = {fk.BeforeDrawCard},
@@ -262,13 +243,38 @@ local cunmu = fk.CreateTriggerSkill{
     data.fromPlace = "bottom"
   end,
 }
+chenglve:addRelatedSkill(chenglve_targetmod)
+xuyou:addSkill(chenglve)
+xuyou:addSkill(shicai)
+xuyou:addSkill(cunmu)
 Fk:loadTranslationTable{
+  ["xuyou"] = "许攸",
+  ["chenglve"] = "成略",
+  [":chenglve"] = "转换技，出牌阶段限一次，阳：你可以摸一张牌，然后弃置两张手牌；阴：你可以摸两张牌，然后弃置一张手牌。"..
+  "若如此做，你于此阶段内使用与你以此法弃置的牌花色相同的牌无距离和次数限制。",
+  ["shicai"] = "恃才",
+  [":shicai"] = "当你每回合首次使用一种类别的牌结算结束后，你可以将之置于牌堆顶，然后摸一张牌。",
   ["cunmu"] = "寸目",
   [":cunmu"] = "锁定技，当你摸牌时，改为从牌堆底摸牌。",
+  ["@chenglve-phase"] = "成略",
+  ["@shicai"] = "恃才",
+
+  ["$chenglve1"] = "成略在胸，良计速出。",
+  ["$chenglve2"] = "吾有良略在怀，必为阿瞒所需。",
+  ["$shicai1"] = "吾才满腹，袁本初竟不从之。",
+  ["$shicai2"] = "阿瞒有我良计，取冀州便是易如反掌。",
   ["$cunmu1"] = "哼！目光所及，短寸之间。",
   ["$cunmu2"] = "狭目之见，只能窥底。",
+  ["~xuyou"] = "阿瞒，没有我你得不到冀州啊！",
 }
 
-xuyou:addSkill(cunmu)
+Fk:loadTranslationTable{
+  ["luzhi"] = "卢植",
+  ["mingren"] = "明任",
+  [":mingren"] = "游戏开始时，你摸两张牌，然后将一张手牌置于你的武将牌上，称为“任”。结束阶段，你可以用手牌替换“任”。",
+  ["zhenliang"] = "贞良",
+  [":zhenliang"] = "转换技，阳：出牌阶段限一次，你可以选择攻击范围内的一名其他角色，后弃置一张与“任”颜色相同的牌对其造成1点伤害。"..
+  "阴：当你于回合外使用或打出的牌置入弃牌堆时，若此牌与“任”颜色相同，你可以令一名角色摸一张牌。",
+}
 
 return extension
