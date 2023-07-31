@@ -151,46 +151,42 @@ Fk:loadTranslationTable{
 local wolong = General(extension, "wolong", "shu", 3)
 local bazhen = fk.CreateTriggerSkill{
   name = "bazhen",
-  mute = true,
-  frequency = Skill.Compulsory,
-  events = {fk.GameStart, fk.AfterCardsMove},
+  events = {fk.AskForCardUse, fk.AskForCardResponse},
+  anim_type = "defensive",
   can_trigger = function(self, event, target, player, data)
-    if player:hasSkill(self.name) then
-      if event == fk.GameStart then
-        return true
-      else
-        for _, move in ipairs(data) do
-          if move.from == player.id then
-            for _, info in ipairs(move.moveInfo) do
-              if info.fromArea == Card.PlayerEquip then
-                return true
-              end
-            end
-          end
-          if move.to == player.id and move.toArea == Player.Equip then
-            return true
-          end
-        end
-      end
-    end
+    return target == player and player:hasSkill(self.name) and
+      (data.cardName == "jink" or (data.pattern and Exppattern:Parse(data.pattern):matchExp("jink|0|nosuit|none"))) and not player:getEquipment(Card.SubtypeArmor) and player:getMark(fk.MarkArmorNullified) == 0
   end,
-  on_use = function(self, event, target, player, data)  --FIXME: 虚拟装备技能应该用statusSkill而非triggerSkill
-    if player:getEquipment(Card.SubtypeArmor) == nil and not player:hasSkill("#eight_diagram_skill", true) then
-      player.room:handleAddLoseSkills(player, "#eight_diagram_skill", self.name, false, true)
-    elseif player:getEquipment(Card.SubtypeArmor) ~= nil and player:hasSkill("#eight_diagram_skill", true) then
-      player.room:handleAddLoseSkills(player, "-#eight_diagram_skill", nil, false, true)
-    end
-  end,
+  on_use = function(self, event, target, player, data)
+    local room = player.room
+    local judgeData = {
+      who = player,
+      reason = self.name,
+      pattern = ".|.|heart,diamond",
+    }
+    room:judge(judgeData)
 
-  refresh_events = {fk.AfterCardUseDeclared, fk.PreCardRespond},
-  can_refresh = function(self, event, target, player, data)
-    return target == player and player:hasSkill(self.name) and table.contains(data.card.skillNames, "eight_diagram") and
-    player:getEquipment(Card.SubtypeArmor) == nil
-  end,
-  on_refresh = function(self, event, target, player, data)
-    player.room:broadcastSkillInvoke(self.name)
-    player.room:notifySkillInvoked(player, self.name, "defensive")
-  end,
+    if judgeData.card.color == Card.Red then
+      if event == fk.AskForCardUse then
+        data.result = {
+          from = player.id,
+          card = Fk:cloneCard('jink'),
+        }
+        data.result.card.skillName = "eight_diagram"
+        data.result.card.skillName = "bazhen"
+
+        if data.eventData then
+          data.result.toCard = data.eventData.toCard
+          data.result.responseToEvent = data.eventData.responseToEvent
+        end
+      else
+        data.result = Fk:cloneCard('jink')
+        data.result.skillName = "eight_diagram"
+        data.result.skillName = "bazhen"
+      end
+      return true
+    end
+  end
 }
 local huoji = fk.CreateViewAsSkill{
   name = "huoji",
@@ -228,7 +224,7 @@ wolong:addSkill(kanpo)
 Fk:loadTranslationTable{
   ["wolong"] = "卧龙诸葛亮",
   ["bazhen"] = "八阵",
-  [":bazhen"] = "锁定技，当你没有装备防具时，视为你装备着【八卦阵】。",
+  [":bazhen"] = "锁定技，若你没有装备防具，视为你装备着【八卦阵】。",
   ["huoji"] = "火计",
   [":huoji"] = "你可以将一张红色手牌当【火攻】使用。",
   ["kanpo"] = "看破",
@@ -289,8 +285,6 @@ local tianyi_targetmod = fk.CreateTargetModSkill{
 }
 local tianyi_prohibit = fk.CreateProhibitSkill{
   name = "#tianyi_prohibit",
-  is_prohibited = function()
-  end,
   prohibit_use = function(self, player, card)
     return player:getMark("tianyi_lose-turn") > 0 and card.trueName == "slash"
   end,
@@ -313,15 +307,14 @@ local pangde = General(extension, "pangde", "qun", 4)
 local mengjin = fk.CreateTriggerSkill{
   name = "mengjin",
   anim_type = "offensive",
-  events = {fk.CardUseFinished},
+  events = {fk.CardEffectCancelledOut},
   can_trigger = function(self, event, target, player, data)
-    return player:hasSkill(self.name) and
-      data.card.name == "jink" and data.toCard and data.toCard.trueName == "slash" and
-      data.responseToEvent and data.responseToEvent.from == player.id and
-      not target:isNude()
+    return target == player and player:hasSkill(self.name) and data.card.trueName == "slash" and
+      not player.room:getPlayerById(data.to):isNude()
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room
+    local target = room:getPlayerById(data.to)
     local cid = room:askForCardChosen(player, target, "he", self.name)
     room:throwCard(cid, self.name, target)
   end,

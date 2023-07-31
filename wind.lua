@@ -452,7 +452,7 @@ local huangtian = fk.CreateTriggerSkill{
     if event == fk.GameStart then
       return player:hasSkill(self.name, true)
     elseif event == fk.EventAcquireSkill or event == fk.EventLoseSkill then
-      return data == self
+      return data == self and target == player
     else
       return target == player and player:hasSkill(self.name, true, true)
     end

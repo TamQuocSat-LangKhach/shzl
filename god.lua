@@ -1471,13 +1471,14 @@ longnu:addRelatedSkill(longnu_filter)
 longnu:addRelatedSkill(longnu_targetmod)
 local jieying = fk.CreateTriggerSkill{
   name = "jieying",
-  events = {fk.GameStart, fk.BeforeChainStateChange, fk.EventPhaseStart},
+  events = {fk.BeforeChainStateChange, fk.EventPhaseStart, fk.EventAcquireSkill, fk.EventLoseSkill},
   frequency = Skill.Compulsory,
   can_trigger = function(self, event, target, player, data)
+    if event == fk.EventAcquireSkill or event == fk.EventLoseSkill then
+      return data == self and target == player
+    end
     if not player:hasSkill(self.name) then return false end
-    if event == fk.GameStart then
-      return true
-    elseif event == fk.BeforeChainStateChange then
+    if event == fk.BeforeChainStateChange then
       return target == player and player.chained
     elseif target == player and player.phase == Player.Finish then 
       return table.find(player.room.alive_players, function(p) 
@@ -1486,8 +1487,10 @@ local jieying = fk.CreateTriggerSkill{
     end
   end,
   on_use = function(self, event, target, player, data)
-    if event == fk.GameStart then
+    if event == fk.EventAcquireSkill then
       player:setChainState(true)
+    elseif event == fk.EventLoseSkill then
+      player:setChainState(false)
     elseif event == fk.BeforeChainStateChange then
       return true
     else
