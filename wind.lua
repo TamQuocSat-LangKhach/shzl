@@ -460,7 +460,7 @@ local huangtian = fk.CreateTriggerSkill{
   on_use = function(self, event, target, player, data)
     local room = player.room
     local targets = table.filter(room:getOtherPlayers(player), function(p)
-      return (p.kingdom == "qun")
+      return p.kingdom == "qun"
     end)
     if event == fk.GameStart or event == fk.EventAcquireSkill then
       if player:hasSkill(self.name, true) then

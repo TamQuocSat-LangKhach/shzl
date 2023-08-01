@@ -388,10 +388,94 @@ local hunzi = fk.CreateTriggerSkill{
     room:handleAddLoseSkills(player, "yingzi|yinghun", nil, true, false)
   end,
 }
+
+local zhiba = fk.CreateTriggerSkill{
+  name = "zhiba$",
+  mute = true,
+  frequency = Skill.Compulsory,
+  events = {fk.GameStart, fk.EventAcquireSkill, fk.EventLoseSkill, fk.Deathed},
+  can_trigger = function(self, event, target, player, data)
+    if event == fk.GameStart then
+      return player:hasSkill(self.name, true)
+    elseif event == fk.EventAcquireSkill or event == fk.EventLoseSkill then
+      return data == self and target == player
+    else
+      return target == player and player:hasSkill(self.name, true, true)
+    end
+  end,
+  on_use = function(self, event, target, player, data)
+    local room = player.room
+    local targets = table.filter(room:getOtherPlayers(player), function(p)
+      return p.kingdom == "wu"
+    end)
+    if event == fk.GameStart or event == fk.EventAcquireSkill then
+      if player:hasSkill(self.name, true) then
+        table.forEach(targets, function(p)
+          room:handleAddLoseSkills(p, "zhiba_other&", nil, false, true)
+        end)
+      end
+    elseif event == fk.EventLoseSkill or event == fk.Deathed then
+      table.forEach(targets, function(p)
+        room:handleAddLoseSkills(p, "-zhiba_other&", nil, false, true)
+      end)
+    end
+  end,
+}
+local zhiba_other = fk.CreateActiveSkill{
+  name = "zhiba_other&",
+  anim_type = "special",
+  mute = true,
+  can_use = function(self, player)
+    if player:usedSkillTimes(self.name, Player.HistoryPhase) < 1 and player.kingdom == "wu" then
+      return table.find(Fk:currentRoom().alive_players, function(p) return p:hasSkill("zhiba") end)
+    end
+    return false
+  end,
+  card_num = 0,
+  card_filter = function(self, to_select, selected)
+    return false
+  end,
+  target_num = 0,
+  on_use = function(self, room, effect)
+    local player = room:getPlayerById(effect.from)
+    room:notifySkillInvoked(player, "zhiba")
+    room:broadcastSkillInvoke("zhiba")
+    local targets = table.filter(room.alive_players, function(p) return p:hasSkill("zhiba") end)
+    local target
+    if #targets == 1 then
+      target = targets[1]
+    else
+      target = room:getPlayerById(room:askForChoosePlayers(player, table.map(targets, function(p) return p.id end), 1, 1, nil, self.name, false)[1])
+    end
+    if not target then return false end
+    room:doIndicate(effect.from, { target.id })
+    if target:usedSkillTimes("hunzi", Player.HistoryGame) > 0 and room:askForChoice(target, {"zhiba_yes", "zhiba_no"}, self.name, "#zhiba-ask:" .. player.id) == "zhiba_no" then
+      return false
+    end
+    local pindian = player:pindian({target}, self.name)
+    if pindian.results[target.id].winner ~= player then
+      local dummy = Fk:cloneCard("dilu")
+      local leftFromCardIds = room:getSubcardsByRule(pindian.fromCard, { Card.DiscardPile })
+      if #leftFromCardIds > 0 then
+        dummy:addSubcards(leftFromCardIds)
+      end
+      local leftToCardIds = room:getSubcardsByRule(pindian.results[target.id].toCard, { Card.DiscardPile })
+      if #leftToCardIds > 0 then
+        dummy:addSubcards(leftToCardIds)
+      end
+      if #dummy.subcards > 0 then
+        room:obtainCard(target, dummy, true, fk.ReasonJustMove)
+      end
+    end
+  end,
+}
+
 sunce:addSkill(jiang)
 sunce:addSkill(hunzi)
 sunce:addRelatedSkill("yingzi")
 sunce:addRelatedSkill("yinghun")
+sunce:addSkill(zhiba)
+Fk:addSkill(zhiba_other)
 Fk:loadTranslationTable{
   ["sunce"] = "孙策",
   ["jiang"] = "激昂",
@@ -399,7 +483,14 @@ Fk:loadTranslationTable{
   ["hunzi"] = "魂姿",
   [":hunzi"] = "觉醒技，准备阶段，若你的体力值为1，你减1点体力上限，然后获得〖英姿〗和〖英魂〗。",
   ["zhiba"] = "制霸",
-  [":zhiba"] = "主公技，其他吴势力角色的出牌阶段限一次，该角色可以与你拼点（若你已觉醒，你可以拒绝此拼点），若其没赢，你可以获得拼点的两张牌。",
+  [":zhiba"] = "主公技，其他吴势力角色的出牌阶段限一次，其可以与你拼点（若你发动过〖魂姿〗，你可以拒绝此拼点），若其没赢，你可以获得拼点的两张牌。",
+
+  ["zhiba_other&"] = "制霸",
+  [":zhiba_other&"] = "出牌阶段限一次，你可与孙策拼点（若其发动过〖魂姿〗，其可以拒绝此拼点），若你没赢，其可以获得拼点的两张牌。",
+
+  ["#zhiba-ask"] = "%src发起“制霸”拼点，是否拒绝",
+  ["zhiba_yes"] = "进行“制霸”拼点",
+  ["zhiba_no"] = "拒绝“制霸”拼点",
 
   ["$jiang1"] = "吾乃江东小霸王孙伯符！",
   ["$jiang2"] = "江东子弟，何惧于天下！",
