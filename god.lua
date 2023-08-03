@@ -397,7 +397,7 @@ local qixing = fk.CreateTriggerSkill{
     if event == fk.GameStart then
       local dummy = Fk:cloneCard("dilu")
       dummy:addSubcards(room:getNCards(7))
-      player:addToPile("star", dummy, false, self.name)
+      player:addToPile("star", dummy, true, self.name) --应该是false，先蒸
     end
     local cids = room:askForExchange(player, {player:getPile("star"), player:getCardIds(Player.Hand)}, {"star", "$Hand"}, self.name)
     room:moveCards(
@@ -419,6 +419,7 @@ local qixing = fk.CreateTriggerSkill{
         proposer = player.id,
         specialName = "star",
         skillName = self.name,
+        moveVisible = true,
       }
     )
   end,
@@ -427,6 +428,7 @@ local kuangfeng = fk.CreateTriggerSkill{
   name = "kuangfeng",
   events = {fk.EventPhaseStart, fk.DamageInflicted},
   anim_type = "offensive",
+  expand_pile = "star",
   can_trigger = function(self, event, target, player, data)
     if not player:hasSkill(self.name) then return false end
     if event == fk.EventPhaseStart then
@@ -474,6 +476,7 @@ local dawu = fk.CreateTriggerSkill{
   name = "dawu",
   anim_type = "defensive",
   events = {fk.EventPhaseStart, fk.DamageInflicted},
+  expand_pile = "star",
   can_trigger = function(self, event, target, player, data)
     if not player:hasSkill(self.name) then return false end
     if event == fk.EventPhaseStart then
