@@ -152,6 +152,7 @@ local wolong = General(extension, "wolong", "shu", 3)
 local bazhen = fk.CreateTriggerSkill{
   name = "bazhen",
   events = {fk.AskForCardUse, fk.AskForCardResponse},
+  frequency = Skill.Compulsory,
   anim_type = "defensive",
   can_trigger = function(self, event, target, player, data)
     return target == player and player:hasSkill(self.name) and

@@ -44,7 +44,7 @@ local jinqu = fk.CreateTriggerSkill{
   end,
   on_use = function(self, event, target, player, data)
     player:drawCards(2, self.name)
-    local n = #player:getCardIds("h") - player:usedSkillTimes("qizhi", Player.HistoryTurn)
+    local n = #player:getCardIds("h") - player:usedSkillTimes("qizhi", Player.HistoryPhase)
     if n > 0 then
       player.room:askForDiscard(player, n, n, false, self.name)
     end
@@ -135,7 +135,7 @@ local chenglve = fk.CreateActiveSkill{
 
     from:drawCards(isYang and 1 or 2, self.name)
     local discardNum = isYang and 2 or 1
-    local cardsDiscarded = table.filter(room:askForDiscard(from, discardNum, discardNum, false, self.name, true), function(id)
+    local cardsDiscarded = table.filter(room:askForDiscard(from, discardNum, discardNum, false, self.name, false), function(id)
       return Fk:getCardById(id).suit < Card.NoSuit
     end)
 
