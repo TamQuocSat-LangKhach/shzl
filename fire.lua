@@ -158,6 +158,9 @@ local bazhen = fk.CreateTriggerSkill{
     return target == player and player:hasSkill(self.name) and
       (data.cardName == "jink" or (data.pattern and Exppattern:Parse(data.pattern):matchExp("jink|0|nosuit|none"))) and not player:getEquipment(Card.SubtypeArmor) and player:getMark(fk.MarkArmorNullified) == 0
   end,
+  on_cost = function(self, event, target, player, data)
+    return player.room:askForSkillInvoke(player, self.name, data)
+  end,
   on_use = function(self, event, target, player, data)
     local room = player.room
     local judgeData = {
