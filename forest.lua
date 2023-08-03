@@ -499,16 +499,7 @@ local luanwu = fk.CreateActiveSkill{
       end), function (p)
         return p.id
       end)
-      if #luanwu_targets > 1 then
-        local tos = room:askForChoosePlayers(target, luanwu_targets, 1, 1, "#luanwu-slash", self.name, false)
-        if #tos == 1 then
-          luanwu_targets = tos
-        else
-          luanwu_targets = {luanwu_targets[1]}
-          room:doIndicate(target.id, luanwu_targets)
-        end
-      end
-      local use = room:askForUseCard(target, "slash", "slash", "#luanwu-use::" .. luanwu_targets[1], true, {must_targets = luanwu_targets})
+      local use = room:askForUseCard(target, "slash", "slash", "#luanwu-use", true, {exclusive_targets = luanwu_targets})
       if use then
         room:useCard(use)
       else
@@ -538,8 +529,7 @@ Fk:loadTranslationTable{
   ["weimu"] = "帷幕",
   [":weimu"] = "锁定技，你不是黑色锦囊牌的合法目标。",
 
-  ["#luanwu-slash"] = "乱武：选择距离最近的一名角色，然后对其使用一张【杀】",
-  ["#luanwu-use"] = "乱武：你需要对包含%dest在内的角色使用一张【杀】，否则失去1点体力",
+  ["#luanwu-use"] = "乱武：你需要对距离最近的一名角色使用一张【杀】，否则失去1点体力",
 
   ["$wansha1"] = "神仙难救，神仙难救啊。",
   ["$wansha2"] = "我要你三更死，谁敢留你到五更！",
