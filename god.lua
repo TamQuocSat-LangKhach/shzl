@@ -400,26 +400,38 @@ local qixing = fk.CreateTriggerSkill{
       player:addToPile("star", dummy, true, self.name) --应该是false，先蒸
     end
     local cids = room:askForExchange(player, {player:getPile("star"), player:getCardIds(Player.Hand)}, {"star", "$Hand"}, self.name)
-    room:moveCards(
+    local cards1, cards2 = {}, {}
+    for _, id in ipairs(cids[1]) do
+      if room:getCardArea(id) == Player.Hand then
+        table.insert(cards1, id)
+      end
+    end
+    for _, id in ipairs(cids[2]) do
+      if room:getCardArea(id) ~= Player.Hand then
+        table.insert(cards2, id)
+      end
+    end
+    room:moveCards( 
       {
-      ids = cids[2],
+      ids = cards2,
         from = player.id,
         to = player.id,
+        fromArea = Card.PlayerSpecial,
         toArea = Card.PlayerHand,
         moveReason = fk.ReasonExchange,
         proposer = player.id,
         skillName = self.name,
       },
       {
-      ids = cids[1],
+      ids = cards1,
         from = player.id,
         to = player.id,
+        fromArea = Card.PlayerHand,
         toArea = Card.PlayerSpecial,
         moveReason = fk.ReasonExchange,
         proposer = player.id,
         specialName = "star",
         skillName = self.name,
-        moveVisible = true,
       }
     )
   end,
