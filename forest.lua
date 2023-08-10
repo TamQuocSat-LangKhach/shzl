@@ -124,7 +124,7 @@ local juxiang = fk.CreateTriggerSkill{
   frequency = Skill.Compulsory,
   events = {fk.PreCardEffect, fk.CardUseFinished},
   can_trigger = function(self, event, target, player, data)
-    if player:hasSkill(self.name) and data.card.trueName == "savage_assault" then
+    if player:hasSkill(self.name) and data.card and data.card.trueName == "savage_assault" then
       if event == fk.PreCardEffect then
         return data.to == player.id
       else
