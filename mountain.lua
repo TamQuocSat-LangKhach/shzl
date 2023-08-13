@@ -453,7 +453,7 @@ local zhiba_other = fk.CreateActiveSkill{
       return false
     end
     local pindian = player:pindian({target}, self.name)
-    if pindian.results[target.id].winner ~= player then
+    if not pindian.results[target.id].winner or pindian.results[target.id].winner ~= player then
       local dummy = Fk:cloneCard("dilu")
       local leftFromCardIds = room:getSubcardsByRule(pindian.fromCard, { Card.DiscardPile })
       if #leftFromCardIds > 0 then
@@ -515,11 +515,15 @@ local zhijian = fk.CreateActiveSkill{
     return not player:isKongcheng()
   end,
   card_filter = function(self, to_select, selected)
-    return #selected == 0 and Fk:getCardById(to_select).type == Card.TypeEquip and Fk:currentRoom():getCardArea(to_select) ~= Card.PlayerEquip
+    return #selected == 0 and Fk:getCardById(to_select).type == Card.TypeEquip and
+      Fk:currentRoom():getCardArea(to_select) ~= Card.PlayerEquip
   end,
-  target_filter = function(self, to_select, selected, cards)
-    return #selected == 0 and #cards == 1 and to_select ~= Self.id and
-      Fk:currentRoom():getPlayerById(to_select):getEquipment(Fk:getCardById(cards[1]).sub_type) == nil
+  target_filter = function(self, to_select, selected, selected_cards)
+    if #selected == 0 and #selected_cards == 1 then
+      local target = Fk:currentRoom():getPlayerById(to_select)
+      local card = Fk:getCardById(selected_cards[1])
+      return to_select ~= Self.id and target:getEquipment(card.sub_type) == nil and #target:getAvailableEquipSlots(card.sub_type) > 0
+    end
   end,
   on_use = function(self, room, effect)
     local player = room:getPlayerById(effect.from)
@@ -633,6 +637,137 @@ Fk:loadTranslationTable{
   ["$guzheng1"] = "固国安邦，居当如是。",
   ["$guzheng2"] = "今当稳固内政，以御外患。",
   ["~zhangzhaozhanghong"] = "竭力尽智，死而无憾……",
+}
+
+local zuoci = General(extension, "zuoci", "qun", 3)
+local function DoHuanshen(player)
+  local room = player.room
+  local huashens = player:getMark("@&huanshen")
+  if huashens == 0 or #huashens == 0 then return end
+  local name = room:askForGeneral(player, huashens, 1)
+  local general = Fk.generals[name]
+
+  local kingdom = general.kingdom
+  if general.kingdom == "god" or general.subkingdom then
+    local allKingdoms = {}
+    if general.kingdom == "god" then
+      allKingdoms = {"wei", "shu", "wu", "qun", "jin"}
+    elseif general.subkingdom then
+      allKingdoms = { general.kingdom, general.subkingdom }
+    end
+    kingdom = room:askForChoice(player, allKingdoms, "AskForKingdom", "#ChooseInitialKingdom")
+  end
+  player.kingdom = kingdom
+  room:broadcastProperty(player, "kingdom")
+  player.gender = general.gender
+  room:broadcastProperty(player, "gender")
+
+  local skills = {}
+  for _, s in ipairs(general.skills) do
+    if not (s.lordSkill or s.switchSkillName or s.frequency > 3) then
+      if #s.attachedKingdom == 0 or table.contains(s.attachedKingdom, player.kingdom) then
+        table.insert(skills, s.name)
+      end
+    end
+  end
+  if #skills == 0 then return end
+  local skill = room:askForChoice(player, skills, "huashen", "#huashen", true)
+  local huanshen_skill = skill
+  if player:getMark("huanshen_skill") ~= 0 then huanshen_skill = skill.."|-"..player:getMark("huanshen_skill") end
+  room:setPlayerMark(player, "huanshen_skill", skill)
+  room:handleAddLoseSkills(player, huanshen_skill, nil, true, false)
+end
+local huashen = fk.CreateTriggerSkill{
+  name = "huashen",
+  anim_type = "special",
+  events = {fk.GamePrepared, fk.TurnStart, fk.TurnEnd},
+  can_trigger = function(self, event, target, player, data)
+    if player:hasSkill(self.name) then
+      if event == fk.GamePrepared then
+        return true
+      else
+        return target == player and player:getMark("@&huanshen") ~= 0
+      end
+    end
+  end,
+  on_cost = function(self, event, target, player, data)
+    if event == fk.GamePrepared then
+      return true
+    else
+      return player.room:askForSkillInvoke(player, self.name)
+    end
+  end,
+  on_use = function(self, event, target, player, data)
+    local room = player.room
+    if event == fk.GamePrepared then
+      local generalPile = room:getTag("generalPile") or {}
+      if #generalPile == 0 then
+        for _, general in pairs(Fk:getAllGenerals()) do
+          if (not general.hidden and not general.total_hidden) and
+            not table.find(generalPile, function(g) return Fk.generals[g].trueName == general.trueName end) and
+            not table.find(room.alive_players, function(p)
+              return Fk.generals[p.general].trueName == general.trueName or
+                (p.deputyGeneral ~= "" and Fk.generals[p.deputyGeneral].trueName == general.trueName)
+                --TODO: 国战暗将不考虑
+            end) then
+            table.insert(generalPile, general.name)
+          end
+        end
+        if #generalPile > 0 then
+          room:setTag("generalPile", generalPile)
+        end
+      end
+      local generals = table.random(room:getTag("generalPile"), 2)
+      if #generals == 0 then return end
+      for _, g in ipairs(generals) do
+        table.removeOne(room:getTag("generalPile"), g)
+      end
+      room:setPlayerMark(player, "@&huanshen", generals)
+    end
+    DoHuanshen(player)
+  end,
+}
+local xinsheng = fk.CreateTriggerSkill{
+  name = "xinsheng",
+  anim_type = "masochism",
+  events = {fk.Damaged},
+  can_trigger = function(self, event, target, player, data)
+    return target == player and player:hasSkill(self.name) and player.room:getTag("generalPile") and #player.room:getTag("generalPile") > 0
+  end,
+  on_trigger = function(self, event, target, player, data)
+    self.cancel_cost = false
+    for i = 1, data.damage do
+      if self.cancel_cost or #player.room:getTag("generalPile") == 0 then break end
+      self:doCost(event, target, player, data)
+    end
+  end,
+  on_cost = function(self, event, target, player, data)
+    if player.room:askForSkillInvoke(player, self.name, data) then
+      return true
+    end
+    self.cancel_cost = true
+  end,
+  on_use = function(self, event, target, player, data)
+    local room = player.room
+    local general = table.random(room:getTag("generalPile"))
+    table.removeOne(room:getTag("generalPile"), general)
+    local generals = player:getMark("@&huanshen")
+    if generals == 0 then generals = {} end
+    table.insert(generals, general)
+    room:setPlayerMark(player, "@&huanshen", generals)
+  end,
+}
+zuoci:addSkill(huashen)
+zuoci:addSkill(xinsheng)
+Fk:loadTranslationTable{
+  ["zuoci"] = "左慈",
+  ["huashen"] = "化身",
+  [":huashen"] = "游戏开始前，你获得两张未加入游戏的武将牌，称为“化身”，然后选择一张“化身”的一个技能（主公技、限定技、觉醒技除外）。"..
+  "回合开始时和回合结束后，你可以重新选择一张“化身”的一个技能。你获得你以此法选择的技能且性别与势力改为与此“化身”相同。",
+  ["xinsheng"] = "新生",
+  [":xinsheng"] = "当你受到1点伤害后，你可以获得一张“化身”。",
+  ["@&huanshen"] = "化身",
+  ["#huashen"] = "化身：请选择要化身的技能",
 }
 
 local caiwenji = General(extension, "caiwenji", "qun", 3, 3, General.Female)
