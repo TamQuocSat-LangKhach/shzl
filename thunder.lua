@@ -5,6 +5,115 @@ Fk:loadTranslationTable{
   ["thunder"] = "雷",
 }
 
+local zhangxiu = General(extension, "zhangxiu", "qun", 4)
+local xiongluan = fk.CreateActiveSkill{
+  name = "xiongluan",
+  anim_type = "offensive",
+  target_num = 1,
+  frequency = Skill.Limited,
+  can_use = function(self, player)
+    return player:usedSkillTimes(self.name, Player.HistoryGame) == 0
+  end,
+  card_filter = function(self, to_select, selected)
+    return false
+  end,
+  target_filter = function(self, to_select, selected, selected_cards)
+    return Self.id ~= to_select 
+  end,
+  on_use = function(self, room, effect)
+    local to = room:getPlayerById(effect.tos[1])
+    local player = room:getPlayerById(effect.from)
+    
+    room:addPlayerMark(to, "@@xiongluan-turn")
+     local targetRecorded = type(player:getMark("xiongluan_target-turn")) == "table" and player:getMark("xiongluan_target-turn") or {}
+      table.insertIfNeed(targetRecorded, to.id)
+      room:setPlayerMark(player, "xiongluan_target-turn", targetRecorded)
+     
+    local eqipSlots = player:getAvailableEquipSlots()
+    table.insert(eqipSlots, Player.JudgeSlot)
+    room:abortPlayerArea(player, eqipSlots)
+  end,
+}
+local xiongluan_prohibit = fk.CreateProhibitSkill{
+  name = "#xiongluan_prohibit",
+  prohibit_use = function(self, player, card)
+    return player:getMark("@@xiongluan-turn") > 0
+  end,
+  prohibit_response = function(self, player, card)
+    return player:getMark("@@xiongluan-turn") > 0
+  end,
+}
+
+local xiongluan_targetmod = fk.CreateTargetModSkill{
+  name = "#xiongluan_targetmod",
+  bypass_times = function(self, player, skill, scope, card, to)
+    if card and to then
+      local targetRecorded = player:getMark("xiongluan_target-turn")
+      return type(targetRecorded) == "table" and table.contains(targetRecorded, to.id)
+    end
+  end,
+  bypass_distances = function(self, player, skill, card, to)
+    if card and to then
+      local targetRecorded = player:getMark("xiongluan_target-turn")
+      return type(targetRecorded) == "table" and table.contains(targetRecorded, to.id)
+    end
+  end,
+}
+xiongluan:addRelatedSkill(xiongluan_targetmod)
+xiongluan:addRelatedSkill(xiongluan_prohibit)
+
+local congjian = fk.CreateTriggerSkill{
+  name = "congjian",
+  anim_type = "defensive",
+  events = {fk.TargetConfirmed},
+  can_trigger = function(self, event, target, player, data)
+    return target == player and player:hasSkill(self.name) and data.card.type == Card.TypeTrick and  #AimGroup:getAllTargets(data.tos) > 1
+  end,
+  on_cost = function(self, event, target, player, data)
+      local room = player.room
+    local tos, cardId = room:askForChooseCardAndPlayers(
+      player,
+      data.tos[1],
+      1,
+      1,
+      nil,
+      "#congjian-give",
+      self.name,
+      true
+    )
+    if #tos > 0 then
+      self.cost_data = {tos[1], cardId}
+      return true
+    end
+  end,
+  on_use = function(self, event, target, player, data)
+    local room = player.room
+  
+    room:obtainCard(self.cost_data[1], self.cost_data[2], false, fk.ReasonGive)
+     if Fk:getCardById(self.cost_data[2]).type == Card.TypeEquip then
+       player:drawCards(2, self.name)
+     else
+       player:drawCards(1, self.name)
+     end
+  end,
+}
+
+zhangxiu:addSkill(xiongluan)
+zhangxiu:addSkill(congjian)
+Fk:loadTranslationTable{
+  ["zhangxiu"] = "张绣",
+  ["xiongluan"] = "雄乱",
+  [":xiongluan"] = "限定技，出牌阶段，你可以废除你的判定区和装备区，然后指定一名其他角色。直到回合结束，你对其使用牌无距离和次数限制，其不能使用和打出手牌。",
+  ["congjian"] = "从谏",
+  [":congjian"] = "当你成为锦囊牌的目标时，若此牌的目标数大于1，则你可以交给其中一名其他目标角色一张牌，然后摸一张牌，若你给出的是装备牌，改为摸两张牌。",
+  ["@@xiongluan-turn"] = "雄乱",
+  ["#congjian-give"] = "从谏：选择一名为目标的其他角色，交给其一张牌，然后你摸一张牌。若你以此法交出的是装备牌，改为摸两张牌。",
+  ["$xiongluan1"] = "北地枭雄，乱世不败!!",
+  ["$xiongluan2"] = "雄据宛城，虽乱世可安！",
+  ["$congjian1"] = "听君谏言，去危亡！ 保宗室!",
+  ["$congjian2"] = "从谏良计，可得自保！",
+  ["~zhangxiu"] = "若失文和....吾将何归~~",
+}
 local haozhao = General(extension, "haozhao", "wei", 4)
 local zhengu = fk.CreateTriggerSkill{
   name = "zhengu",
