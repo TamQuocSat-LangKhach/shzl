@@ -71,14 +71,16 @@ local congjian = fk.CreateTriggerSkill{
   end,
   on_cost = function(self, event, target, player, data)
       local room = player.room
+      local targets = data.tos[1]
+      table.removeOne(targets, player.id)
     local tos, cardId = room:askForChooseCardAndPlayers(
       player,
-      data.tos[1],
+      targets,
       1,
       1,
       nil,
       "#congjian-give",
-      self.name,
+      self.name, 
       true
     )
     if #tos > 0 then
