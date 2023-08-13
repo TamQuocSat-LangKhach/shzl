@@ -820,7 +820,7 @@ local nos__longhun = fk.CreateViewAsSkill{
       else
         return false
       end
-      return (Fk.currentResponsePattern == nil and c.skill:canUse(Self)) or (Fk.currentResponsePattern and Exppattern:Parse(Fk.currentResponsePattern):match(c))
+      return (Fk.currentResponsePattern == nil and c.skill:canUse(Self, c)) or (Fk.currentResponsePattern and Exppattern:Parse(Fk.currentResponsePattern):match(c))
     end
   end,
   view_as = function(self, cards)
@@ -916,7 +916,7 @@ local longhun = fk.CreateViewAsSkill{
       else
         return false
       end
-      return (Fk.currentResponsePattern == nil and c.skill:canUse(Self)) or (Fk.currentResponsePattern and Exppattern:Parse(Fk.currentResponsePattern):match(c))
+      return (Fk.currentResponsePattern == nil and c.skill:canUse(Self, c)) or (Fk.currentResponsePattern and Exppattern:Parse(Fk.currentResponsePattern):match(c))
     end
   end,
   view_as = function(self, cards)
@@ -1052,7 +1052,7 @@ local gundam__longhun = fk.CreateViewAsSkill{
       else
         return false
       end
-      return (Fk.currentResponsePattern == nil and c.skill:canUse(Self)) or
+      return (Fk.currentResponsePattern == nil and c.skill:canUse(Self, c)) or
         (Fk.currentResponsePattern and Exppattern:Parse(Fk.currentResponsePattern):match(c))
     end
   end,

@@ -562,7 +562,7 @@ local guhuo = fk.CreateViewAsSkill{
     for _, id in ipairs(Fk:getAllCardIds()) do
       local card = Fk:getCardById(id)
       if (card.type == Card.TypeBasic or card:isCommonTrick()) and
-      ((Fk.currentResponsePattern == nil and card.skill:canUse(Self)) or
+      ((Fk.currentResponsePattern == nil and card.skill:canUse(Self, card)) or
       (Fk.currentResponsePattern and Exppattern:Parse(Fk.currentResponsePattern):match(card))) then
         table.insertIfNeed(names, card.name)
       end
