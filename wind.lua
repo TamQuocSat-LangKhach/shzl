@@ -194,6 +194,7 @@ local tianxiang = fk.CreateTriggerSkill{
       damage = data.damage,
       damageType = data.type,
       skillName = self.name,
+      card = data.card,
     }
     if not to.dead then
       to:drawCards(to:getLostHp(), self.name)
@@ -463,8 +464,8 @@ local huangtian = fk.CreateTriggerSkill{
   name = "huangtian$",
   mute = true,
   frequency = Skill.Compulsory,
-  events = {fk.GameStart, fk.EventAcquireSkill, fk.EventLoseSkill, fk.Deathed},
-  can_trigger = function(self, event, target, player, data)
+  refresh_events = {fk.GameStart, fk.EventAcquireSkill, fk.EventLoseSkill, fk.Deathed},
+  can_refresh = function(self, event, target, player, data)
     if event == fk.GameStart then
       return player:hasSkill(self.name, true)
     elseif event == fk.EventAcquireSkill or event == fk.EventLoseSkill then
@@ -473,11 +474,14 @@ local huangtian = fk.CreateTriggerSkill{
       return target == player and player:hasSkill(self.name, true, true)
     end
   end,
-  on_use = function(self, event, target, player, data)
+  on_refresh = function(self, event, target, player, data)
     local room = player.room
+    --[[
     local targets = table.filter(room:getOtherPlayers(player), function(p)
       return p.kingdom == "qun"
     end)
+    ]]
+    local targets = room.alive_players
     if event == fk.GameStart or event == fk.EventAcquireSkill then
       if player:hasSkill(self.name, true) then
         table.forEach(targets, function(p)
@@ -497,7 +501,7 @@ local huangtian_other = fk.CreateActiveSkill{
   mute = true,
   can_use = function(self, player)
     if player:usedSkillTimes(self.name, Player.HistoryPhase) < 1 and player.kingdom == "qun" then
-      return table.find(Fk:currentRoom().alive_players, function(p) return p:hasSkill("huangtian") end)
+      return table.find(Fk:currentRoom().alive_players, function(p) return p:hasSkill("huangtian") and p ~= player end)
     end
     return false
   end,
@@ -508,9 +512,7 @@ local huangtian_other = fk.CreateActiveSkill{
   target_num = 0,
   on_use = function(self, room, effect)
     local player = room:getPlayerById(effect.from)
-    room:notifySkillInvoked(player, "huangtian")
-    room:broadcastSkillInvoke("huangtian")
-    local targets = table.filter(room.alive_players, function(p) return p:hasSkill("huangtian") end)
+    local targets = table.filter(room.alive_players, function(p) return p:hasSkill("huangtian") and p ~= player end)
     local target
     if #targets == 1 then
       target = targets[1]
@@ -518,6 +520,8 @@ local huangtian_other = fk.CreateActiveSkill{
       target = room:getPlayerById(room:askForChoosePlayers(player, table.map(targets, function(p) return p.id end), 1, 1, nil, self.name, false)[1])
     end
     if not target then return false end
+    room:notifySkillInvoked(player, "huangtian")
+    room:broadcastSkillInvoke("huangtian")
     room:doIndicate(effect.from, { target.id })
     room:moveCardTo(effect.cards, Player.Hand, target, fk.ReasonGive, self.name, nil, true)
   end,

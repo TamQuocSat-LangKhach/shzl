@@ -397,7 +397,7 @@ local qixing = fk.CreateTriggerSkill{
     if event == fk.GameStart then
       local dummy = Fk:cloneCard("dilu")
       dummy:addSubcards(room:getNCards(7))
-      player:addToPile("star", dummy, true, self.name) --应该是false，先蒸
+      player:addToPile("star", dummy, false, self.name)
     end
     local cids = room:askForExchange(player, {player:getPile("star"), player:getCardIds(Player.Hand)}, {"star", "$Hand"}, self.name)
     local cards1, cards2 = {}, {}

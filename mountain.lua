@@ -393,8 +393,8 @@ local zhiba = fk.CreateTriggerSkill{
   name = "zhiba$",
   mute = true,
   frequency = Skill.Compulsory,
-  events = {fk.GameStart, fk.EventAcquireSkill, fk.EventLoseSkill, fk.Deathed},
-  can_trigger = function(self, event, target, player, data)
+  refresh_events = {fk.GameStart, fk.EventAcquireSkill, fk.EventLoseSkill, fk.Deathed},
+  can_refresh = function(self, event, target, player, data)
     if event == fk.GameStart then
       return player:hasSkill(self.name, true)
     elseif event == fk.EventAcquireSkill or event == fk.EventLoseSkill then
@@ -403,11 +403,14 @@ local zhiba = fk.CreateTriggerSkill{
       return target == player and player:hasSkill(self.name, true, true)
     end
   end,
-  on_use = function(self, event, target, player, data)
+  on_refresh = function(self, event, target, player, data)
     local room = player.room
+    --[[
     local targets = table.filter(room:getOtherPlayers(player), function(p)
       return p.kingdom == "wu"
     end)
+    ]]
+    local targets = room.alive_players
     if event == fk.GameStart or event == fk.EventAcquireSkill then
       if player:hasSkill(self.name, true) then
         table.forEach(targets, function(p)
@@ -426,8 +429,8 @@ local zhiba_other = fk.CreateActiveSkill{
   anim_type = "special",
   mute = true,
   can_use = function(self, player)
-    if player:usedSkillTimes(self.name, Player.HistoryPhase) < 1 and player.kingdom == "wu" then
-      return table.find(Fk:currentRoom().alive_players, function(p) return p:hasSkill("zhiba") end)
+    if player:usedSkillTimes(self.name, Player.HistoryPhase) < 1 and player.kingdom == "wu" and not player:isKongcheng() then
+      return table.find(Fk:currentRoom().alive_players, function(p) return p:hasSkill("zhiba") and p ~= player and not p:isKongcheng() end)
     end
     return false
   end,
@@ -438,9 +441,7 @@ local zhiba_other = fk.CreateActiveSkill{
   target_num = 0,
   on_use = function(self, room, effect)
     local player = room:getPlayerById(effect.from)
-    room:notifySkillInvoked(player, "zhiba")
-    room:broadcastSkillInvoke("zhiba")
-    local targets = table.filter(room.alive_players, function(p) return p:hasSkill("zhiba") end)
+    local targets = table.filter(room.alive_players, function(p) return p:hasSkill("zhiba") and p ~= player and not p:isKongcheng() end)
     local target
     if #targets == 1 then
       target = targets[1]
@@ -448,6 +449,8 @@ local zhiba_other = fk.CreateActiveSkill{
       target = room:getPlayerById(room:askForChoosePlayers(player, table.map(targets, function(p) return p.id end), 1, 1, nil, self.name, false)[1])
     end
     if not target then return false end
+    room:notifySkillInvoked(player, "zhiba")
+    room:broadcastSkillInvoke("zhiba")
     room:doIndicate(effect.from, { target.id })
     if target:usedSkillTimes("hunzi", Player.HistoryGame) > 0 and room:askForChoice(target, {"zhiba_yes", "zhiba_no"}, self.name, "#zhiba-ask:" .. player.id) == "zhiba_no" then
       return false
@@ -519,11 +522,8 @@ local zhijian = fk.CreateActiveSkill{
       Fk:currentRoom():getCardArea(to_select) ~= Card.PlayerEquip
   end,
   target_filter = function(self, to_select, selected, selected_cards)
-    if #selected == 0 and #selected_cards == 1 then
-      local target = Fk:currentRoom():getPlayerById(to_select)
-      local card = Fk:getCardById(selected_cards[1])
-      return to_select ~= Self.id and target:getEquipment(card.sub_type) == nil and #target:getAvailableEquipSlots(card.sub_type) > 0
-    end
+    return #selected == 0 and #selected_cards == 1 and 
+    Fk:currentRoom():getPlayerById(to_select):hasEmptyEquipSlot(Fk:getCardById(selected_cards[1]).sub_type)
   end,
   on_use = function(self, room, effect)
     local player = room:getPlayerById(effect.from)

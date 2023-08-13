@@ -23,12 +23,10 @@ local xiongluan = fk.CreateActiveSkill{
   on_use = function(self, room, effect)
     local to = room:getPlayerById(effect.tos[1])
     local player = room:getPlayerById(effect.from)
-    
     room:addPlayerMark(to, "@@xiongluan-turn")
-     local targetRecorded = type(player:getMark("xiongluan_target-turn")) == "table" and player:getMark("xiongluan_target-turn") or {}
-      table.insertIfNeed(targetRecorded, to.id)
-      room:setPlayerMark(player, "xiongluan_target-turn", targetRecorded)
-     
+    local targetRecorded = type(player:getMark("xiongluan_target-turn")) == "table" and player:getMark("xiongluan_target-turn") or {}
+    table.insertIfNeed(targetRecorded, to.id)
+    room:setPlayerMark(player, "xiongluan_target-turn", targetRecorded)
     local eqipSlots = player:getAvailableEquipSlots()
     table.insert(eqipSlots, Player.JudgeSlot)
     room:abortPlayerArea(player, eqipSlots)
@@ -67,12 +65,12 @@ local congjian = fk.CreateTriggerSkill{
   anim_type = "defensive",
   events = {fk.TargetConfirmed},
   can_trigger = function(self, event, target, player, data)
-    return target == player and player:hasSkill(self.name) and data.card.type == Card.TypeTrick and  #AimGroup:getAllTargets(data.tos) > 1
+    return target == player and player:hasSkill(self.name) and data.card.type == Card.TypeTrick and #AimGroup:getAllTargets(data.tos) > 1
   end,
   on_cost = function(self, event, target, player, data)
-      local room = player.room
-      local targets = data.tos[1]
-      table.removeOne(targets, player.id)
+    local room = player.room
+    local targets = data.tos[1]
+    table.removeOne(targets, player.id)
     local tos, cardId = room:askForChooseCardAndPlayers(
       player,
       targets,
@@ -90,13 +88,10 @@ local congjian = fk.CreateTriggerSkill{
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room
-  
     room:obtainCard(self.cost_data[1], self.cost_data[2], false, fk.ReasonGive)
-     if Fk:getCardById(self.cost_data[2]).type == Card.TypeEquip then
-       player:drawCards(2, self.name)
-     else
-       player:drawCards(1, self.name)
-     end
+    if not player.dead then
+      player:drawCards(Fk:getCardById(self.cost_data[2]).type == Card.TypeEquip and 2 or 1, self.name)
+    end
   end,
 }
 
@@ -110,11 +105,11 @@ Fk:loadTranslationTable{
   [":congjian"] = "当你成为锦囊牌的目标时，若此牌的目标数大于1，则你可以交给其中一名其他目标角色一张牌，然后摸一张牌，若你给出的是装备牌，改为摸两张牌。",
   ["@@xiongluan-turn"] = "雄乱",
   ["#congjian-give"] = "从谏：选择一名为目标的其他角色，交给其一张牌，然后你摸一张牌。若你以此法交出的是装备牌，改为摸两张牌。",
-  ["$xiongluan1"] = "北地枭雄，乱世不败!!",
+  ["$xiongluan1"] = "北地枭雄，乱世不败！！",
   ["$xiongluan2"] = "雄据宛城，虽乱世可安！",
-  ["$congjian1"] = "听君谏言，去危亡！ 保宗室!",
+  ["$congjian1"] = "听君谏言，去危亡，保宗祀!",
   ["$congjian2"] = "从谏良计，可得自保！",
-  ["~zhangxiu"] = "若失文和....吾将何归~~",
+  ["~zhangxiu"] = "若失文和……吾将何归~~",
 }
 local haozhao = General(extension, "haozhao", "wei", 4)
 local zhengu = fk.CreateTriggerSkill{
