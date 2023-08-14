@@ -69,7 +69,7 @@ local congjian = fk.CreateTriggerSkill{
   end,
   on_cost = function(self, event, target, player, data)
     local room = player.room
-    local targets = data.tos[1]
+    local targets = AimGroup:getAllTargets(data.tos)
     table.removeOne(targets, player.id)
     local tos, cardId = room:askForChooseCardAndPlayers(
       player,
@@ -104,7 +104,7 @@ Fk:loadTranslationTable{
   ["congjian"] = "从谏",
   [":congjian"] = "当你成为锦囊牌的目标时，若此牌的目标数大于1，则你可以交给其中一名其他目标角色一张牌，然后摸一张牌，若你给出的是装备牌，改为摸两张牌。",
   ["@@xiongluan-turn"] = "雄乱",
-  ["#congjian-give"] = "从谏：选择一名为目标的其他角色，交给其一张牌，然后你摸一张牌。若你以此法交出的是装备牌，改为摸两张牌。",
+  ["#congjian-give"] = "从谏：你可以选择一名为目标的其他角色，交给其一张牌，然后你摸一张牌。若你以此法交出的是装备牌，改为摸两张牌。",
   ["$xiongluan1"] = "北地枭雄，乱世不败！！",
   ["$xiongluan2"] = "雄据宛城，虽乱世可安！",
   ["$congjian1"] = "听君谏言，去危亡，保宗祀!",
