@@ -274,6 +274,7 @@ local dimeng = fk.CreateActiveSkill{
   anim_type = "control",
   min_card_num = 0,
   target_num = 2,
+  prompt = "#dimeng",
   can_use = function(self, player)
     return player:usedSkillTimes(self.name) == 0 and #Fk:currentRoom().alive_players > 2
   end,
@@ -287,15 +288,19 @@ local dimeng = fk.CreateActiveSkill{
     else
       local target1 = Fk:currentRoom():getPlayerById(to_select)
       local target2 = Fk:currentRoom():getPlayerById(selected[1])
-      if target1:isKongcheng() and #target2:isKongcheng() then
+      if target1:isKongcheng() and target2:isKongcheng() then
         return false
       end
-      return math.abs(#target1.player_cards[Player.Hand] - #target2.player_cards[Player.Hand]) <= #selected_cards
+      return math.abs(target1:getHandcardNum() - target2:getHandcardNum()) <= #selected_cards
     end
+  end,
+  feasible = function (self, selected, selected_cards)
+    return #selected == 2 and
+      math.abs(Fk:currentRoom():getPlayerById(selected[1]):getHandcardNum() - Fk:currentRoom():getPlayerById(selected[2]):getHandcardNum()) == #selected_cards
   end,
   on_use = function(self, room, effect)
     local player = room:getPlayerById(effect.from)
-    room:throwCard(effect.cards, "haoshi", player, player)
+    room:throwCard(effect.cards, self.name, player, player)
     local move1 = {
       from = effect.tos[1],
       ids = room:getPlayerById(effect.tos[1]).player_cards[Player.Hand],
@@ -303,7 +308,7 @@ local dimeng = fk.CreateActiveSkill{
       toArea = Card.PlayerHand,
       moveReason = fk.ReasonExchange,
       proposer = effect.from,
-      skillName = "haoshi",
+      skillName = self.name,
     }
     local move2 = {
       from = effect.tos[2],
@@ -312,7 +317,7 @@ local dimeng = fk.CreateActiveSkill{
       toArea = Card.PlayerHand,
       moveReason = fk.ReasonExchange,
       proposer = effect.from,
-      skillName = "haoshi",
+      skillName = self.name,
     }
     room:moveCards(move1, move2)
   end,
@@ -327,6 +332,7 @@ Fk:loadTranslationTable{
   ["dimeng"] = "缔盟",
   [":dimeng"] = "出牌阶段，你可以选择两名其他角色并弃置X张牌（X为这些角色手牌数差），令这两名角色交换手牌。",
   ["#haoshi-give"] = "好施：将%arg张手牌交给手牌最少的一名其他角色",
+  ["#dimeng"] = "缔盟：选择两名其他角色，你弃置其手牌数之差的牌，目标角色交换手牌",
 
   ["$haoshi1"] = "拿去拿去，莫跟哥哥客气！",
   ["$haoshi2"] = "来来来，见面分一半。",
