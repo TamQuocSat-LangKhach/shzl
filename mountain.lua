@@ -38,6 +38,7 @@ local qiaobian = fk.CreateTriggerSkill{
         local n = math.min(2, #targets)
         local tos = room:askForChoosePlayers(player, targets, 1, n, "#qiaobian-choose:::"..n, self.name, true)
         if #tos > 0 then
+          room:sortPlayersByAction(tos)
           for _, id in ipairs(tos) do
             local p = room:getPlayerById(id)
             if not p:isKongcheng() then
