@@ -658,23 +658,7 @@ local shenfen = fk.CreateActiveSkill{
     end)
     table.forEach(targets, function(p)
       if not p.dead then
-        local canDiscards = table.filter(
-          p:getCardIds{ Player.Hand }, function(id)
-            local card = Fk:getCardById(id)
-            local status_skills = room.status_skills[ProhibitSkill] or {}
-            for _, skill in ipairs(status_skills) do
-              if skill:prohibitDiscard(p, card) then
-                return false
-              end
-            end
-            return true
-          end
-        )
-        if #canDiscards <= 4 then
-          room:throwCard(canDiscards, self.name, p, p)
-        else
-          room:askForDiscard(p, 4, 4, false, self.name, false)
-        end
+        room:askForDiscard(p, 4, 4, false, self.name, false)
       end
     end)
     if not player.dead then player:turnOver() end
