@@ -221,11 +221,96 @@ Fk:loadTranslationTable{
   ["$yinghun2"] = "不诛此贼三族，则吾死不瞑目！",
   ["~sunjian"] = "有埋伏，啊……",
 }
+local function swapHandCards(room, from, tos, skillname) -- 抄自心变佬
+  local target1 = room:getPlayerById(tos[1])
+  local target2 = room:getPlayerById(tos[2])
+  local cards1 = table.clone(target1.player_cards[Player.Hand])
+  local cards2 = table.clone(target2.player_cards[Player.Hand])
+  local moveInfos = {}
+  if #cards1 > 0 then
+    table.insert(moveInfos, {
+      from = tos[1],
+      ids = cards1,
+      toArea = Card.Processing,
+      moveReason = fk.ReasonExchange,
+      proposer = from,
+      skillName = skillname,
+    })
+  end
+  if #cards2 > 0 then
+    table.insert(moveInfos, {
+      from = tos[2],
+      ids = cards2,
+      toArea = Card.Processing,
+      moveReason = fk.ReasonExchange,
+      proposer = from,
+      skillName = skillname,
+    })
+  end
+  if #moveInfos > 0 then
+    room:moveCards(table.unpack(moveInfos))
+  end
+  moveInfos = {}
+  if not target2.dead then
+    local to_ex_cards = table.filter(cards1, function (id)
+      return room:getCardArea(id) == Card.Processing
+    end)
+    if #to_ex_cards > 0 then
+      table.insert(moveInfos, {
+        ids = to_ex_cards,
+        fromArea = Card.Processing,
+        to = tos[2],
+        toArea = Card.PlayerHand,
+        moveReason = fk.ReasonExchange,
+        proposer = from,
+        skillName = skillname,
+      })
+    end
+  end
+  if not target1.dead then
+    local to_ex_cards = table.filter(cards2, function (id)
+      return room:getCardArea(id) == Card.Processing
+    end)
+    if #to_ex_cards > 0 then
+      table.insert(moveInfos, {
+        ids = to_ex_cards,
+        fromArea = Card.Processing,
+        to = tos[1],
+        toArea = Card.PlayerHand,
+        moveReason = fk.ReasonExchange,
+        proposer = from,
+        skillName = skillname,
+      })
+    end
+  end
+  if #moveInfos > 0 then
+    room:moveCards(table.unpack(moveInfos))
+  end
+  table.insertTable(cards1, cards2)
+  local dis_cards = table.filter(cards1, function (id)
+    return room:getCardArea(id) == Card.Processing
+  end)
+  if #dis_cards > 0 then
+    local dummy = Fk:cloneCard("dilu")
+    dummy:addSubcards(dis_cards)
+    room:moveCardTo(dummy, Card.DiscardPile, nil, fk.ReasonPutIntoDiscardPile, skillname)
+  end
+end
 
 local lusu = General(extension, "lusu", "wu", 3)
+local haoshi = fk.CreateTriggerSkill{
+  name = "haoshi",
+  anim_type = "drawcard",
+  events = {fk.DrawNCards},
+  on_use = function(self, event, target, player, data)
+    data.n = data.n + 2
+  end,
+}
 local haoshi_active = fk.CreateActiveSkill{
   name = "#haoshi_active",
+  main_skill = haoshi,
   max_target_num = 1,
+  can_use = Util.FalseFunc,
   card_num = function ()
     return Self:getHandcardNum() // 2
   end,
@@ -252,17 +337,10 @@ local haoshi_active = fk.CreateActiveSkill{
     return table.contains(targets, to_select) and #selected < 1
   end,
 }
-local haoshi = fk.CreateTriggerSkill{
-  name = "haoshi",
-  anim_type = "drawcard",
-  events = {fk.DrawNCards},
-  on_use = function(self, event, target, player, data)
-    data.n = data.n + 2
-  end,
-}
 local haoshi_give = fk.CreateTriggerSkill{
   name = "#haoshi_give",
   events = {fk.AfterDrawNCards},
+  mute = true,
   anim_type = "support",
   frequency = Skill.Compulsory,
   main_skill = haoshi,
@@ -301,14 +379,14 @@ local haoshi_give = fk.CreateTriggerSkill{
 local dimeng = fk.CreateActiveSkill{
   name = "dimeng",
   anim_type = "control",
-  min_card_num = 0,
+  card_num = 0,
   target_num = 2,
   prompt = "#dimeng",
   can_use = function(self, player)
     return player:usedSkillTimes(self.name) == 0 and #Fk:currentRoom().alive_players > 2
   end,
   card_filter = function(self, to_select, selected, selected_targets)
-    return true
+    return false
   end,
   target_filter = function(self, to_select, selected, selected_cards)
     if to_select == Self.id or #selected > 1 then return false end
@@ -317,38 +395,28 @@ local dimeng = fk.CreateActiveSkill{
     else
       local target1 = Fk:currentRoom():getPlayerById(to_select)
       local target2 = Fk:currentRoom():getPlayerById(selected[1])
-      if target1:isKongcheng() and target2:isKongcheng() then
+      local num, num2 = target1:getHandcardNum(), target2:getHandcardNum()
+      if num == 0 and num2 == 0 then
         return false
       end
-      return math.abs(target1:getHandcardNum() - target2:getHandcardNum()) <= #selected_cards
+      local x = #table.filter(Self:getCardIds({Player.Hand, Player.Equip}), function(cid) return not Self:prohibitDiscard(Fk:getCardById(cid)) end)
+      return math.abs( num - num2 ) <= x
     end
   end,
+  --[[
   feasible = function (self, selected, selected_cards)
     return #selected == 2 and
       math.abs(Fk:currentRoom():getPlayerById(selected[1]):getHandcardNum() - Fk:currentRoom():getPlayerById(selected[2]):getHandcardNum()) == #selected_cards
   end,
+  ]]
   on_use = function(self, room, effect)
     local player = room:getPlayerById(effect.from)
-    room:throwCard(effect.cards, self.name, player, player)
-    local move1 = {
-      from = effect.tos[1],
-      ids = room:getPlayerById(effect.tos[1]).player_cards[Player.Hand],
-      to = effect.tos[2],
-      toArea = Card.PlayerHand,
-      moveReason = fk.ReasonExchange,
-      proposer = effect.from,
-      skillName = self.name,
-    }
-    local move2 = {
-      from = effect.tos[2],
-      ids = room:getPlayerById(effect.tos[2]).player_cards[Player.Hand],
-      to = effect.tos[1],
-      toArea = Card.PlayerHand,
-      moveReason = fk.ReasonExchange,
-      proposer = effect.from,
-      skillName = self.name,
-    }
-    room:moveCards(move1, move2)
+    local num = math.abs(room:getPlayerById(effect.tos[1]):getHandcardNum() - room:getPlayerById(effect.tos[2]):getHandcardNum())
+    if num > 0 then
+      room:askForDiscard(player, num, num, true, self.name, false, nil, "#dimeng-discard:" .. effect.tos[1] .. ":" .. effect.tos[2] .. ":" .. num)
+    end
+    --room:throwCard(effect.cards, self.name, player, player)
+    swapHandCards(room, effect.from, effect.tos, self.name)
   end,
 }
 haoshi:addRelatedSkill(haoshi_active)
@@ -360,11 +428,12 @@ Fk:loadTranslationTable{
   ["haoshi"] = "好施",
   [":haoshi"] = "摸牌阶段，你可以多摸两张牌，然后若你的手牌数大于5，你将半数（向下取整）手牌交给手牌牌最少的一名其他角色。",
   ["dimeng"] = "缔盟",
-  [":dimeng"] = "出牌阶段，你可以选择两名其他角色并弃置X张牌（X为这些角色手牌数差），令这两名角色交换手牌。",
+  [":dimeng"] = "出牌阶段限一次，你可以选择两名其他角色并弃置X张牌（X为这些角色手牌数差），令这两名角色交换手牌。",
   ["#haoshi-give"] = "好施：将%arg张手牌交给手牌最少的一名其他角色",
   ["#haoshi_active"] = "好施[给牌]",
   ["#haoshi_give"] = "好施[给牌]",
-  ["#dimeng"] = "缔盟：选择两名其他角色，你弃置其手牌数之差的牌，目标角色交换手牌",
+  ["#dimeng"] = "缔盟：选择两名其他角色，点击“确定”后，选择与其手牌数之差等量的牌，这两名角色交换手牌",
+  ["#dimeng-discard"] = "缔盟：弃置 %arg 张牌，交换%src和%dest的手牌",
 
   ["$haoshi1"] = "拿去拿去，莫跟哥哥客气！",
   ["$haoshi2"] = "来来来，见面分一半。",
