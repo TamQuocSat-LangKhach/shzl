@@ -298,8 +298,11 @@ local zuilun = fk.CreateTriggerSkill{
       n = n + 1
     end
     events = room.logic:getEventsOfScope(GameEvent.MoveCards, 1, function(e)
-      local move = e.data[1]
-      return move.from == player.id and move.moveReason == fk.ReasonDiscard
+      for _, move in ipairs(e.data) do
+        if move.from == player.id and move.moveReason == fk.ReasonDiscard then
+          return true
+        end
+      end
     end, Player.HistoryTurn)
     if #events == 0 then
       n = n + 1
