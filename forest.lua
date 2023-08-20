@@ -225,48 +225,77 @@ Fk:loadTranslationTable{
 local lusu = General(extension, "lusu", "wu", 3)
 local haoshi_active = fk.CreateActiveSkill{
   name = "#haoshi_active",
-  anim_type = "support",
-  target_num = 1,
+  max_target_num = 1,
   card_num = function ()
-    return Self:getMark("haoshi")
+    return Self:getHandcardNum() // 2
   end,
   card_filter = function(self, to_select, selected)
-    return #selected < Self:getMark("haoshi") and Fk:currentRoom():getCardArea(to_select) ~= Player.Equip
+    return #selected < Self:getHandcardNum() // 2 and Fk:currentRoom():getCardArea(to_select) == Player.Hand
   end,
   target_filter = function(self, to_select, selected, selected_cards)
+    if #selected_cards ~= Self:getHandcardNum() // 2 then return false end
     local num = 999
+    local targets = {}
     for _, p in ipairs(Fk:currentRoom().alive_players) do
-      if p ~= Self and #p.player_cards[Player.Hand] < num then
-        num = #p.player_cards[Player.Hand]
+      if p ~= Self then
+        local n = p:getHandcardNum()
+        if n <= num then
+          if n < num then
+            num = n
+            targets = {}
+          end
+          table.insert(targets, p.id)
+        end
       end
     end
-    return #selected_cards == Self:getMark("haoshi") and #selected == 0 and
-      #Fk:currentRoom():getPlayerById(to_select).player_cards[Player.Hand] == num
-  end,
-  on_use = function(self, room, effect)
-    room:setPlayerMark(room:getPlayerById(effect.from), "haoshi", 0)
-    local dummy = Fk:cloneCard("dilu")
-    dummy:addSubcards(effect.cards)
-    room:obtainCard(effect.tos[1], dummy, false, fk.ReasonGive)
+    if #targets <= 1 then return false end
+    return table.contains(targets, to_select) and #selected < 1
   end,
 }
 local haoshi = fk.CreateTriggerSkill{
   name = "haoshi",
-  anim_type = "support",
+  anim_type = "drawcard",
   events = {fk.DrawNCards},
   on_use = function(self, event, target, player, data)
     data.n = data.n + 2
   end,
-
-  refresh_events = {fk.AfterDrawNCards},
-  can_refresh = function(self, event, target, player, data)
-    return player:hasSkill(self.name) and player:usedSkillTimes(self.name) > 0 and #player.player_cards[Player.Hand] > 5
+}
+local haoshi_give = fk.CreateTriggerSkill{
+  name = "#haoshi_give",
+  events = {fk.AfterDrawNCards},
+  anim_type = "support",
+  frequency = Skill.Compulsory,
+  main_skill = haoshi,
+  can_trigger = function(self, event, target, player, data)
+    return target == player and player:usedSkillTimes("haoshi", Player.HistoryPhase) > 0 and player:getHandcardNum() > 5
   end,
-  on_refresh = function(self, event, target, player, data)
+  on_use = function(self, event, target, player, data)
     local room = player.room
-    room:addPlayerMark(player, self.name, #player.player_cards[Player.Hand] // 2)
-    room:askForUseActiveSkill(player, "#haoshi_active", "#haoshi-give:::"..#player.player_cards[Player.Hand] // 2, false)  --FIXME: 当烧条结束时不可cancelable的技能也无默认触发！
-    room:setPlayerMark(player, self.name, 0)
+    local cards, target = {}, nil
+    local targets = {}
+    local num = 999
+    for _, p in ipairs(room.alive_players) do
+      if p ~= player then
+        local n = p:getHandcardNum()
+        if n <= num then
+          if n < num then
+            num = n
+            targets = {}
+          end
+          table.insert(targets, p.id)
+        end
+      end
+    end
+    if #targets == 0 then return false end
+    local _, ret = room:askForUseActiveSkill(player, "#haoshi_active", "#haoshi-give:::"..player:getHandcardNum() // 2, false)
+    if ret then
+      cards = ret.cards
+      target = ret.targets and ret.targets[1] or targets[1]
+    else
+      cards = table.random(player:getCardIds(Player.Hand), player:getHandcardNum() // 2)
+      target = table.random(targets)
+    end
+    room:moveCardTo(cards, Card.PlayerHand, room:getPlayerById(target), fk.ReasonGive, self.name, nil, false, player.id)
   end
 }
 local dimeng = fk.CreateActiveSkill{
@@ -322,16 +351,19 @@ local dimeng = fk.CreateActiveSkill{
     room:moveCards(move1, move2)
   end,
 }
-Fk:addSkill(haoshi_active)
+haoshi:addRelatedSkill(haoshi_active)
+haoshi:addRelatedSkill(haoshi_give)
 lusu:addSkill(haoshi)
 lusu:addSkill(dimeng)
 Fk:loadTranslationTable{
   ["lusu"] = "鲁肃",
   ["haoshi"] = "好施",
-  [":haoshi"] = "摸牌阶段，你可以多摸两张牌，然后若你的手牌数大于5，你将半数（向下取整）手牌交给手牌最少的一名其他角色。",
+  [":haoshi"] = "摸牌阶段，你可以多摸两张牌，然后若你的手牌数大于5，你将半数（向下取整）手牌交给手牌牌最少的一名其他角色。",
   ["dimeng"] = "缔盟",
   [":dimeng"] = "出牌阶段，你可以选择两名其他角色并弃置X张牌（X为这些角色手牌数差），令这两名角色交换手牌。",
   ["#haoshi-give"] = "好施：将%arg张手牌交给手牌最少的一名其他角色",
+  ["#haoshi_active"] = "好施[给牌]",
+  ["#haoshi_give"] = "好施[给牌]",
   ["#dimeng"] = "缔盟：选择两名其他角色，你弃置其手牌数之差的牌，目标角色交换手牌",
 
   ["$haoshi1"] = "拿去拿去，莫跟哥哥客气！",

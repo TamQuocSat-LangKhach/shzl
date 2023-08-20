@@ -165,7 +165,7 @@ local bazhen = fk.CreateTriggerSkill{
     local room = player.room
     local judgeData = {
       who = player,
-      reason = self.name,
+      reason = "eight_diagram",
       pattern = ".|.|heart,diamond",
     }
     room:judge(judgeData)
