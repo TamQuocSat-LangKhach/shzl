@@ -21,22 +21,24 @@ local shensu = fk.CreateTriggerSkill{
   end,
   on_cost = function(self, event, target, player, data)
     local room = player.room
+    local slash = Fk:cloneCard("slash")
+    local max_num = slash.skill:getMaxTargetNum(player, slash)
     local targets = {}
     for _, p in ipairs(room:getOtherPlayers(player)) do
-      if not player:isProhibited(p, Fk:cloneCard("slash")) then
+      if not player:isProhibited(p, slash) then
         table.insert(targets, p.id)
       end
     end
-    if #targets == 0 then return end
+    if #targets == 0 or max_num == 0 then return end
     if data.to == Player.Judge then
-      local to = room:askForChoosePlayers(player, targets, 1, 1, "#shensu1-choose", self.name, true)
+      local to = room:askForChoosePlayers(player, targets, 1, max_num, "#shensu1-choose", self.name, true)
       if #to > 0 then
         self.cost_data = {to[1]}
         return true
       end
     elseif data.to == Player.Play then
       --FIXME: 这个方法在没有装备牌的时候不会询问！会暴露手牌信息！
-      local tos, id = room:askForChooseCardAndPlayers(player, targets, 1, 1, ".|.|.|.|.|equip", "#shensu2-choose", self.name, true)
+      local tos, id = room:askForChooseCardAndPlayers(player, targets, 1, max_num, ".|.|.|.|.|equip", "#shensu2-choose", self.name, true)
       if #tos > 0 then
         self.cost_data = {tos[1], id}
         return true
@@ -52,7 +54,7 @@ local shensu = fk.CreateTriggerSkill{
       player:skip(Player.Play)
       room:throwCard({self.cost_data[2]}, self.name, player, player)
     end
-    room:useVirtualCard("slash", nil, player, player.room:getPlayerById(self.cost_data[1]), self.name, true)
+    room:useVirtualCard("slash", nil, player, table.map(self.cost_data, Util.Id2PlayerMapper), self.name, true)
     return true
   end,
 }
