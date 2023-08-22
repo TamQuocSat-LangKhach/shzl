@@ -2,7 +2,7 @@ local extension = Package:new("fire")
 extension.extensionName = "shzl"
 
 Fk:loadTranslationTable{
-  ["fire"] = "火",
+  ["fire"] = "神话再临·火",
 }
 
 local dianwei = General(extension, "dianwei", "wei", 4)
@@ -337,8 +337,9 @@ Fk:loadTranslationTable{
 
 local shuangxiongJudge = fk.CreateTriggerSkill{
   name = "#shuangxiongJude",
-  anim_type = "drawcard",
+  anim_type = "offensive",
   events = {fk.EventPhaseStart},
+  mute = true,
   can_trigger = function(self, event, target, player, data)
     return target == player and player:hasSkill(self.name) and player.phase == Player.Draw
   end,
@@ -348,34 +349,17 @@ local shuangxiongJudge = fk.CreateTriggerSkill{
       who = player,
       reason = self.name,
     }
-
+    room:notifySkillInvoked(player, "shuangxiong", "offensive")
     room:broadcastSkillInvoke("shuangxiong")
     room:judge(judge)
-
     if judge.card then
-      local color = judge.card:getColorString() == "black" and "red" or "black";
-
-      room:setPlayerMark(player, "shuangxiong", color)
-      room:setPlayerMark(player, "@shuangxiong", color)
+      local color = judge.card:getColorString()
+      local colorsRecorded = type(player:getMark("@shuangxiong-turn")) == "table" and player:getMark("@shuangxiong-turn") or {}
+      table.insertIfNeed(colorsRecorded, color)
+      room:setPlayerMark(player, "@shuangxiong-turn", colorsRecorded)
       room:obtainCard(player.id, judge.card)
     end
-
     return true
-  end,
-
-  refresh_events = {fk.EventPhaseStart},
-  can_refresh = function(self, event, target, player, data)
-    if not (target == player and player:hasSkill(self.name)) then return end
-    if event == fk.EventPhaseStart then
-      return player.phase == Player.NotActive
-    else
-      return player.phase < Player.NotActive -- FIXME: this is a bug of FK 0.0.2!!
-    end
-  end,
-  on_refresh = function(self, event, target, player, data)
-    local room = player.room
-    room:setPlayerMark(player, "shuangxiong", 0)
-    room:setPlayerMark(player, "@shuangxiong", 0)
   end,
 }
 local shuangxiong = fk.CreateViewAsSkill{
@@ -384,17 +368,30 @@ local shuangxiong = fk.CreateViewAsSkill{
   pattern = "duel",
   card_filter = function(self, to_select, selected)
     if #selected == 1 then return false end
-
-    return Fk:currentRoom():getCardArea(to_select) ~= Player.Equip and Fk:getCardById(to_select):getColorString() == Self:getMark("shuangxiong")
+    local color = Fk:getCardById(to_select):getColorString()
+    if color == "red" then
+      color = "black"
+    elseif color == "black" then
+      color = "red"
+    else
+      return false
+    end
+    return Fk:currentRoom():getCardArea(to_select) == Player.Hand and table.contains(Self:getMark("@shuangxiong-turn"), color)
   end,
   view_as = function(self, cards)
     if #cards ~= 1 then
       return nil
     end
-
     local c = Fk:cloneCard("duel")
     c:addSubcard(cards[1])
+    c.skillName = self.name
     return c
+  end,
+  enabled_at_play = function(self, player)
+    return type(player:getMark("@shuangxiong-turn")) == "table"
+  end,
+  enabled_at_response = function(self, player)
+    return type(player:getMark("@shuangxiong-turn")) == "table"
   end,
 }
 shuangxiong:addRelatedSkill(shuangxiongJudge)
@@ -404,7 +401,7 @@ Fk:loadTranslationTable{
   ["yanliangwenchou"] = "颜良文丑",
   ["shuangxiong"] = "双雄",
   [":shuangxiong"] = "摸牌阶段，你可以选择放弃摸牌并进行一次判定：你获得此判定牌并且此回合可以将任意一张与该判定牌不同颜色的手牌当【决斗】使用。",
-  ["@shuangxiong"] = "双雄",
+  ["@shuangxiong-turn"] = "双雄",
   ["#shuangxiongJude"] = "双雄",
 
   ["$shuangxiong1"] = "吾乃河北上将颜良文丑是也！",

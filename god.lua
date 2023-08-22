@@ -2,7 +2,7 @@ local extension = Package:new("god")
 extension.extensionName = "shzl"
 
 Fk:loadTranslationTable{
-  ["god"] = "神",
+  ["god"] = "神话再临·神",
   ["nos"] = "旧",
   --["gundam"] = "高达",
 }

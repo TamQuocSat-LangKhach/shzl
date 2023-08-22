@@ -2,7 +2,7 @@ local extension = Package:new("wind")
 extension.extensionName = "shzl"
 
 Fk:loadTranslationTable{
-  ["wind"] = "风",
+  ["wind"] = "神话再临·风",
 }
 
 local xiahouyuan = General(extension, "xiahouyuan", "wei", 4)

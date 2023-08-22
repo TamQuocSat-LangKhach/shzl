@@ -2,7 +2,7 @@ local extension = Package:new("mountain")
 extension.extensionName = "shzl"
 
 Fk:loadTranslationTable{
-  ["mountain"] = "山",
+  ["mountain"] = "神话再临·山",
 }
 
 local zhanghe = General(extension, "zhanghe", "wei", 4)

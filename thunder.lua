@@ -2,7 +2,7 @@ local extension = Package("thunder")
 extension.extensionName = "shzl"
 
 Fk:loadTranslationTable{
-  ["thunder"] = "雷",
+  ["thunder"] = "神话再临·雷",
 }
 
 local zhangxiu = General(extension, "zhangxiu", "qun", 4)

@@ -1,7 +1,7 @@
 local extension = Package:new("shadow")
 extension.extensionName = "shzl"
 Fk:loadTranslationTable{
-  ["shadow"] = "阴",
+  ["shadow"] = "神话再临·阴",
 }
 
 local wangji = General(extension, "wangji", "wei", 3)

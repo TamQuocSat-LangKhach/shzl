@@ -2,7 +2,7 @@ local extension = Package:new("forest")
 extension.extensionName = "shzl"
 
 Fk:loadTranslationTable{
-  ["forest"] = "林",
+  ["forest"] = "神话再临·林",
 }
 
 local xuhuang = General(extension, "xuhuang", "wei", 4)
@@ -308,7 +308,7 @@ local haoshi = fk.CreateTriggerSkill{
 }
 local haoshi_active = fk.CreateActiveSkill{
   name = "#haoshi_active",
-  main_skill = haoshi,
+  visible = false,
   max_target_num = 1,
   can_use = Util.FalseFunc,
   card_num = function ()
@@ -343,7 +343,7 @@ local haoshi_give = fk.CreateTriggerSkill{
   mute = true,
   anim_type = "support",
   frequency = Skill.Compulsory,
-  main_skill = haoshi,
+  visible = false,
   can_trigger = function(self, event, target, player, data)
     return target == player and player:usedSkillTimes("haoshi", Player.HistoryPhase) > 0 and player:getHandcardNum() > 5
   end,
