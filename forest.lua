@@ -117,6 +117,113 @@ Fk:loadTranslationTable{
   ["~caopi"] = "子建，子建……",
 }
 
+local menghuo = General(extension, "menghuo", "shu", 4)
+local huoshou = fk.CreateTriggerSkill{
+  name = "huoshou",
+  anim_type = "defensive",
+  frequency = Skill.Compulsory,
+  events = {fk.PreCardEffect, fk.TargetSpecified},
+  can_trigger = function(self, event, target, player, data)
+    if player:hasSkill(self.name) and data.card.trueName == "savage_assault" then
+      if event == fk.PreCardEffect then
+        return player.id == data.to
+      else
+        return target ~= player and data.firstTarget
+      end
+    end
+  end,
+  on_use = function(self, event, target, player, data)
+    if event == fk.PreCardEffect then
+      return true
+    else
+      data.extra_data = data.extra_data or {}
+      data.extra_data.huoshou = player.id
+    end
+  end,
+
+  refresh_events = {fk.PreDamage},
+  can_refresh = function(self, event, target, player, data)
+    if data.card and data.card.trueName == "savage_assault" then
+      local e = player.room.logic:getCurrentEvent():findParent(GameEvent.UseCard)
+      if e then
+        local use = e.data[1]
+        return use.extra_data and use.extra_data.huoshou
+      end
+    end
+  end,
+  on_refresh = function(self, event, target, player, data)
+    local room = player.room
+    local e = room.logic:getCurrentEvent():findParent(GameEvent.UseCard)
+    if e then
+      local use = e.data[1]
+      data.from = room:getPlayerById(use.extra_data.huoshou)
+    end
+  end,
+}
+local zaiqi = fk.CreateTriggerSkill{
+  name = "zaiqi",
+  anim_type = "support",
+  events = {fk.EventPhaseStart},
+  can_trigger = function(self, event, target, player, data)
+    return target == player and player:hasSkill(self.name) and player.phase == Player.Draw and player:isWounded()
+  end,
+  on_use = function(self, event, target, player, data)
+    local room = player.room
+    local n = player:getLostHp()
+    local cards = room:getNCards(n)
+    room:moveCards{
+      ids = cards,
+      toArea = Card.Processing,
+      moveReason = fk.ReasonJustMove,
+      skillName = self.name,
+    }
+    room:delay(2000)
+    local dummy = Fk:cloneCard("dilu")
+    for i = #cards, 1, -1 do
+      if Fk:getCardById(cards[i]).suit ~= Card.Heart then
+        dummy:addSubcard(cards[i])
+        table.removeOne(cards, cards[i])
+      end
+    end
+    if #cards > 0 then
+      room:moveCards{
+        ids = cards,
+        toArea = Card.DiscardPile,
+        moveReason = fk.ReasonJustMove,
+        skillName = self.name,
+      }
+      if player:isWounded() then
+        room:recover({
+          who = player,
+          num = math.min(#cards, player:getLostHp()),
+          recoverBy = player,
+          skillName = self.name,
+        })
+      end
+    end
+    if #dummy.subcards > 0 and not player.dead then
+      room:obtainCard(player.id, dummy, true, fk.ReasonJustMove)
+    end
+    return true
+  end,
+}
+menghuo:addSkill(huoshou)
+menghuo:addSkill(zaiqi)
+Fk:loadTranslationTable{
+  ["menghuo"] = "孟获",
+  ["huoshou"] = "祸首",
+  [":huoshou"] = "锁定技，【南蛮入侵】对你无效；当其他角色使用【南蛮入侵】指定目标后，你代替其成为此牌造成的伤害的来源。",
+  ["zaiqi"] = "再起",
+  [":zaiqi"] = "摸牌阶段，若你已受伤，你可以放弃摸牌，改为亮出牌堆顶X张牌（X为你已损失体力值），你将其中的<font color='red'>♥</font>牌置入弃牌堆"..
+  "并回复等量体力，获得其余的牌。",
+
+  ["$huoshou1"] = "背黑锅我来，送死？你去！",
+  ["$huoshou2"] = "通通算我的！",
+  ["$zaiqi1"] = "丞相助我！",
+  ["$zaiqi2"] = "起！",
+  ["~menghuo"] = "七纵之恩……来世……再报了……",
+}
+
 local zhurong = General(extension, "zhurong", "shu", 4, 4, General.Female)
 local juxiang = fk.CreateTriggerSkill{
   name = "juxiang",
@@ -195,12 +302,12 @@ local yinghun = fk.CreateTriggerSkill{
     local n = player:getLostHp()
     local choice = room:askForChoice(player, {"#yinghun-draw:::" .. n,  "#yinghun-discard:::" .. n}, self.name)
     if choice:startsWith("#yinghun-draw") then
-      room:broadcastSkillInvoke(self.name, 1)
+      player:broadcastSkillInvoke(self.name, 1)
       room:notifySkillInvoked(player, self.name, "support")
       to:drawCards(n, self.name)
       room:askForDiscard(to, 1, 1, true, self.name, false)
     else
-      room:broadcastSkillInvoke(self.name, 2)
+      player:broadcastSkillInvoke(self.name, 2)
       room:notifySkillInvoked(player, self.name, "control")
       to:drawCards(1, self.name)
       room:askForDiscard(to, n, n, true, self.name, false)
@@ -506,7 +613,7 @@ local baonve = fk.CreateTriggerSkill{
   anim_type = "support",
   events = {fk.Damage},
   can_trigger = function(self, event, target, player, data)
-    return player:hasSkill(self.name) and target ~= player and target.kingdom == "qun"
+    return player:hasSkill(self.name) and target ~= player and target.kingdom == "qun" and not target.dead
   end,
   on_cost = function(self, event, target, player, data)
     return player.room:askForSkillInvoke(target, self.name, nil, "#baonve-invoke:"..player.id)
@@ -569,7 +676,7 @@ local wansha = fk.CreateTriggerSkill{
   end,
   on_refresh = function(self, event, target, player, data)
     player.room:notifySkillInvoked(player, self.name)
-    player.room:broadcastSkillInvoke(self.name)
+    player:broadcastSkillInvoke(self.name)
   end,
 }
 local wansha_prohibit = fk.CreateProhibitSkill{

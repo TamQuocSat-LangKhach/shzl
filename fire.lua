@@ -156,7 +156,8 @@ local bazhen = fk.CreateTriggerSkill{
   anim_type = "defensive",
   can_trigger = function(self, event, target, player, data)
     return target == player and player:hasSkill(self.name) and
-      (data.cardName == "jink" or (data.pattern and Exppattern:Parse(data.pattern):matchExp("jink|0|nosuit|none"))) and not player:getEquipment(Card.SubtypeArmor) and player:getMark(fk.MarkArmorNullified) == 0
+      (data.cardName == "jink" or (data.pattern and Exppattern:Parse(data.pattern):matchExp("jink|0|nosuit|none"))) and
+      not player:getEquipment(Card.SubtypeArmor) and player:getMark(fk.MarkArmorNullified) == 0
   end,
   on_cost = function(self, event, target, player, data)
     return player.room:askForSkillInvoke(player, self.name, data)
@@ -196,6 +197,7 @@ local huoji = fk.CreateViewAsSkill{
   name = "huoji",
   anim_type = "offensive",
   pattern = "fire_attack",
+  prompt = "#huoji",
   card_filter = function(self, to_select, selected)
     return #selected == 0 and Fk:getCardById(to_select).color == Card.Red and Fk:currentRoom():getCardArea(to_select) ~= Player.Equip
   end,
@@ -211,6 +213,7 @@ local kanpo = fk.CreateViewAsSkill{
   name = "kanpo",
   anim_type = "control",
   pattern = "nullification",
+  prompt = "#kanpo",
   card_filter = function(self, to_select, selected)
     return #selected == 0 and Fk:getCardById(to_select).color == Card.Black and Fk:currentRoom():getCardArea(to_select) ~= Player.Equip
   end,
@@ -233,6 +236,8 @@ Fk:loadTranslationTable{
   [":huoji"] = "你可以将一张红色手牌当【火攻】使用。",
   ["kanpo"] = "看破",
   [":kanpo"] = "你可以将一张黑色手牌当【无懈可击】使用。",
+  ["#huoji"] = "火计：你可以将一张红色手牌当【火攻】使用",
+  ["#kanpo"] = "看破：你可以将一张黑色手牌当【无懈可击】使用",
 
   ["$bazhen1"] = "你可识得此阵？",
   ["$bazhen2"] = "太极生两仪，两仪生四象，四象生八卦。",
@@ -241,6 +246,86 @@ Fk:loadTranslationTable{
   ["$kanpo1"] = "雕虫小技。",
   ["$kanpo2"] = "你的计谋被识破了。",
   ["~wolong"] = "我的计谋竟被……",
+}
+
+local pangtong = General(extension, "pangtong", "shu", 3)
+local lianhuan = fk.CreateActiveSkill{
+  name = "lianhuan",
+  mute = true,
+  card_num = 1,
+  min_target_num = 0,
+  prompt = "#lianhuan",
+  can_use = function(self, player)
+    return not player:isKongcheng()
+  end,
+  card_filter = function(self, to_select, selected, selected_targets)
+    return #selected == 0 and Fk:getCardById(to_select).suit == Card.Club and Fk:currentRoom():getCardArea(to_select) ~= Player.Equip
+  end,
+  target_filter = function(self, to_select, selected, selected_cards)
+    if #selected_cards == 1 and #selected < 2 then
+      local card = Fk:cloneCard("iron_chain")
+      card:addSubcard(selected_cards[1])
+      return card.skill:canUse(Self, card) and card.skill:targetFilter(to_select, selected, selected_cards, card) and
+        not Self:isProhibited(Fk:currentRoom():getPlayerById(to_select), card)
+    end
+  end,
+  on_use = function(self, room, effect)
+    local player = room:getPlayerById(effect.from)
+    player:broadcastSkillInvoke(self.name)
+    if #effect.tos == 0 then
+      room:notifySkillInvoked(player, self.name, "drawcard")
+      room:recastCard(effect.cards, player, self.name)
+    else
+      room:notifySkillInvoked(player, self.name, "control")
+      room:sortPlayersByAction(effect.tos)
+      room:useVirtualCard("iron_chain", effect.cards, player, table.map(effect.tos, function(id)
+        return room:getPlayerById(id) end), self.name)
+    end
+  end,
+}
+local niepan = fk.CreateTriggerSkill{
+  name = "niepan",
+  anim_type = "defensive",
+  frequency = Skill.Limited,
+  events = {fk.AskForPeaches},
+  can_trigger = function(self, event, target, player, data)
+    return target == player and player:hasSkill(self.name) and player.dying and player:usedSkillTimes(self.name, Player.HistoryGame) == 0
+  end,
+  on_use = function(self, event, target, player, data)
+    local room = player.room
+    player:throwAllCards("hej")
+    if player.dead then return end
+    if not player.faceup then
+      player:turnOver()
+    end
+    if player.chained then
+      player:setChainState(false)
+    end
+    player:drawCards(3, self.name)
+    if player.dead or not player:isWounded() then return end
+    room:recover({
+      who = player,
+      num = math.min(3, player.maxHp) - player.hp,
+      recoverBy = player,
+      skillName = self.name,
+    })
+  end,
+}
+pangtong:addSkill(lianhuan)
+pangtong:addSkill(niepan)
+Fk:loadTranslationTable{
+  ["pangtong"] = "庞统",
+  ["lianhuan"] = "连环",
+  [":lianhuan"] = "你可以将一张♣手牌当【铁索连环】使用或重铸。",
+  ["niepan"] = "涅槃",
+  [":niepan"] = "限定技，当你处于濒死状态时，你可以弃置区域里的所有牌，复原你的武将牌，然后摸三张牌并将体力回复至3点。",
+  ["#lianhuan"] = "连环：你可以将一张♣手牌当【铁索连环】使用或重铸",
+
+  ["$lianhuan1"] = "伤一敌可连其百！",
+  ["$lianhuan2"] = "通通连起来吧！",
+  ["$niepan1"] = "凤雏岂能消亡？",
+  ["$niepan2"] = "浴火重生！",
+  ["~pangtong"] = "看来我命中注定将丧命于此……",
 }
 
 local taishici = General(extension, "taishici", "wu", 4)

@@ -664,6 +664,9 @@ local function DoHuanshen(player)
   room:broadcastProperty(player, "kingdom")
   player.gender = general.gender
   room:broadcastProperty(player, "gender")
+  local original_general = player.general
+  player.general = general.name
+  room:broadcastProperty(player, "general")
 
   local skills = {}
   for _, s in ipairs(general.skills) do
@@ -676,8 +679,10 @@ local function DoHuanshen(player)
   if #skills == 0 then return end
   local skill = room:askForChoice(player, skills, "huashen", "#huashen", true)
   local huanshen_skill = skill
-  if player:getMark("huanshen_skill") ~= 0 then huanshen_skill = skill.."|-"..player:getMark("huanshen_skill") end
-  room:setPlayerMark(player, "huanshen_skill", skill)
+  if player:getMark("@huanshen_skill") ~= 0 then huanshen_skill = skill.."|-"..player:getMark("@huanshen_skill") end
+  player.general = original_general
+  room:broadcastProperty(player, "general")
+  room:setPlayerMark(player, "@huanshen_skill", skill)
   room:handleAddLoseSkills(player, huanshen_skill, nil, true, false)
 end
 local huashen = fk.CreateTriggerSkill{
@@ -771,6 +776,13 @@ Fk:loadTranslationTable{
   [":xinsheng"] = "当你受到1点伤害后，你可以获得一张“化身”。",
   ["@&huanshen"] = "化身",
   ["#huashen"] = "化身：请选择要化身的技能",
+  ["@huanshen_skill"] = "化身",
+
+  ["$huashen1"] = "哼，肉眼凡胎，岂能窥视仙人变幻？",
+  ["$huashen2"] = "万物苍生，幻化由心。",
+  ["$xinsheng1"] = "幻幻无穷，生生不息。",
+  ["$xinsheng2"] = "吐故纳新，师法天地。",
+  ["~zuoci"] = "腾云跨风，飞升太虚……",
 }
 
 local caiwenji = General(extension, "caiwenji", "qun", 3, 3, General.Female)
