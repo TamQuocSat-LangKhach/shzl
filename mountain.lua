@@ -259,6 +259,8 @@ Fk:loadTranslationTable{
   ["$tiaoxin2"] = "贼将早降，可免一死。",
   ["$zhiji1"] = "先帝之志，丞相之托，不可忘也！",
   ["$zhiji2"] = "丞相厚恩，维万死不能相报。",
+  ["$guanxing_jiangwei1"] = "继丞相之遗志，讨篡汉之逆贼！",
+  ["$guanxing_jiangwei2"] = "克复中原，指日可待！",
   ["~jiangwei"] = "我计不成，乃天命也……",
 }
 
@@ -353,8 +355,8 @@ Fk:loadTranslationTable{
   ["$fangquan2"] = "哎，你办事儿，我放心~",
   ["$ruoyu1"] = "不装疯卖傻，岂能安然无恙？",
   ["$ruoyu2"] = "世人皆错看我，唉！",
-  --["$jijiang1"] = "我蜀汉岂无人乎！",
-  --["$jijiang2"] = "匡扶汉室，谁敢出战！",
+  ["$jijiang_liushan1"] = "我蜀汉岂无人乎！",
+  ["$jijiang_liushan2"] = "匡扶汉室，谁敢出战！",
   ["~liushan"] = "哎，别打脸，我投降还不行吗？",
 }
 
@@ -451,7 +453,7 @@ local zhiba_other = fk.CreateActiveSkill{
     end
     if not target then return false end
     room:notifySkillInvoked(player, "zhiba")
-    room:broadcastSkillInvoke("zhiba")
+    player:broadcastSkillInvoke("zhiba")
     room:doIndicate(effect.from, { target.id })
     if target:usedSkillTimes("hunzi", Player.HistoryGame) > 0 and room:askForChoice(target, {"zhiba_yes", "zhiba_no"}, self.name, "#zhiba-ask:" .. player.id) == "zhiba_no" then
       return false
@@ -502,10 +504,10 @@ Fk:loadTranslationTable{
   ["$hunzi2"] = "愿承父志，与公瑾共谋天下！",
   ["$zhiba1"] = "我若怕你，非孙伯符也！",
   ["$zhiba2"] = "是友是敌，一探便知。",
-  --["$yingzi1"] = "公瑾，助我决一死战！",
-  --["$yingzi2"] = "尔等看好了！",
-  --["$yinghun1"] = "父亲，助我背水一战！",
-  --["$yinghun2"] = "孙氏英烈，庇佑江东！",
+  ["$yingzi_sunce1"] = "公瑾，助我决一死战！",
+  ["$yingzi_sunce2"] = "尔等看好了！",
+  ["$yinghun_sunce1"] = "父亲，助我背水一战！",
+  ["$yinghun_sunce2"] = "孙氏英烈，庇佑江东！",
   ["~sunce"] = "内事不决问张昭，外事不决问周瑜……",
 }
 

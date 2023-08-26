@@ -12,36 +12,48 @@ local xiongluan = fk.CreateActiveSkill{
   target_num = 1,
   frequency = Skill.Limited,
   can_use = function(self, player)
-    return player:usedSkillTimes(self.name, Player.HistoryGame) == 0
+    return player:usedSkillTimes(self.name, Player.HistoryGame) == 0 and
+    (#player:getAvailableEquipSlots() > 0 or not table.contains(player.sealedSlots, Player.JudgeSlot))
   end,
   card_filter = function(self, to_select, selected)
     return false
   end,
   target_filter = function(self, to_select, selected, selected_cards)
-    return Self.id ~= to_select 
+    return Self.id ~= to_select
   end,
   on_use = function(self, room, effect)
     local to = room:getPlayerById(effect.tos[1])
     local player = room:getPlayerById(effect.from)
+    local eqipSlots = player:getAvailableEquipSlots()
+    if not table.contains(player.sealedSlots, Player.JudgeSlot) then
+      table.insert(eqipSlots, Player.JudgeSlot)
+    end
+    room:abortPlayerArea(player, eqipSlots)
     room:addPlayerMark(to, "@@xiongluan-turn")
     local targetRecorded = type(player:getMark("xiongluan_target-turn")) == "table" and player:getMark("xiongluan_target-turn") or {}
     table.insertIfNeed(targetRecorded, to.id)
     room:setPlayerMark(player, "xiongluan_target-turn", targetRecorded)
-    local eqipSlots = player:getAvailableEquipSlots()
-    table.insert(eqipSlots, Player.JudgeSlot)
-    room:abortPlayerArea(player, eqipSlots)
   end,
 }
 local xiongluan_prohibit = fk.CreateProhibitSkill{
   name = "#xiongluan_prohibit",
   prohibit_use = function(self, player, card)
-    return player:getMark("@@xiongluan-turn") > 0
+    if player:getMark("@@xiongluan-turn") > 0 then
+      local subcards = card:isVirtual() and card.subcards or {card.id}
+      return #subcards > 0 and table.every(subcards, function(id)
+        return table.contains(player:getCardIds(Player.Hand), id)
+      end)
+    end
   end,
   prohibit_response = function(self, player, card)
-    return player:getMark("@@xiongluan-turn") > 0
+    if player:getMark("@@xiongluan-turn") > 0 then
+      local subcards = card:isVirtual() and card.subcards or {card.id}
+      return #subcards > 0 and table.every(subcards, function(id)
+        return table.contains(player:getCardIds(Player.Hand), id)
+      end)
+    end
   end,
 }
-
 local xiongluan_targetmod = fk.CreateTargetModSkill{
   name = "#xiongluan_targetmod",
   bypass_times = function(self, player, skill, scope, card, to)
@@ -59,7 +71,6 @@ local xiongluan_targetmod = fk.CreateTargetModSkill{
 }
 xiongluan:addRelatedSkill(xiongluan_targetmod)
 xiongluan:addRelatedSkill(xiongluan_prohibit)
-
 local congjian = fk.CreateTriggerSkill{
   name = "congjian",
   anim_type = "defensive",
@@ -78,7 +89,7 @@ local congjian = fk.CreateTriggerSkill{
       1,
       nil,
       "#congjian-give",
-      self.name, 
+      self.name,
       true
     )
     if #tos > 0 then
@@ -111,6 +122,7 @@ Fk:loadTranslationTable{
   ["$congjian2"] = "从谏良计，可得自保！",
   ["~zhangxiu"] = "若失文和……吾将何归~~",
 }
+
 local haozhao = General(extension, "haozhao", "wei", 4)
 local zhengu = fk.CreateTriggerSkill{
   name = "zhengu",
@@ -135,21 +147,44 @@ local zhengu = fk.CreateTriggerSkill{
     if mark == 0 then mark = {} end
     table.insertIfNeed(mark, player.id)
     room:setPlayerMark(to, "@@zhengu", mark)
-    room:setPlayerMark(player, "zhengu-turn", to.id)
+    local x, y, z = player:getHandcardNum(), to:getHandcardNum(), 0
+    if x > y then
+      z = math.min(5, x) - y
+      if z > 0 then
+        room:drawCards(to, z, self.name)
+      end
+    elseif x < y then
+      z = y-x
+      room:askForDiscard(to, z, z, false, self.name, false)
+    end
+  end,
+
+  refresh_events = {fk.BuryVictim, fk.AfterTurnEnd},
+  can_refresh = function(self, event, target, player, data)
+    return player:getMark("@@zhengu") ~= 0 and (event == fk.BuryVictim or player == target)
+  end,
+  on_refresh = function(self, event, target, player, data)
+    local room = player.room
+    if event == fk.BuryVictim then
+      local mark = player:getMark("@@zhengu")
+      if type(mark) == "table" and table.removeOne(mark, target.id) then
+        room:setPlayerMark(player, "@@zhengu", #mark > 0 and mark or 0)
+      end
+    elseif event == fk.AfterTurnEnd then
+      room:setPlayerMark(player, "@@zhengu", 0)
+    end
   end,
 }
-local zhengu_trigger = fk.CreateTriggerSkill{
-  name = "#zhengu_trigger",
+local zhengu_delay = fk.CreateTriggerSkill{
+  name = "#zhengu_delay",
+  events = {fk.TurnEnd},
   mute = true,
-  events = {fk.EventPhaseChanging, fk.Death},
   can_trigger = function(self, event, target, player, data)
-    if target == player then
-      if event == fk.EventPhaseChanging then
-        return data.to == Player.NotActive and (player:getMark("zhengu-turn") ~= 0 or player:getMark("@@zhengu") ~= 0) and not player.dead
-      else
-        return table.find(player.room.alive_players, function(p)
-          return p:getMark("@@zhengu") ~= 0 and table.contains(p:getMark("@@zhengu"), player.id) end)
-      end
+    if target.dead or player.dead then return false end
+    local mark = target:getMark("@@zhengu")
+    if type(mark) == "table" and table.contains(mark, player.id) then
+      local x, y = player:getHandcardNum(), target:getHandcardNum()
+      return x < y or (x > y and y < 5)
     end
   end,
   on_cost = function(self, event, target, player, data)
@@ -157,64 +192,29 @@ local zhengu_trigger = fk.CreateTriggerSkill{
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room
-    if event == fk.EventPhaseChanging then
-      if player:getMark("zhengu-turn") ~= 0 then
-        local to = room:getPlayerById(player:getMark("zhengu-turn"))
-        if to.dead then return end
-        local n = to:getHandcardNum() - player:getHandcardNum()
-        if n ~= 0 then
-          room:broadcastSkillInvoke("zhengu")
-          room:notifySkillInvoked(player, "zhengu")
-          room:doIndicate(player.id, {to.id})
-          if n < 0 then
-            to:drawCards(math.min(player:getHandcardNum(), 5) - to:getHandcardNum(), "zhengu")
-          elseif n > 0 then
-            room:askForDiscard(to, n, n, false, "zhengu", false)
-          end
-        end
+    room:notifySkillInvoked(player, zhengu.name)
+    player:broadcastSkillInvoke(zhengu.name)
+    room:doIndicate(player.id, {target.id})
+    local x, y, z = player:getHandcardNum(), target:getHandcardNum(), 0
+    if x > y then
+      z = math.min(5, x) - y
+      if z > 0 then
+        room:drawCards(target, z, self.name)
       end
-      if player:getMark("@@zhengu") ~= 0 then
-        local mark = player:getMark("@@zhengu")
-        local ids = table.simpleClone(mark)
-        for _, id in ipairs(ids) do
-          if player.dead then return end
-          local src = room:getPlayerById(id)
-          table.removeOne(mark, id)
-          if not src.dead then
-            local n = player:getHandcardNum() - src:getHandcardNum()
-            if n ~= 0 then
-              room:broadcastSkillInvoke("zhengu")
-              room:notifySkillInvoked(src, "zhengu")
-              room:doIndicate(src.id, {player.id})
-              if n < 0 then
-                player:drawCards(math.min(src:getHandcardNum(), 5) - player:getHandcardNum(), "zhengu")
-              elseif n > 0 then
-                room:askForDiscard(player, n, n, false, "zhengu", false)
-              end
-            end
-          end
-        end
-        if #mark == 0 then mark = 0 end
-        room:setPlayerMark(player, "@@zhengu", mark)
-      end
-    else
-      for _, p in ipairs(room.alive_players) do
-        if p:getMark("@@zhengu") ~= 0 then
-          local mark = p:getMark("@@zhengu")
-          table.removeOne(mark, player.id)
-          if #mark == 0 then mark = 0 end
-          room:setPlayerMark(p, "@@zhengu", mark)
-        end
-      end
+    elseif x < y then
+      z = y-x
+      room:askForDiscard(target, z, z, false, self.name, false)
     end
   end,
 }
-zhengu:addRelatedSkill(zhengu_trigger)
+zhengu:addRelatedSkill(zhengu_delay)
 haozhao:addSkill(zhengu)
 Fk:loadTranslationTable{
   ["haozhao"] = "郝昭",
   ["zhengu"] = "镇骨",
   [":zhengu"] = "结束阶段，你可以选择一名其他角色，本回合结束时和其下个回合结束时，其将手牌摸或弃至与你手牌数量相同（至多摸至五张）。",
+
+  ["#zhengu_delay"] = "镇骨",
   ["@@zhengu"] = "镇骨",
   ["#zhengu-choose"] = "镇骨：选择一名其他角色，本回合结束时和其下个回合结束时其将手牌调整与你相同",
 
@@ -229,7 +229,7 @@ local wangliec = fk.CreateTriggerSkill{
   events = {fk.CardUsing},
   can_trigger = function(self, event, target, player, data)
     return target == player and player.phase == Player.Play and player:hasSkill(self.name) and
-      (data.card:isCommonTrick() or data.card.trueName == "slash") and player:getMark("@wangliec-phase") == 0
+      (data.card:isCommonTrick() or data.card.trueName == "slash")
   end,
   on_cost = function(self, event, target, player, data)
     return player.room:askForSkillInvoke(player, self.name, nil, "#wangliec-invoke:::"..data.card:toLogString())
@@ -252,10 +252,8 @@ local wangliec = fk.CreateTriggerSkill{
 }
 local wanglie_targetmod = fk.CreateTargetModSkill{
   name = "#wanglie_targetmod",
-  distance_limit_func =  function(self, player, skill, card)
-    if card and player:hasSkill("wangliec") and player.phase == Player.Play and player:getMark("wanglie-phase") == 0 then
-      return 999
-    end
+  bypass_distances =  function(self, player, skill, card, to)
+    return card and player:hasSkill("wangliec") and player.phase == Player.Play and player:getMark("wanglie-phase") == 0
   end,
 }
 local wanglie_prohibit = fk.CreateProhibitSkill{
@@ -299,7 +297,9 @@ local zuilun = fk.CreateTriggerSkill{
     end
     events = room.logic:getEventsOfScope(GameEvent.MoveCards, 1, function(e)
       for _, move in ipairs(e.data) do
-        if move.from == player.id and move.moveReason == fk.ReasonDiscard then
+        if move.from == player.id and move.moveReason == fk.ReasonDiscard and table.find(move.moveInfo, function (info)
+          return info.fromArea == Card.PlayerHand or info.fromArea == Card.PlayerEquip
+        end) then
           return true
         end
       end
@@ -378,7 +378,7 @@ Fk:loadTranslationTable{
   ["#zuilun-choose"] = "罪论：选择一名其他角色，你与其各失去1点体力",
 
   ["$zuilun1"] = "吾有三罪，未能除黄皓、制伯约、守国土。",
-  ["$zuilun2"] = "数罪当论，吾愧对先帝恩惠。",
+  ["$zuilun2"] = "唉，数罪当论，吾愧对先帝恩惠。",
   ["$fuyin1"] = "得父荫庇，平步青云。",
   ["$fuyin2"] = "吾自幼心怀父诫，方不愧父亲荫庇。",
   ["~zhugezhan"] = "临难而死义，无愧先父。",
@@ -397,7 +397,7 @@ local thunder__yongsi = fk.CreateTriggerSkill{
       else
         if player.phase == Player.Play then
           local n = 0
-          local events = player.room.logic:getEventsOfScope(GameEvent.ChangeHp, 999, function(e)
+          player.room.logic:getEventsOfScope(GameEvent.ChangeHp, 999, function(e)
             local damage = e.data[5]
             if damage and player == damage.from then
               n = n + damage.damage
@@ -418,7 +418,7 @@ local thunder__yongsi = fk.CreateTriggerSkill{
       data.n = #kingdoms
     else
       local n = 0
-      local events = player.room.logic:getEventsOfScope(GameEvent.ChangeHp, 999, function(e)
+      player.room.logic:getEventsOfScope(GameEvent.ChangeHp, 999, function(e)
         local damage = e.data[5]
         if damage and player == damage.from then
           n = n + damage.damage

@@ -523,7 +523,7 @@ local huangtian_other = fk.CreateActiveSkill{
     end
     if not target then return false end
     room:notifySkillInvoked(player, "huangtian")
-    room:broadcastSkillInvoke("huangtian")
+    player:broadcastSkillInvoke("huangtian")
     room:doIndicate(effect.from, { target.id })
     room:moveCardTo(effect.cards, Player.Hand, target, fk.ReasonGive, self.name, nil, true)
   end,

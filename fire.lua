@@ -276,10 +276,8 @@ local tianyi_targetmod = fk.CreateTargetModSkill{
       return 1
     end
   end,
-  distance_limit_func =  function(self, player, skill)
-    if skill.trueName == "slash_skill" and player:getMark("tianyi_win-turn") > 0 then
-      return 999
-    end
+  bypass_distances =  function(self, player, skill)
+    return skill.trueName == "slash_skill" and player:getMark("tianyi_win-turn") > 0
   end,
   extra_target_func = function(self, player, skill)
     if skill.trueName == "slash_skill" and player:getMark("tianyi_win-turn") > 0 then
@@ -350,7 +348,7 @@ local shuangxiongJudge = fk.CreateTriggerSkill{
       reason = self.name,
     }
     room:notifySkillInvoked(player, "shuangxiong", "offensive")
-    room:broadcastSkillInvoke("shuangxiong")
+    player:broadcastSkillInvoke("shuangxiong")
     room:judge(judge)
     if judge.card then
       local color = judge.card:getColorString()

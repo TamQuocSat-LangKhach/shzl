@@ -39,7 +39,7 @@ local wushenAudio = fk.CreateTriggerSkill{
       data.card.suit == Card.Heart
   end,
   on_refresh = function(self, event, target, player, data)
-    player.room:broadcastSkillInvoke("wushen")
+    player:broadcastSkillInvoke("wushen")
     player.room:notifySkillInvoked(player, "wushen", "offensive")
   end,
 }
@@ -691,8 +691,10 @@ Fk:loadTranslationTable{
   ["$wumou2"] = "不管这些了！",
   ["$wuqian1"] = "看我神威，无坚不摧！",
   ["$wuqian2"] = "天王老子也保不住你！",
-  ["$shenfen1"] = "凡人们，颤抖吧！这是神之怒火！	",
+  ["$shenfen1"] = "凡人们，颤抖吧！这是神之怒火！",
   ["$shenfen2"] = "这，才是活生生的地狱！",
+  ["$wushuang_godlvbu1"] = "燎原千里，凶名远扬！",
+  ["$wushuang_godlvbu2"] = "铁蹄奋进，所向披靡！",
   ["~godlvbu"] = "我在修罗炼狱，等着你们，呃哈哈哈哈哈~",
 }
 
@@ -767,19 +769,7 @@ local nos__juejing_maxcards = fk.CreateMaxCardsSkill{
     end
   end
 }
-local nos__juejing_maxcards_audio = fk.CreateTriggerSkill{
-  name = "#nos__juejing_maxcards_audio",
-  refresh_events = {fk.EventPhaseStart},
-  can_refresh = function(self, event, target, player, data)
-    return player == target and player:hasSkill(nos__juejing.name) and player.phase == Player.Discard
-  end,
-  on_refresh = function(self, event, target, player, data)
-    player.room:broadcastSkillInvoke(nos__juejing.name)
-    player.room:notifySkillInvoked(player, nos__juejing.name, "special")
-  end,
-}
 nos__juejing:addRelatedSkill(nos__juejing_maxcards)
-nos__juejing:addRelatedSkill(nos__juejing_maxcards_audio)
 
 local nos__longhun = fk.CreateViewAsSkill{
   name = "nos__longhun",
@@ -865,19 +855,7 @@ local juejing_maxcards = fk.CreateMaxCardsSkill{
     end
   end
 }
-local juejing_maxcards_audio = fk.CreateTriggerSkill{
-  name = "#juejing_maxcards_audio",
-  refresh_events = {fk.EventPhaseStart},
-  can_refresh = function(self, event, target, player, data)
-    return player == target and player:hasSkill(juejing.name) and player.phase == Player.Discard
-  end,
-  on_refresh = function(self, event, target, player, data)
-    player.room:broadcastSkillInvoke(juejing.name)
-    player.room:notifySkillInvoked(player, juejing.name, "special")
-  end,
-}
 juejing:addRelatedSkill(juejing_maxcards)
-juejing:addRelatedSkill(juejing_maxcards_audio)
 local longhun = fk.CreateViewAsSkill{
   name = "longhun",
   pattern = "peach,slash,jink,nullification",
@@ -999,7 +977,7 @@ local gundam__juejing = fk.CreateTriggerSkill{
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room
-    room:broadcastSkillInvoke(self.name)
+    player:broadcastSkillInvoke(self.name)
     if event == fk.EventPhaseChanging then
       room:notifySkillInvoked(player, self.name, "negative")
       return true
@@ -1096,7 +1074,7 @@ local gundam__longhun_qinggang = fk.CreateTriggerSkill{
   on_use = function(self, event, target, player, data)
     local room = player.room
     room:notifySkillInvoked(player, gundam__longhun.name, "control")
-    room:broadcastSkillInvoke(gundam__longhun.name)
+    player:broadcastSkillInvoke(gundam__longhun.name)
     table.forEach(self.cost_data, function(id)
       room:obtainCard(player, id, true, fk.ReasonPrey)
     end)
@@ -1109,16 +1087,16 @@ local gundam__longhun_qinggang = fk.CreateTriggerSkill{
   on_refresh = function(self, event, target, player, data)
     local room = player.room
     if data.card.trueName == "nullification" then
-      room:broadcastSkillInvoke("gundam__longhun", 1)
+      player:broadcastSkillInvoke("gundam__longhun", 1)
       room:notifySkillInvoked(player, "gundam__longhun", "control")
     elseif data.card.trueName == "jink" then
-      room:broadcastSkillInvoke("gundam__longhun", 2)
+      player:broadcastSkillInvoke("gundam__longhun", 2)
       room:notifySkillInvoked(player, "gundam__longhun", "defensive")
     elseif data.card.trueName == "peach" then
-      room:broadcastSkillInvoke("gundam__longhun", 3)
+      player:broadcastSkillInvoke("gundam__longhun", 3)
       room:notifySkillInvoked(player, "gundam__longhun", "support")
     elseif data.card.trueName == "slash" then
-      room:broadcastSkillInvoke("gundam__longhun", 4)
+      player:broadcastSkillInvoke("gundam__longhun", 4)
       room:notifySkillInvoked(player, "gundam__longhun", "offensive")
     end
   end,
@@ -1237,7 +1215,7 @@ local jilve = fk.CreateActiveSkill{
     if self.interaction.data == "ex__zhiheng" then
       return 1
     end
-    if self.interaction.data == "wansha" then
+    if self.interaction.data == "ol_ex__wansha" then
       return 0
     end
   end,
@@ -1245,7 +1223,7 @@ local jilve = fk.CreateActiveSkill{
     if self.interaction.data == "ex__zhiheng" then
       return 999
     end
-    if self.interaction.data == "wansha" then
+    if self.interaction.data == "ol_ex__wansha" then
       return 0
     end
   end,
@@ -1253,7 +1231,7 @@ local jilve = fk.CreateActiveSkill{
   prompt = function(self, selected, selected_cards)
     if self.interaction.data == "ex__zhiheng" then
       return "#jilve-zhiheng"
-    elseif self.interaction.data == "wansha" then
+    elseif self.interaction.data == "ol_ex__wansha" then
       return "#jilve-wansha"
     end
   end,
@@ -1262,21 +1240,21 @@ local jilve = fk.CreateActiveSkill{
     if Self:usedSkillTimes("ex__zhiheng", Player.HistoryPhase) == 0 then
       table.insert(choices, "ex__zhiheng")
     end
-    if not Self:hasSkill("wansha", true) then
-      table.insert(choices, "wansha")
+    if not Self:hasSkill("ol_ex__wansha", true) then
+      table.insert(choices, "ol_ex__wansha")
     end
     if #choices == 0 then return false end
-    return UI.ComboBox { choices = choices }
+    return UI.ComboBox { choices = choices , all_choices = {"ex__zhiheng", "ol_ex__wansha"}}
   end,
   can_use = function(self, player)
     return player:getMark("@godsimayi_bear") > 0 and
-      (player:usedSkillTimes("ex__zhiheng", Player.HistoryPhase) == 0 or not player:hasSkill("wansha", true))
+      (player:usedSkillTimes("ex__zhiheng", Player.HistoryPhase) == 0 or not player:hasSkill("ol_ex__wansha", true))
   end,
   on_use = function(self, room, effect)
     local player = room:getPlayerById(effect.from)
     room:removePlayerMark(player, "@godsimayi_bear", 1)
     if self.interaction.data == "ex__zhiheng" then
-      room:broadcastSkillInvoke("jilve", 4)
+      player:broadcastSkillInvoke("ex__zhiheng")
       room:notifySkillInvoked(player, "jilve", "drawcard")
       player:setSkillUseHistory("ex__zhiheng", player:usedSkillTimes("ex__zhiheng", Player.HistoryPhase) + 1, Player.HistoryPhase)
       local hand = player:getCardIds(Player.Hand)
@@ -1289,11 +1267,11 @@ local jilve = fk.CreateActiveSkill{
       end
       room:throwCard(effect.cards, "ex__zhiheng", player, player)
       room:drawCards(player, #effect.cards + (more and 1 or 0), "ex__zhiheng")
-    elseif self.interaction.data == "wansha" then
-      room:broadcastSkillInvoke("jilve", 5)
+    elseif self.interaction.data == "ol_ex__wansha" then
+      player:broadcastSkillInvoke("ol_ex__wansha")
       room:notifySkillInvoked(player, "jilve", "offensive")
       room:setPlayerMark(player, "jilve-turn", 1)
-      room:handleAddLoseSkills(player, "wansha", nil, true, false)
+      room:handleAddLoseSkills(player, "ol_ex__wansha", nil, true, false)
     end
   end
 }
@@ -1339,7 +1317,7 @@ local jilve_trigger = fk.CreateTriggerSkill{
   on_use = function(self, event, target, player, data)
     local room = player.room
     if event == fk.TurnEnd then
-      room:handleAddLoseSkills(player, "-wansha", nil, true, false)
+      room:handleAddLoseSkills(player, "-ol_ex__wansha", nil, true, false)
     else
       room:removePlayerMark(player, "@godsimayi_bear", 1)
       local type
@@ -1352,15 +1330,15 @@ local jilve_trigger = fk.CreateTriggerSkill{
       end
       room:notifySkillInvoked(player, "jilve", type)
       if event == fk.AskForRetrial then
-        room:broadcastSkillInvoke("jilve", 1)
+        player:broadcastSkillInvoke("ex__guicai")
         room:retrial(self.cost_data, player, data, "ex__guicai")
       elseif event == fk.Damaged then
-        room:broadcastSkillInvoke("jilve", 2)
+        player:broadcastSkillInvoke("fangzhu")
         local to = player.room:getPlayerById(self.cost_data)
         to:drawCards(player:getLostHp(), "fangzhu")
         to:turnOver()
       elseif event == fk.CardUsing then
-        room:broadcastSkillInvoke("jilve", 3)
+        player:broadcastSkillInvoke("ex__jizhi")
         local id = player:drawCards(1, "ex__jizhi")[1]
         if room:getCardArea(id) == Card.PlayerHand and room:getCardOwner(id) == player and
           Fk:getCardById(id).type == Card.TypeBasic and player.phase ~= Player.NotActive and
@@ -1381,7 +1359,7 @@ godsimayi:addRelatedSkill("ex__guicai")
 godsimayi:addRelatedSkill("fangzhu")
 godsimayi:addRelatedSkill("ex__jizhi")
 godsimayi:addRelatedSkill("ex__zhiheng")
-godsimayi:addRelatedSkill("wansha")
+godsimayi:addRelatedSkill("ol_ex__wansha")
 Fk:loadTranslationTable{
   ["godsimayi"] = "神司马懿",
   ["renjie"] = "忍戒",
@@ -1404,11 +1382,11 @@ Fk:loadTranslationTable{
   ["$baiyin2"] = "烈士暮年，壮心不已！",
   ["$lianpo1"] = "受命于天，既寿永昌！",
   ["$lianpo2"] = "一鼓作气，破敌致胜！",
-  ["$jilve1"] = "老夫，即是天命！",
-  ["$jilve2"] = "赦你死罪，你去吧！",
-  ["$jilve3"] = "顺应天意，得道多助。",
-  ["$jilve4"] = "天之道，轮回也。",
-  ["$jilve5"] = "天要亡你，谁人能救？",
+  ["$ex__guicai_godsimayi"] = "老夫，即是天命！",
+  ["$fangzhu_godsimayi"] = "赦你死罪，你去吧！",
+  ["$ex__jizhi_godsimayi"] = "顺应天意，得道多助。",
+  ["$ex__zhiheng_godsimayi"] = "天之道，轮回也。",
+  ["$ol_ex__wansha_godsimayi"] = "天要亡你，谁人能救？",
   ["~godsimayi"] = "鼎足三分已成梦，一切都结束了……",
 }
 
@@ -1887,9 +1865,9 @@ local meihun = fk.CreateTriggerSkill{
     local room = player.room
     room:notifySkillInvoked(player, self.name)
     if event == fk.TargetConfirmed then
-      room:broadcastSkillInvoke(self.name, math.random(1, 2))
+      player:broadcastSkillInvoke(self.name, math.random(1, 2))
     else
-      room:broadcastSkillInvoke(self.name, math.random(3, 4))
+      player:broadcastSkillInvoke(self.name, math.random(3, 4))
     end
 
     local choice = room:askForChoice(player,
@@ -1929,7 +1907,7 @@ local huoxinTrig = fk.CreateTriggerSkill{
   on_cost = function() return true end,
   on_use = function(self, event, target, player, data)
     local room = player.room
-    room:broadcastSkillInvoke("huoxin")
+    player:broadcastSkillInvoke("huoxin")
     room:notifySkillInvoked(player, "huoxin")
 
     room:setPlayerMark(target, "@huoxin-meihuo", 0)
