@@ -1647,6 +1647,181 @@ Fk:loadTranslationTable{
   ["~godluxun"] = "东吴业火，终究熄灭…",
 }
 
+local godzhangliao = General(extension, "godzhangliao", "god", 4)
+
+local duorui = fk.CreateTriggerSkill{
+  name = "duorui",
+  anim_type = "control",
+  events = {fk.Damage},
+  can_trigger = function(self, event, target, player, data)
+    return target == player and player:hasSkill(self.name) and player.phase == Player.Play and player:getMark("duorui_source") == 0 and
+    #player:getAvailableEquipSlots() > 0 and data.to ~= player and not data.to.dead
+  end,
+  on_cost = function(self, event, target, player, data)
+    local all_choices = {"WeaponSlot", "ArmorSlot", "DefensiveRideSlot", "OffensiveRideSlot", "TreasureSlot"}
+    local subtypes = {Card.SubtypeWeapon, Card.SubtypeArmor, Card.SubtypeDefensiveRide, Card.SubtypeOffensiveRide, Card.SubtypeTreasure}
+    local choices = {}
+    for i = 1, 5, 1 do
+      if #player:getAvailableEquipSlots(subtypes[i]) > 0 then
+        table.insert(choices, all_choices[i])
+      end
+    end
+    table.insert(all_choices, "Cancel")
+    table.insert(choices, "Cancel")
+    local choice = player.room:askForChoice(player, choices, self.name, "#duorui-choice::" .. data.to.id, false, all_choices)
+    if choice ~= "Cancel" then
+      player.room:doIndicate(player.id, {data.to.id})
+      self.cost_data = choice
+      return true
+    end
+  end,
+  on_use = function(self, event, _, player, data)
+    local room = player.room
+    room:abortPlayerArea(player, {self.cost_data})
+    local target = data.to
+    if player.dead or target.dead then return false end
+    local skills = {}
+    local ban_types = {Skill.Limited, Skill.Wake, Skill.Quest}
+    for _, skill_name in ipairs(Fk.generals[target.general]:getSkillNameList()) do
+      local skill = Fk.skills[skill_name]
+      if not (skill.lordSkill or table.contains(ban_types, skill.frequency)) then
+        table.insertIfNeed(skills, skill_name)
+      end
+    end
+    if target.deputyGeneral and target.deputyGeneral ~= "" then
+      for _, skill_name in ipairs(Fk.generals[target.deputyGeneral]:getSkillNameList()) do
+        local skill = Fk.skills[skill_name]
+        if not (skill.lordSkill or table.contains(ban_types, skill.frequency)) then
+          table.insertIfNeed(skills, skill_name)
+        end
+      end
+    end
+    if #skills == 0 then return false end
+    local choice = room:askForChoice(player, skills, self.name, "#duorui-skill::" .. data.to.id, true)
+    local mark = type(target:getMark("duorui_target")) == "table" and target:getMark("duorui_target") or {}
+    table.insert(mark, choice)
+    room:setPlayerMark(target, "duorui_target", mark)
+    room:setPlayerMark(target, "@duorui_target", choice)
+    if player:hasSkill(choice, true) then return false end
+    local mark2 = type(player:getMark("duorui_source")) == "table" and player:getMark("duorui_source") or {}
+    table.insert(mark2, {target.id, choice})
+    room:setPlayerMark(player, "duorui_source", mark2)
+    room:setPlayerMark(player, "@duorui_source", choice)
+    room:handleAddLoseSkills(player, choice, nil, true, true)
+  end,
+
+  refresh_events = {fk.AfterTurnEnd, fk.BuryVictim},
+  can_refresh = function(self, event, target, player, data)
+    return true
+  end,
+  on_refresh = function(self, event, target, player, data)
+    local room = player.room
+    if player == target then
+      room:setPlayerMark(player, "duorui_target", 0)
+      room:setPlayerMark(player, "@duorui_target", 0)
+    end
+    local mark = player:getMark("duorui_source")
+    if type(mark) ~= "table" then return false end
+    local clear_skills = {}
+    local mark2 = {}
+    for _, duorui_info in ipairs(mark) do
+      if duorui_info[1] == target.id then
+        table.insertIfNeed(clear_skills, duorui_info[2])
+      else
+        table.insertIfNeed(mark2, duorui_info)
+      end
+    end
+    if #clear_skills > 0 then
+      if #mark2 > 0 then
+        room:setPlayerMark(player, "duorui_source", mark2)
+        room:setPlayerMark(player, "@duorui_source", mark2[#mark2][2])
+      else
+        room:setPlayerMark(player, "duorui_source", 0)
+        room:setPlayerMark(player, "@duorui_source", 0)
+      end
+      room:handleAddLoseSkills(player, "-"..table.concat(clear_skills, "|-"), nil, true, false)
+    end
+  end,
+}
+local duorui_invalidity = fk.CreateInvaliditySkill {
+  name = "#duorui_invalidity",
+  invalidity_func = function(self, from, skill)
+    local mark = from:getMark("duorui_target")
+    return type(mark) == "table" and table.contains(mark, skill.name)
+  end
+}
+local zhiti = fk.CreateTriggerSkill{
+  name = "zhiti",
+  events = {fk.Damage, fk.Damaged, fk.PindianResultConfirmed},
+  frequency = Skill.Compulsory,
+  can_trigger = function(self, event, target, player, data)
+    if not player:hasSkill(self.name) or table.every(player.sealedSlots, function(slot_name)
+      return slot_name == Player.JudgeSlot
+    end) then return false end
+    if event == fk.Damage then
+      return player == target and data.card and data.card.trueName == "duel" and data.to:isWounded() and player:inMyAttackRange(data.to)
+    elseif event == fk.Damaged then
+      return player == target and data.from and data.from:isWounded() and player:inMyAttackRange(data.from)
+    elseif event == fk.PindianResultConfirmed then
+      if data.winner == player then
+        if player == data.from then
+          return data.to:isWounded() and player:inMyAttackRange(data.to)
+        else
+          return data.from:isWounded() and player:inMyAttackRange(data.from)
+        end
+      end
+    end
+  end,
+  on_use = function(self, event, _, player, data)
+    local all_slots = {"WeaponSlot", "ArmorSlot", "DefensiveRideSlot", "OffensiveRideSlot", "TreasureSlot"}
+    local choices = {}
+    for _, equip_slot in ipairs(all_slots) do
+      if table.contains(player.sealedSlots, equip_slot) then
+        table.insert(choices, equip_slot)
+      end
+    end
+    if #choices > 0 then
+      local choice = player.room:askForChoice(player, choices, self.name, "#zhiti-choice", false)
+      player.room:resumePlayerArea(player, {choice})
+    end
+  end,
+}
+local zhiti_maxcards = fk.CreateMaxCardsSkill{
+  name = "#zhiti_maxcards",
+  correct_func = function(self, player)
+    if not player:isWounded() then return 0 end
+    return - #table.filter(Fk:currentRoom().alive_players, function(p)
+      return p:hasSkill(zhiti.name) and p:inMyAttackRange(player) end
+    )
+  end,
+}
+duorui:addRelatedSkill(duorui_invalidity)
+zhiti:addRelatedSkill(zhiti_maxcards)
+godzhangliao:addSkill(duorui)
+godzhangliao:addSkill(zhiti)
+
+Fk:loadTranslationTable{
+  ["godzhangliao"] = "神张辽",
+  ["duorui"] = "夺锐",
+  [":duorui"] = "当你于出牌阶段内对一名其他角色造成伤害后，你可以废除你的一个装备栏，然后选择该角色的武将牌上的一个技能"..
+  "（限定技、觉醒技、使命技、主公技除外），令其于其下回合结束之前此技能无效，然后你于其下回合结束或其死亡之前拥有此技能且不能发动〖夺锐〗。",
+  ["zhiti"] = "止啼",
+  [":zhiti"] = "锁定技，你攻击范围内已受伤的角色手牌上限-1；当你和这些角色拼点或【决斗】你赢时，你恢复一个装备栏。"..
+  "当你受到伤害后，若来源在你的攻击范围内且已受伤，你恢复一个装备栏。",
+
+  ["#duorui-choice"] = "是否发动 夺锐，废除一个装备栏，夺取%dest一个技能",
+  ["#duorui-skill"] = "夺锐：选择%dest的一个技能令其无效，且你获得此技能",
+  ["@duorui_source"] = "夺锐",
+  ["@duorui_target"] = "被夺锐",
+  ["#zhiti-choice"] = "止啼：选择要恢复的装备栏",
+
+  ["$duorui1"] = "夺敌军锐气，杀敌方士气。",
+  ["$duorui2"] = "尖锐之势，吾亦可一人夺之！",
+  ["$zhiti1"] = "江东小儿，安敢啼哭？",
+  ["$zhiti2"] = "娃闻名止啼，孙损十万休。",
+  ["~godzhangliao"] = "我也有……被孙仲谋所伤之时？",
+}
+
 local godganning = General(extension, "godganning", "god", 3, 6)
 
 local poxi = fk.CreateActiveSkill{
