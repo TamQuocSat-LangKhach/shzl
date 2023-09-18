@@ -679,7 +679,7 @@ local function DoHuanshen(player)
   if #skills == 0 then return end
   local skill = room:askForChoice(player, skills, "huashen", "#huashen", true)
   local huanshen_skill = skill
-  if player:getMark("@huanshen_skill") ~= 0 then huanshen_skill = skill.."|-"..player:getMark("@huanshen_skill") end
+  if player:getMark("@huanshen_skill") ~= 0 then huanshen_skill = "-"..player:getMark("@huanshen_skill").."|"..skill end
   player.general = original_general
   room:broadcastProperty(player, "general")
   room:setPlayerMark(player, "@huanshen_skill", skill)
