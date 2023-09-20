@@ -253,7 +253,7 @@ local lieren = fk.CreateTriggerSkill{
   events = {fk.Damage},
   can_trigger = function(self, event, target, player, data)
     return target == player and player:hasSkill(self.name) and data.card and data.card.trueName == "slash" and
-      not data.to.dead and not data.to:isNude() and not data.chain
+      not data.to.dead and not data.to:isKongcheng() and not data.chain and not player:isKongcheng()
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room
