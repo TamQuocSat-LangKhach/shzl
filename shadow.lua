@@ -77,11 +77,68 @@ Fk:loadTranslationTable{
   "阴：当其他角色对你造成伤害后，你可以观看其手牌，并交给其一张牌；当前回合结束阶段，若其未失去此牌，你将手牌摸至四张。",
 }
 
+local yanyan = General(extension, "yanyan", "shu", 4)
+local juzhan = fk.CreateTriggerSkill{
+  name = "juzhan",
+  switch_skill_name = "juzhan",
+  anim_type = "switch",
+  events = { fk.TargetSpecified, fk.TargetConfirmed },
+  can_trigger = function(self, event, target, player, data)
+    if not (target == player and player:hasSkill(self.name) and
+      data.card.trueName == 'slash') then return end
+
+    local isYang = player:getSwitchSkillState(self.name) == fk.SwitchYang
+    if event == fk.TargetConfirmed and isYang then
+      return player.id ~= data.from
+    elseif event == fk.TargetSpecified and not isYang then
+      return not player.room:getPlayerById(data.to):isNude()
+    end
+  end,
+  on_use = function(self, event, target, player, data)
+    local room = player.room
+    local isYang = player:getSwitchSkillState(self.name, true) == fk.SwitchYang
+    local aim = data ---@type AimStruct
+
+    if isYang then
+      local from = room:getPlayerById(aim.from)
+      player:drawCards(1, self.name)
+      from:drawCards(1, self.name)
+      local x = from:getMark("@@juzhan-turn")
+      if x == 0 then x = {} end
+      table.insert(x, player.id)
+      room:setPlayerMark(from, "@@juzhan-turn", x)
+    else
+      local to = room:getPlayerById(aim.to)
+      local from = player
+      local c = room:askForCardChosen(from, to, "he", self.name)
+      room:obtainCard(from, c, false)
+      local x = from:getMark("@@juzhan-turn")
+      if x == 0 then x = {} end
+      table.insert(x, to.id)
+      room:setPlayerMark(from, "@@juzhan-turn", x)
+    end
+  end,
+}
+local juzhan_prohibit = fk.CreateProhibitSkill{
+  name = "#juzhan_prohibit",
+  is_prohibited = function(self, from, to)
+    local x = from:getMark("@@juzhan-turn")
+    if x == 0 then return false end
+    return table.contains(x, to.id)
+  end,
+}
+juzhan:addRelatedSkill(juzhan_prohibit)
+yanyan:addSkill(juzhan)
 Fk:loadTranslationTable{
   ["yanyan"] = "严颜",
   ["juzhan"] = "拒战",
   [":juzhan"] = "转换技，阳：当你成为其他角色使用【杀】的目标后，你可以与其各摸一张牌，然后其本回合不能再对你使用牌。"..
   "阴：当你使用【杀】指定一名角色为目标后，你可以获得其一张牌，然后你本回合不能再对其使用牌。",
+
+  ["@@juzhan-turn"] = "拒战",
+  ["~yanyan"] = "宁可断头死，安能屈膝降！",
+  ["$juzhan1"] = "砍头便砍头，何为怒耶！",
+  ["$juzhan2"] = "我州但有断头将军，无降将军也！",
 }
 
 Fk:loadTranslationTable{
@@ -93,14 +150,114 @@ Fk:loadTranslationTable{
   [":binglve"] = "锁定技，当你首次对一名角色发动〖飞军〗时，你摸两张牌。",
 }
 
+local luji = General(extension, "luji", "wu", 3)
+local huaiju_effect = fk.CreateTriggerSkill{
+  name = "#huaiju_effect",
+  mute = true,
+  events = {fk.DrawNCards, fk.DamageInflicted},
+  can_trigger = function(self, event, target, player, data)
+    return target == player and player:getMark("@orange") > 0
+  end,
+  on_cost = Util.TrueFunc,
+  on_use = function(self, event, target, player, data)
+    local room = player.room
+    local _luji = table.find(room.alive_players, function(p)
+      return p:hasSkill("huaiju")
+    end)
+    if _luji then
+      _luji:broadcastSkillInvoke("huaiju")
+      room:notifySkillInvoked(_luji, "huaiju", event == fk.DamageInflicted and "defensive" or "drawcard")
+    end
+    if event == fk.DamageInflicted then
+      room:removePlayerMark(player, "@orange")
+      return true
+    elseif event == fk.DrawNCards then
+      data.n = data.n + 1
+    end
+  end
+}
+local huaiju = fk.CreateTriggerSkill{
+  name = "huaiju",
+  events = {fk.GameStart},
+  frequency = Skill.Compulsory,
+  can_trigger = function(self, event, target, player, data)
+    return player:hasSkill(self.name)
+  end,
+  on_use = function(self, event, target, player, data)
+    player.room:addPlayerMark(player, "@orange", 3)
+  end,
+}
+huaiju:addRelatedSkill(huaiju_effect)
+local yili = fk.CreateTriggerSkill{
+  name = "yili",
+  anim_type = "support",
+  events = { fk.EventPhaseStart },
+  can_trigger = function(self, event, target, player, data)
+    return target == player and player:hasSkill(self.name) and player.phase == Player.Play
+  end,
+  on_cost = function(self, event, target, player, data)
+    local room = player.room
+    local targets = table.map(room:getOtherPlayers(player), Util.IdMapper)
+
+    local result = room:askForChoosePlayers(player, targets, 1, 1, "#yili-choose", self.name)
+    if #result > 0 then
+      local tgt = result[1]
+      if player:getMark("@orange") == 0 then
+        self.cost_data = { tgt, "loseHp" }
+        return true
+      end
+      local choice = room:askForChoice(player, { "loseHp", "yili_lose_orange" }, self.name)
+      self.cost_data = { tgt, choice }
+      return true
+    end
+  end,
+  on_use = function(self, event, target, player, data)
+    local room = player.room
+    local t, c = table.unpack(self.cost_data)
+    if c == 'loseHp' then
+      room:loseHp(player, 1, self.name)
+    elseif c == 'yili_lose_orange' then
+      room:removePlayerMark(player, "@orange")
+    end
+    room:addPlayerMark(room:getPlayerById(t), "@orange")
+  end,
+}
+local zhenglun = fk.CreateTriggerSkill{
+  name = "zhenglun",
+  events = { fk.EventPhaseStart },
+  can_trigger = function(self, event, target, player, data)
+    return target == player and player:hasSkill(self.name) and player.phase == Player.Draw and
+      player:getMark("@orange") == 0
+  end,
+  on_use = function(self, event, target, player, data)
+    local room = player.room
+    room:addPlayerMark(player, "@orange")
+    return true
+  end,
+}
+luji:addSkill(huaiju)
+luji:addSkill(yili)
+luji:addSkill(zhenglun)
 Fk:loadTranslationTable{
   ["luji"] = "陆绩",
   ["huaiju"] = "怀橘",
   [":huaiju"] = "锁定技，游戏开始时，你获得3枚“橘”标记。当有“橘”的角色受到伤害时，防止此伤害并移除1枚“橘”。有“橘”的角色摸牌阶段多摸一张牌。",
   ["yili"] = "遗礼",
   [":yili"] = "出牌阶段开始时，你可以失去1点体力或移除1枚“橘”，然后令一名其他角色获得1枚“橘”。",
+  ["#yili-choose"] = "遗礼: 你可以失去1点体力或者移除1枚“橘”，令一名其他角色获得1枚“橘”",
+  ["yili_lose_orange"] = "移除1枚“橘”",
   ["zhenglun"] = "整论",
   [":zhenglun"] = "摸牌阶段开始前，若你没有“橘”，你可以跳过摸牌阶段并获得1枚“橘”。",
+
+  ["#huaiju_effect"] = "怀橘",
+  ["@orange"] = "橘",
+  ["$huaiju1"] = "情深舐犊，怀擢藏橘。",
+  ["$huaiju2"] = "袖中怀绿桔，遗母报乳哺。",
+  ["$yili2"] = "行遗礼之举，于不敬王者。",
+  ["$yili1"] = "遗失礼仪，则俱非议。",
+  ["$zhenglun1"] = "整论四海未泰，修文德以平。",
+  ["$zhenglun2"] = "今论者不务道德怀取之术，而惟尚武，窃所未安。",
+  ["~luji"] = "恨不能见，车同轨，书同文……",
 }
 
 Fk:loadTranslationTable{
