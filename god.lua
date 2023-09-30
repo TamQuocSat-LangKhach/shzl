@@ -950,7 +950,7 @@ Fk:loadTranslationTable{
 }
 
 local gundam = General(extension, "gundam", "god", 1)
-gundam.hidden = true
+-- gundam.hidden = true
 local gundam__juejing = fk.CreateTriggerSkill{
   name = "gundam__juejing",
   events = {fk.AfterCardsMove, fk.EventPhaseChanging},
