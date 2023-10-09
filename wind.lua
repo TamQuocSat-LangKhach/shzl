@@ -74,7 +74,7 @@ Fk:loadTranslationTable{
 local caoren = General(extension, "caoren", "wei", 4)
 local jushou = fk.CreateTriggerSkill{
   name = "jushou",
-  anim_type = "offensive",
+  anim_type = "defensive",
   events = {fk.EventPhaseEnd},
   can_trigger = function(self, event, target, player, data)
     return target == player and player:hasSkill(self.name) and player.phase == Player.Finish
@@ -93,6 +93,66 @@ Fk:loadTranslationTable{
   ["$jushou1"] = "我先休息一会！",
   ["$jushou2"] = "尽管来吧！",
   ["~caoren"] = "实在是守不住！",
+}
+
+local caoren3 = General(extension, "y13__caoren", "wei", 4)
+local jushou3 = fk.CreateTriggerSkill{
+  name = "y13__jushou",
+  anim_type = "defensive",
+  events = {fk.EventPhaseEnd},
+  can_trigger = function(self, event, target, player, data)
+    return target == player and player:hasSkill(self.name) and player.phase == Player.Finish
+  end,
+  on_use = function(self, event, target, player, data)
+    player.room:drawCards(player, 1, self.name)
+    player:turnOver()
+  end,
+}
+caoren3:addSkill(jushou3)
+local jiewei3 = fk.CreateTriggerSkill{
+  name = "y13__jiewei",
+  anim_type = "drawcard",
+  events = {fk.TurnedOver},
+  on_use = function(self, event, target, player, data)
+    local room = player.room
+    room:drawCards(player, 1, self.name)
+    local use = room:askForUseCard(player, self.name, ".|.|.|.|.|trick,equip", "#y13__jiewei-use", true)
+    if use then
+      room:useCard(use)
+      local t = use.card:getTypeString()
+      local flag = t == "trick" and "j" or "e"
+      local targets = table.filter(room.alive_players, function(p)
+        return #p:getCardIds(flag) > 0
+      end)
+      if #targets > 0 then
+        local p = room:askForChoosePlayers(player, table.map(targets, Util.IdMapper),
+          1, 1, "#y13__jiewei-discard:::" .. t, self.name, true)[1]
+
+        if p then
+          local pl = room:getPlayerById(p)
+          local c = room:askForCardChosen(player, pl, flag, self.name)
+          room:throwCard(c, self.name, pl, player)
+        end
+      end
+    end
+  end,
+}
+caoren3:addSkill(jiewei3)
+Fk:loadTranslationTable{
+  ["y13"] = "2013",
+  ["y13__caoren"] = "曹仁",
+  ["y13__jushou"] = "据守",
+  [":y13__jushou"] = "结束阶段，你可以摸一张牌并翻面。",
+  ["y13__jiewei"] = "解围",
+  [":y13__jiewei"] = "当你翻面后，你可以摸一张牌，然后你可以使用一张锦囊牌或者装备牌，若如此做，你可以弃置场上一张同类别的牌。",
+  ["#y13__jiewei-use"] = "解围：你可以使用一张锦囊牌或者装备牌",
+  ["#y13__jiewei-discard"] = "解围：你可以弃置场上一张%arg",
+
+  ["$y13__jushou1"] = "坚守勿出，严阵以待。",
+  ["$y13__jushou2"] = "以静制动，以逸待劳。",
+  ["$y13__jiewei1"] = "以守为攻，伺机而动！",
+  ["$y13__jiewei2"] = "援军已到，转守为攻！",
+  ["~y13__caoren"] = "有负丞相厚托，子孝愧矣。",
 }
 
 local huangzhong = General(extension, "huangzhong", "shu", 4)
