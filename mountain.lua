@@ -33,7 +33,7 @@ local qiaobian = fk.CreateTriggerSkill{
     player:skip(data.to)
     if data.to == Player.Draw then
       local targets = table.map(table.filter(room:getOtherPlayers(player), function(p)
-        return not p:isKongcheng() end), function(p) return p.id end)
+        return not p:isKongcheng() end), Util.IdMapper)
       if #targets > 0 then
         local n = math.min(2, #targets)
         local tos = room:askForChoosePlayers(player, targets, 1, n, "#qiaobian-choose:::"..n, self.name, true)
@@ -186,11 +186,9 @@ local tiaoxin = fk.CreateActiveSkill{
   card_num = 0,
   target_num = 1,
   can_use = function(self, player)
-    return player:usedSkillTimes(self.name) == 0
+    return player:usedSkillTimes(self.name, Player.HistoryPhase) == 0
   end,
-  card_filter = function(self, to_select, selected)
-    return false
-  end,
+  card_filter = Util.FalseFunc,
   target_filter = function(self, to_select, selected)
     return #selected == 0 and Fk:currentRoom():getPlayerById(to_select):inMyAttackRange(Self)
   end,
@@ -438,9 +436,7 @@ local zhiba_other = fk.CreateActiveSkill{
     return false
   end,
   card_num = 0,
-  card_filter = function(self, to_select, selected)
-    return false
-  end,
+  card_filter = Util.FalseFunc,
   target_num = 0,
   on_use = function(self, room, effect)
     local player = room:getPlayerById(effect.from)
@@ -449,7 +445,7 @@ local zhiba_other = fk.CreateActiveSkill{
     if #targets == 1 then
       target = targets[1]
     else
-      target = room:getPlayerById(room:askForChoosePlayers(player, table.map(targets, function(p) return p.id end), 1, 1, nil, self.name, false)[1])
+      target = room:getPlayerById(room:askForChoosePlayers(player, table.map(targets, Util.IdMapper), 1, 1, nil, self.name, false)[1])
     end
     if not target then return false end
     room:notifySkillInvoked(player, "zhiba")

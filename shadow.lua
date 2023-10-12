@@ -16,7 +16,7 @@ local qizhi = fk.CreateTriggerSkill{
   on_cost = function(self, event, target, player, data)
     local room = player.room
     local targets = table.map(table.filter(room.alive_players, function(p)
-      return not p:isNude() and not table.contains(AimGroup:getAllTargets(data.tos), p.id) end), function(p) return p.id end)
+      return not p:isNude() and not table.contains(AimGroup:getAllTargets(data.tos), p.id) end), Util.IdMapper)
     if #targets == 0 then return end
     local tos = room:askForChoosePlayers(player, targets, 1, 1, "#qizhi-choose", self.name, true)
     if #tos > 0 then
@@ -280,9 +280,7 @@ local chenglve = fk.CreateActiveSkill{
   can_use = function(self, player)
     return player:usedSkillTimes(self.name, Player.HistoryPhase) < 1
   end,
-  card_filter = function(self, to_select, selected)
-    return false
-  end,
+  card_filter = Util.FalseFunc,
   target_filter = function(self, to_select, selected, selected_cards)
     return false
   end,
@@ -298,7 +296,7 @@ local chenglve = fk.CreateActiveSkill{
 
     if #cardsDiscarded > 0 then
       local suitsToRecord = table.map(cardsDiscarded, function(id)
-        return "log_" .. Fk:getCardById(id):getSuitString()
+        return Fk:getCardById(id):getSuitString(true)
       end)
 
       local suitsRecorded = type(from:getMark("@chenglve-phase")) == "table" and from:getMark("@chenglve-phase") or {}

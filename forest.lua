@@ -5,6 +5,8 @@ Fk:loadTranslationTable{
   ["forest"] = "神话再临·林",
 }
 
+local U = require "packages/utility/utility"
+
 local xuhuang = General(extension, "xuhuang", "wei", 4)
 local duanliang = fk.CreateViewAsSkill{
   name = "duanliang",
@@ -328,81 +330,6 @@ Fk:loadTranslationTable{
   ["$yinghun2"] = "不诛此贼三族，则吾死不瞑目！",
   ["~sunjian"] = "有埋伏，啊……",
 }
-local function swapHandCards(room, from, tos, skillname) -- 抄自心变佬
-  local target1 = room:getPlayerById(tos[1])
-  local target2 = room:getPlayerById(tos[2])
-  local cards1 = table.clone(target1.player_cards[Player.Hand])
-  local cards2 = table.clone(target2.player_cards[Player.Hand])
-  local moveInfos = {}
-  if #cards1 > 0 then
-    table.insert(moveInfos, {
-      from = tos[1],
-      ids = cards1,
-      toArea = Card.Processing,
-      moveReason = fk.ReasonExchange,
-      proposer = from,
-      skillName = skillname,
-    })
-  end
-  if #cards2 > 0 then
-    table.insert(moveInfos, {
-      from = tos[2],
-      ids = cards2,
-      toArea = Card.Processing,
-      moveReason = fk.ReasonExchange,
-      proposer = from,
-      skillName = skillname,
-    })
-  end
-  if #moveInfos > 0 then
-    room:moveCards(table.unpack(moveInfos))
-  end
-  moveInfos = {}
-  if not target2.dead then
-    local to_ex_cards = table.filter(cards1, function (id)
-      return room:getCardArea(id) == Card.Processing
-    end)
-    if #to_ex_cards > 0 then
-      table.insert(moveInfos, {
-        ids = to_ex_cards,
-        fromArea = Card.Processing,
-        to = tos[2],
-        toArea = Card.PlayerHand,
-        moveReason = fk.ReasonExchange,
-        proposer = from,
-        skillName = skillname,
-      })
-    end
-  end
-  if not target1.dead then
-    local to_ex_cards = table.filter(cards2, function (id)
-      return room:getCardArea(id) == Card.Processing
-    end)
-    if #to_ex_cards > 0 then
-      table.insert(moveInfos, {
-        ids = to_ex_cards,
-        fromArea = Card.Processing,
-        to = tos[1],
-        toArea = Card.PlayerHand,
-        moveReason = fk.ReasonExchange,
-        proposer = from,
-        skillName = skillname,
-      })
-    end
-  end
-  if #moveInfos > 0 then
-    room:moveCards(table.unpack(moveInfos))
-  end
-  table.insertTable(cards1, cards2)
-  local dis_cards = table.filter(cards1, function (id)
-    return room:getCardArea(id) == Card.Processing
-  end)
-  if #dis_cards > 0 then
-    local dummy = Fk:cloneCard("dilu")
-    dummy:addSubcards(dis_cards)
-    room:moveCardTo(dummy, Card.DiscardPile, nil, fk.ReasonPutIntoDiscardPile, skillname)
-  end
-end
 
 local lusu = General(extension, "lusu", "wu", 3)
 local haoshi = fk.CreateTriggerSkill{
@@ -518,12 +445,13 @@ local dimeng = fk.CreateActiveSkill{
   ]]
   on_use = function(self, room, effect)
     local player = room:getPlayerById(effect.from)
-    local num = math.abs(room:getPlayerById(effect.tos[1]):getHandcardNum() - room:getPlayerById(effect.tos[2]):getHandcardNum())
+    local target1 = room:getPlayerById(effect.tos[1])
+    local target2 = room:getPlayerById(effect.tos[2])
+    local num = math.abs(target1:getHandcardNum() - target2:getHandcardNum())
     if num > 0 then
       room:askForDiscard(player, num, num, true, self.name, false, nil, "#dimeng-discard:" .. effect.tos[1] .. ":" .. effect.tos[2] .. ":" .. num)
     end
-    --room:throwCard(effect.cards, self.name, player, player)
-    swapHandCards(room, effect.from, effect.tos, self.name)
+    U.swapHandCards(room, player, target1, target2, self.name)
   end,
 }
 haoshi:addRelatedSkill(haoshi_active)

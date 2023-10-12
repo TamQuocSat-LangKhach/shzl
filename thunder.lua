@@ -15,9 +15,7 @@ local xiongluan = fk.CreateActiveSkill{
     return player:usedSkillTimes(self.name, Player.HistoryGame) == 0 and
     (#player:getAvailableEquipSlots() > 0 or not table.contains(player.sealedSlots, Player.JudgeSlot))
   end,
-  card_filter = function(self, to_select, selected)
-    return false
-  end,
+  card_filter = Util.FalseFunc,
   target_filter = function(self, to_select, selected, selected_cards)
     return Self.id ~= to_select
   end,
@@ -133,7 +131,7 @@ local zhengu = fk.CreateTriggerSkill{
   end,
   on_cost = function(self, event, target, player, data)
     local room = player.room
-    local to = room:askForChoosePlayers(player, table.map(room:getOtherPlayers(player), function(p) return p.id end),
+    local to = room:askForChoosePlayers(player, table.map(room:getOtherPlayers(player), Util.IdMapper),
       1, 1, "#zhengu-choose", self.name, true)
     if #to > 0 then
       self.cost_data = to[1]
@@ -329,7 +327,7 @@ local zuilun = fk.CreateTriggerSkill{
       room:obtainCard(player.id, dummy, false, fk.ReasonJustMove)
     end
     if n == 0 and not player.dead then
-      local targets = table.map(room:getOtherPlayers(player), function(p) return p.id end)
+      local targets = table.map(room:getOtherPlayers(player), Util.IdMapper)
       local to = room:askForChoosePlayers(player, targets, 1, 1, "#zuilun-choose", self.name, false)
       if #to > 0 then
         to = room:getPlayerById(to[1])

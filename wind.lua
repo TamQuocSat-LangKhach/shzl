@@ -519,7 +519,7 @@ local huangtian_other = fk.CreateActiveSkill{
     if #targets == 1 then
       target = targets[1]
     else
-      target = room:getPlayerById(room:askForChoosePlayers(player, table.map(targets, function(p) return p.id end), 1, 1, nil, self.name, false)[1])
+      target = room:getPlayerById(room:askForChoosePlayers(player, table.map(targets, Util.IdMapper), 1, 1, nil, self.name, false)[1])
     end
     if not target then return false end
     room:notifySkillInvoked(player, "huangtian")

@@ -454,7 +454,7 @@ local kuangfeng = fk.CreateTriggerSkill{
       local room = player.room
       local cids = room:askForCard(player, 1, 1, false, self.name, true, ".|.|.|star", "#kuangfeng-card", "star")
       if #cids > 0 then
-        local targets = room:askForChoosePlayers(player, table.map(room.alive_players, function(p) return p.id end), 1, 1, "#kuangfeng-target", self.name, false)
+        local targets = room:askForChoosePlayers(player, table.map(room.alive_players, Util.IdMapper), 1, 1, "#kuangfeng-target", self.name, false)
         self.cost_data = {targets[1], cids}
         return true
       end
@@ -502,7 +502,7 @@ local dawu = fk.CreateTriggerSkill{
       local room = player.room
       local cids = room:askForCard(player, 1, #room.alive_players, false, self.name, true, ".|.|.|star", "#dawu-card", "star")
       if #cids > 0 then
-        local targets = room:askForChoosePlayers(player, table.map(room.alive_players, function(p) return p.id end), #cids, #cids, "#dawu-target:::" .. #cids, self.name, false)
+        local targets = room:askForChoosePlayers(player, table.map(room.alive_players, Util.IdMapper), #cids, #cids, "#dawu-target:::" .. #cids, self.name, false)
         self.cost_data = {targets, cids}
         return true
       end
@@ -607,9 +607,7 @@ local wuqian = fk.CreateActiveSkill{
   target_filter = function(self, to_select, selected)
     return #selected < 1 and to_select ~= Self.id and Fk:currentRoom():getPlayerById(to_select):getMark("@@wuqian-turn") == 0
   end,
-  card_filter = function(self, to_select, selected)
-    return false
-  end,
+  card_filter = Util.FalseFunc,
   on_use = function(self, room, effect)
     local player = room:getPlayerById(effect.from)
     local target = room:getPlayerById(effect.tos[1])
@@ -643,9 +641,7 @@ local shenfen = fk.CreateActiveSkill{
   end,
   card_num = 0,
   target_num = 0,
-  card_filter = function(self, to_select, selected)
-    return false
-  end,
+  card_filter = Util.FalseFunc,
   on_use = function(self, room, effect)
     local player = room:getPlayerById(effect.from)
     room:removePlayerMark(player, "@baonu", 6)
