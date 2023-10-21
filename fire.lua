@@ -293,12 +293,7 @@ local niepan = fk.CreateTriggerSkill{
     local room = player.room
     player:throwAllCards("hej")
     if player.dead then return end
-    if not player.faceup then
-      player:turnOver()
-    end
-    if player.chained then
-      player:setChainState(false)
-    end
+    player:reset()
     player:drawCards(3, self.name)
     if player.dead or not player:isWounded() then return end
     room:recover({
