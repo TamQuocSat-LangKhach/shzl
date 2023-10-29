@@ -260,17 +260,184 @@ Fk:loadTranslationTable{
   ["~luji"] = "恨不能见，车同轨，书同文……",
 }
 
+local sunliang = General(extension, "sunliang", "wu", 3)
+local kuizhu_active = fk.CreateActiveSkill{
+  name = "kuizhu_active",
+  anim_type = "control",
+  interaction = function()
+    return UI.ComboBox {choices = {"kuizhu_choice1", "kuizhu_choice2"}}
+  end,
+  card_num = 0,
+  card_filter = Util.FalseFunc,
+  target_filter = function(self, to_select, selected)
+    if self.interaction.data == "kuizhu_choice1" then
+      return #selected < Self:getMark("kuizhu")
+    elseif self.interaction.data == "kuizhu_choice2" then
+      local n = Fk:currentRoom():getPlayerById(to_select).hp
+      for _, p in ipairs(selected) do
+        n = n + Fk:currentRoom():getPlayerById(p).hp
+      end
+      return n <= Self:getMark("kuizhu")
+    end
+    return false
+  end,
+  feasible = function(self, selected, selected_cards)
+    if #selected_cards ~= 0 or #selected == 0 then return false end
+    if self.interaction.data == "kuizhu_choice1" then
+      return #selected <= Self:getMark("kuizhu")
+    elseif self.interaction.data == "kuizhu_choice2" then
+      local n = 0
+      for _, p in ipairs(selected) do
+        n = n + Fk:currentRoom():getPlayerById(p).hp
+      end
+      return n == Self:getMark("kuizhu")
+    end
+    return false
+  end,
+  on_use = function(self, room, effect)
+    local player = room:getPlayerById(effect.from)
+    local tos = table.map(effect.tos, Util.Id2PlayerMapper)
+    if self.interaction.data == "kuizhu_choice1" then
+      for _, p in ipairs(tos) do
+        if not p.dead then
+          p:drawCards(1, self.name)
+        end
+      end
+    else
+      for _, p in ipairs(tos) do
+        if not p.dead then
+          room:damage { from = player, to = p, damage = 1, skillName = self.name }
+        end
+      end
+      if not player.dead and #tos >= 2 then
+        room:loseHp(player, 1, self.name)
+      end
+    end
+  end,
+}
+Fk:addSkill(kuizhu_active)
+local kuizhu = fk.CreateTriggerSkill{
+  name = "kuizhu",
+  anim_type = "offensive",
+  events = {fk.EventPhaseEnd},
+  frequency = Skill.Compulsory,
+  can_trigger = function(self, event, target, player, data)
+    return target == player and player:hasSkill(self.name) and player.phase == Player.Discard and #player.room.logic:getEventsOfScope(GameEvent.MoveCards, 1, function(e)
+      for _, move in ipairs(e.data) do
+        if move.toArea == Card.DiscardPile and move.from == player.id and move.moveReason == fk.ReasonDiscard then
+          return true
+        end
+      end
+      return false
+    end, Player.HistoryPhase) > 0
+  end,
+  on_cost = function(self, event, target, player, data)
+    local room = player.room
+    local n = 0
+    room.logic:getEventsOfScope(GameEvent.MoveCards, 1, function(e)
+      for _, move in ipairs(e.data) do
+        if move.toArea == Card.DiscardPile and move.from == player.id and move.moveReason == fk.ReasonDiscard then
+          n = n + #move.moveInfo
+        end
+      end
+      return false
+    end, Player.HistoryPhase)
+    if n == 0 then return false end
+    room:setPlayerMark(player, self.name, n)
+    local success, _ = room:askForUseActiveSkill(player, "kuizhu_active", "#kuizhu-use:::"..n, true)
+    room:setPlayerMark(player, self.name, 0)
+    return success
+  end,
+  on_use = function(self, event, target, player, data)
+    local room = player.room
+  end,
+}
+sunliang:addSkill(kuizhu)
+local chezheng = fk.CreateTriggerSkill{
+  name = "chezheng",
+  anim_type = "control",
+  frequency = Skill.Compulsory,
+  events = {fk.EventPhaseEnd, fk.DamageCaused},
+  can_trigger = function(self, event, target, player, data)
+    if target == player and player:hasSkill(self.name) and player.phase == Player.Play then
+      if event == fk.EventPhaseEnd then
+        local targets = table.filter(player.room.alive_players, function(p) return not p:inMyAttackRange(player) end)
+        local events = player.room.logic:getEventsOfScope(GameEvent.UseCard, 999, function (e)
+          local use = e.data[1]
+          return use and use.from == target.id
+        end, Player.HistoryPhase)
+        return #events < #targets
+      else
+        return not data.to:inMyAttackRange(player)
+      end
+    end
+  end,
+  on_use = function(self, event, target, player, data)
+    local room = player.room
+    if event == fk.EventPhaseEnd then
+      local targets = table.filter(player.room.alive_players, function(p) return not p:inMyAttackRange(player) and not p:isNude() end)
+      if #targets > 0 then
+        local tos = room:askForChoosePlayers(player, table.map(targets, Util.IdMapper), 1, 1, "#chezheng-throw", self.name, false)
+        if #tos > 0 then
+          local to = room:getPlayerById(tos[1])
+          local cid = room:askForCardChosen(player, to, "he", self.name)
+          room:throwCard({cid}, self.name, to, player)
+        end
+      end
+    else
+      return true
+    end
+  end,
+}
+sunliang:addSkill(chezheng)
+local lijun = fk.CreateTriggerSkill{
+  name = "lijun$",
+  events = { fk.CardUseFinished },
+  can_trigger = function(self, event, target, player, data)
+    if player:hasSkill(self.name) and target ~= player and target.kingdom == "wu" and data.card.trueName == "slash" then
+      local cardList = data.card:isVirtual() and data.card.subcards or {data.card.id}
+      return table.find(cardList, function(id) return not player.room:getCardOwner(id) end)
+    end
+  end,
+  on_cost = function (self, event, target, player, data)
+    return player.room:askForSkillInvoke(target, self.name, data, "#lijun-invoke:"..player.id)
+  end,
+  on_use = function(self, event, target, player, data)
+    local room = player.room
+    local cardList = data.card:isVirtual() and data.card.subcards or {data.card.id}
+    local cards = table.filter(cardList, function(id) return not room:getCardOwner(id) end)
+    if #cards == 0 then return end
+    local dummy = Fk:cloneCard("slash")
+    dummy:addSubcards(cards)
+    room:obtainCard(player, dummy, true, fk.ReasonJustMove)
+    if not player.dead and not target.dead and room:askForSkillInvoke(player, self.name, data, "#lijun-draw:"..target.id) then
+      target:drawCards(1, self.name)
+    end
+  end,
+}
+sunliang:addSkill(lijun)
 Fk:loadTranslationTable{
   ["sunliang"] = "孙亮",
   ["kuizhu"] = "溃诛",
   [":kuizhu"] = "弃牌阶段结束时，你可以选择一项：1. 令至多X名角色各摸一张牌；2. 对任意名体力值之和为X的角色造成1点伤害，若不少于2名角色，你失去1点体力（X为你此阶段弃置的牌数）。",
-  --ol：弃牌阶段结束时，你可以选择一项：1. 令至多X名角色各摸一张牌；2. 对任意名体力值之和为X的角色各造成1点伤害（X为你此阶段弃置的牌数）。
+  ["#kuizhu-use"] = "你可发动“溃诛”，X为%arg",
+  ["kuizhu_choice1"] = "令至多X名角色各摸一张牌",
+  ["kuizhu_choice2"] = "对任意名体力值之和为X的角色造成1点伤害",
   ["chezheng"] = "掣政",
-  [":chezheng"] = "锁定技，你的出牌阶段你对攻击范围内不包含你的角色造成伤害时，防止之。出牌阶段结束时，若你本阶段使用的牌数小于这些角色数，"..
-  "你弃置其中一名角色一张牌。",
+  [":chezheng"] = "锁定技，你于你出牌阶段内对攻击范围内不包含你的角色造成伤害时，防止之。出牌阶段结束时，若你本阶段使用的牌数小于这些角色数，你弃置其中一名角色一张牌。",
+  ["#chezheng-throw"] = "掣政：选择攻击范围内不包含你的一名角色，弃置其一张牌",
   ["lijun"] = "立军",
   [":lijun"] = "主公技，其他吴势力角色于其出牌阶段使用【杀】结算结束后，其可以将此【杀】交给你，然后你可以令其摸一张牌。",
-  --ol：主公技，其他吴势力角色出牌阶段限一次，当其使用【杀】后，可以将此【杀】交给你，然后你可以令其摸一张牌且本回合使用【杀】次数上限+1。
+  ["#lijun-invoke"] = "立军：你可以将此【杀】交给 %src，然后 %src 可令你摸一张牌",
+  ["#lijun-draw"] = "立军：你可以令 %src 摸一张牌",
+
+  ["$kuizhu1"] = "子通专恣，必谋而诛之！",
+  ["$kuizhu2"] = "孙綝久专，不可久忍，必溃诛！",
+  ["$chezheng1"] = "风驰电掣，政权不怠！",
+  ["$chezheng2"] = "廉平掣政，实为艰事。",
+  ["$lijun1"] = "立于朝堂，定于军心。",
+  ["$lijun2"] = "君立于朝堂，军侧于四方！",
+  ["~sunliang"] = "今日欲诛逆臣而不得，方知机事不密则害成…",
 }
 local xuyou = General(extension, "xuyou", "qun", 3)
 local chenglve = fk.CreateActiveSkill{
