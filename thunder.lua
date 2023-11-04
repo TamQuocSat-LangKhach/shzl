@@ -74,7 +74,7 @@ local congjian = fk.CreateTriggerSkill{
   anim_type = "defensive",
   events = {fk.TargetConfirmed},
   can_trigger = function(self, event, target, player, data)
-    return target == player and player:hasSkill(self.name) and data.card.type == Card.TypeTrick and #AimGroup:getAllTargets(data.tos) > 1
+    return target == player and player:hasSkill(self) and data.card.type == Card.TypeTrick and #AimGroup:getAllTargets(data.tos) > 1
   end,
   on_cost = function(self, event, target, player, data)
     local room = player.room
@@ -127,7 +127,7 @@ local zhengu = fk.CreateTriggerSkill{
   anim_type = "control",
   events = {fk.EventPhaseStart},
   can_trigger = function(self, event, target, player, data)
-    return target == player and player:hasSkill(self.name) and player.phase == Player.Finish
+    return target == player and player:hasSkill(self) and player.phase == Player.Finish
   end,
   on_cost = function(self, event, target, player, data)
     local room = player.room
@@ -226,7 +226,7 @@ local wangliec = fk.CreateTriggerSkill{
   name = "wangliec",
   events = {fk.CardUsing},
   can_trigger = function(self, event, target, player, data)
-    return target == player and player.phase == Player.Play and player:hasSkill(self.name) and
+    return target == player and player.phase == Player.Play and player:hasSkill(self) and
       (data.card:isCommonTrick() or data.card.trueName == "slash")
   end,
   on_cost = function(self, event, target, player, data)
@@ -281,7 +281,7 @@ local zuilun = fk.CreateTriggerSkill{
   anim_type = "control",
   events = {fk.EventPhaseStart},
   can_trigger = function(self, event, target, player, data)
-    return target == player and target:hasSkill(self.name) and player.phase == Player.Finish
+    return target == player and target:hasSkill(self) and player.phase == Player.Finish
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room
@@ -345,7 +345,7 @@ local fuyin = fk.CreateTriggerSkill{
   frequency = Skill.Compulsory,
   events = {fk.TargetConfirmed},
   can_trigger = function(self, event, target, player, data)
-    return target == player and player:hasSkill(self.name) and table.contains({"slash", "duel"}, data.card.trueName)
+    return target == player and player:hasSkill(self) and table.contains({"slash", "duel"}, data.card.trueName)
       and player:getMark("fuyin-turn") == 0
   end,
   on_trigger = function(self, event, target, player, data)
@@ -389,7 +389,7 @@ local thunder__yongsi = fk.CreateTriggerSkill{
   frequency = Skill.Compulsory,
   events = {fk.DrawNCards, fk.EventPhaseEnd},
   can_trigger = function(self, event, target, player, data)
-    if target == player and player:hasSkill(self.name) then
+    if target == player and player:hasSkill(self) then
       if event == fk.DrawNCards then
         return true
       else

@@ -153,7 +153,7 @@ local bazhen = fk.CreateTriggerSkill{
   frequency = Skill.Compulsory,
   anim_type = "defensive",
   can_trigger = function(self, event, target, player, data)
-    return target == player and player:hasSkill(self.name) and not player:isFakeSkill(self) and
+    return target == player and player:hasSkill(self) and not player:isFakeSkill(self) and
       (data.cardName == "jink" or (data.pattern and Exppattern:Parse(data.pattern):matchExp("jink|0|nosuit|none"))) and
       not player:getEquipment(Card.SubtypeArmor) and player:getMark(fk.MarkArmorNullified) == 0
   end,
@@ -287,7 +287,7 @@ local niepan = fk.CreateTriggerSkill{
   frequency = Skill.Limited,
   events = {fk.AskForPeaches},
   can_trigger = function(self, event, target, player, data)
-    return target == player and player:hasSkill(self.name) and player.dying and player:usedSkillTimes(self.name, Player.HistoryGame) == 0
+    return target == player and player:hasSkill(self) and player.dying and player:usedSkillTimes(self.name, Player.HistoryGame) == 0
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room
@@ -387,7 +387,7 @@ local mengjin = fk.CreateTriggerSkill{
   anim_type = "offensive",
   events = {fk.CardEffectCancelledOut},
   can_trigger = function(self, event, target, player, data)
-    return target == player and player:hasSkill(self.name) and data.card.trueName == "slash" and
+    return target == player and player:hasSkill(self) and data.card.trueName == "slash" and
       not player.room:getPlayerById(data.to):isNude()
   end,
   on_use = function(self, event, target, player, data)
@@ -415,7 +415,7 @@ local shuangxiongJudge = fk.CreateTriggerSkill{
   events = {fk.EventPhaseStart},
   mute = true,
   can_trigger = function(self, event, target, player, data)
-    return target == player and player:hasSkill(self.name) and player.phase == Player.Draw
+    return target == player and player:hasSkill(self) and player.phase == Player.Draw
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room
@@ -509,7 +509,7 @@ local luanji = fk.CreateViewAsSkill{
 local xueyi = fk.CreateMaxCardsSkill{
   name = "xueyi$",
   correct_func = function(self, player)
-    if player:hasSkill(self.name) then
+    if player:hasSkill(self) then
       local hmax = 0
       for _, p in ipairs(Fk:currentRoom().alive_players) do
         if p ~= player and p.kingdom == "qun" then 

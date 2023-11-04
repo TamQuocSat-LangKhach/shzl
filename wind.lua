@@ -11,7 +11,7 @@ local shensu = fk.CreateTriggerSkill{
   anim_type = "offensive",
   events = {fk.EventPhaseChanging},
   can_trigger = function(self, event, target, player, data)
-    if target == player and player:hasSkill(self.name) then
+    if target == player and player:hasSkill(self) then
       if data.to == Player.Judge then
         return true
       elseif data.to == Player.Play then
@@ -77,7 +77,7 @@ local jushou = fk.CreateTriggerSkill{
   anim_type = "defensive",
   events = {fk.EventPhaseEnd},
   can_trigger = function(self, event, target, player, data)
-    return target == player and player:hasSkill(self.name) and player.phase == Player.Finish
+    return target == player and player:hasSkill(self) and player.phase == Player.Finish
   end,
   on_use = function(self, event, target, player, data)
     player.room:drawCards(player, 3, self.name)
@@ -101,7 +101,7 @@ local jushou3 = fk.CreateTriggerSkill{
   anim_type = "defensive",
   events = {fk.EventPhaseEnd},
   can_trigger = function(self, event, target, player, data)
-    return target == player and player:hasSkill(self.name) and player.phase == Player.Finish
+    return target == player and player:hasSkill(self) and player.phase == Player.Finish
   end,
   on_use = function(self, event, target, player, data)
     player.room:drawCards(player, 1, self.name)
@@ -161,7 +161,7 @@ local liegong = fk.CreateTriggerSkill{
   anim_type = "offensive",
   events = {fk.TargetSpecified},
   can_trigger = function(self, event, target, player, data)
-    if not (target == player and player:hasSkill(self.name)) then return end
+    if not (target == player and player:hasSkill(self)) then return end
     local room = player.room
     local to = room:getPlayerById(data.to)
     local num = #to:getCardIds(Player.Hand)
@@ -191,11 +191,11 @@ local kuanggu = fk.CreateTriggerSkill{
   frequency = Skill.Compulsory,
   events = {fk.Damage},
   can_trigger = function(self, event, target, player, data)
-    return player:hasSkill(self.name) and target == player and (data.extra_data or {}).kuanggucheak and player:isWounded()
+    return player:hasSkill(self) and target == player and (data.extra_data or {}).kuanggucheak and player:isWounded()
   end,
   on_trigger = function(self, event, target, player, data)
     for i = 1, data.damage do
-      if not (player:isWounded() and player:hasSkill(self.name)) then break end
+      if not (player:isWounded() and player:hasSkill(self)) then break end
       self:doCost(event, target, player, data)
     end
   end,
@@ -236,7 +236,7 @@ local tianxiang = fk.CreateTriggerSkill{
   anim_type = "defensive",
   events = {fk.DamageInflicted},
   can_trigger = function(self, event, target, player, data)
-    return player:hasSkill(self.name) and target == player
+    return player:hasSkill(self) and target == player
   end,
   on_cost = function(self, event, target, player, data)
     local tar, card =  player.room:askForChooseCardAndPlayers(player, table.map(player.room:getOtherPlayers(player), function (p)
@@ -267,7 +267,7 @@ local tianxiang = fk.CreateTriggerSkill{
 local hongyan = fk.CreateFilterSkill{
   name = "hongyan",
   card_filter = function(self, to_select, player)
-    return to_select.suit == Card.Spade and player:hasSkill(self.name)
+    return to_select.suit == Card.Spade and player:hasSkill(self)
   end,
   view_as = function(self, to_select)
     return Fk:cloneCard(to_select.name, Card.Heart, to_select.number)
@@ -295,7 +295,7 @@ local buqu = fk.CreateTriggerSkill{
   anim_type = "defensive",
   events = {fk.BeforeHpChanged, fk.HpRecover},
   can_trigger = function(self, event, target, player, data)
-    if target == player and player:hasSkill(self.name) then
+    if target == player and player:hasSkill(self) then
       if event == fk.BeforeHpChanged then
         return data.num < 0 and player.hp <= math.abs(data.num) and (math.abs(data.num) - math.max(player.hp , 1) + 1) > 0
       elseif event == fk.HpRecover then
@@ -383,7 +383,7 @@ local buqu = fk.CreateTriggerSkill{
   refresh_events = {fk.AskForPeachesDone, fk.EventLoseSkill},
   can_refresh = function(self, event, target, player, data)
     if event == fk.AskForPeachesDone then--濒死结算流程结束后
-      if target == player and player:hasSkill(self.name) then
+      if target == player and player:hasSkill(self) then
         return player.hp <= 0 and player.dying and player:getMark(self.name) > 0
       end
     elseif event == fk.EventLoseSkill then
@@ -473,7 +473,7 @@ local leiji = fk.CreateTriggerSkill{
   anim_type = "offensive",
   events = {fk.CardUsing, fk.CardResponding},
   can_trigger = function(self, event, target, player, data)
-    return player:hasSkill(self.name) and target == player and data.card.name == "jink"
+    return player:hasSkill(self) and target == player and data.card.name == "jink"
   end,
   on_cost = function(self, event, target, player, data)
     local to = player.room:askForChoosePlayers(player, table.map(player.room:getOtherPlayers(player), function (p)
@@ -508,7 +508,7 @@ local guidao = fk.CreateTriggerSkill{
   anim_type = "control",
   events = {fk.AskForRetrial},
   can_trigger = function(self, event, target, player, data)
-    return player:hasSkill(self.name) and not player:isNude()
+    return player:hasSkill(self) and not player:isNude()
   end,
   on_cost = function(self, event, target, player, data)
     local card = player.room:askForResponse(player, self.name, ".|.|spade,club|hand,equip", "#guidao-ask::" .. target.id .. ":" .. data.reason, true)
