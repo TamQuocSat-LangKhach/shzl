@@ -6,6 +6,8 @@ local shadow = require "packages/shzl/shadow"
 local thunder = require "packages/shzl/thunder"
 local god = require "packages/shzl/god"
 
+Fk:loadTranslationTable(require 'packages/shzl/i18n/en_US', 'en_US')
+
 return {
   wind,
   fire,
