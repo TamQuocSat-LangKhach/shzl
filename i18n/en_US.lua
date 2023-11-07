@@ -3,9 +3,9 @@ return {
   ["wind"] = "Wind",
   ["xiahouyuan"] = "Xiahou Yuan",
   ["shensu"] = "Amazing Speed",
-  [":shensu"] = "You can choose up to 2 options: 1. Skip your judge phase and draw phase; 2. Skip your play phase and discard 1 equip card. Any of the options is regarded as using Slash with no distance limit.",
+  [":shensu"] = "You can choose up to 2 options: 1. Skip your judge phase and draw phase; 2. Skip your action phase and discard 1 equip card. Any of the options is regarded as using Slash with no distance limit.",
   ["#shensu1-choose"] = "Amazing Speed: you may skip your judge phase and draw phase, regard as using Slash",
-  ["#shensu2-choose"] = "Amazing Speed: you may skip your play phase and discard 1 equip card, regard as using Slash",
+  ["#shensu2-choose"] = "Amazing Speed: you may skip your action phase and discard 1 equip card, regard as using Slash",
 
   ["caoren"] = "Cao ren",
   ["jushou"] = "Fortified",
@@ -13,7 +13,7 @@ return {
 
   ["huangzhong"] = "Huang Zhong",
   ["liegong"] = "Fearsome Archer",
-  [":liegong"] = "After you target with a Slash in you play phase, if the target's hand cards is not less than you HP or not more than you ATK range, you can make him can't use Jink to respond this Slash.",
+  [":liegong"] = "After you target with a Slash in you action phase, if the target's hand cards is not less than you HP or not more than you ATK range, you can make him can't use Jink to respond this Slash.",
 
   ["weiyan"] = "Wei Yan",
   ["kuanggu"] = "Haughty Streak",
@@ -42,13 +42,13 @@ return {
   ["guidao"] = "Dark Sorcery",
   [":guidao"] = "Before a player's judge card takes effect, you can play a black card to replace it.",
   ["huangtian"] = "Yellow Sky",
-  [":huangtian"] = "<b>Lord skill</b>, once per play phase of other Neutral characters, they can give you a Jink or a Lightning.",
+  [":huangtian"] = "<b>Lord skill</b>, once per action phase of other Neutral characters, they can give you a Jink or a Lightning.",
 
   ["#leiji-choose"] = "Lighting Strike: you can let a player to perform judgement now",
   ["#guidao-ask"] = 'Dark Sorcery: you can play a black card to replace %dest\'s judge card (reason is "%arg")',
 
   ["huangtian_other&"] = "Yellow Sky",
-  [":huangtian_other&"] = "Once per play phase, you can give a Jink or a Lightning to Zhang Jiao.",
+  [":huangtian_other&"] = "Once per action phase, you can give a Jink or a Lightning to Zhang Jiao.",
 
   ["yuji"] = "Yu Ji",
   ["guhuo"] = "Demagogue",
@@ -63,11 +63,11 @@ return {
   ["fire"] = "Fire",
   ["dianwei"] = "Dian Wei",
   ["qiangxi"] = "Ferocious Assault",
-  [":qiangxi"] = "One per play phase, you can lose 1 HP or discard 1 weapon, and deal 1 DMG to another player within you ATK range.",
+  [":qiangxi"] = "One per action phase, you can lose 1 HP or discard 1 weapon, and deal 1 DMG to another player within you ATK range.",
 
   ["xunyu"] = "Xun Yu",
   ["quhu"] = "Rouse the Tiger",
-  [":quhu"] = "Once per play phase, you can point fight another player whose HP is higher than yours, if you win, he deals 1 DMG to another player of your choice within his ATK range; if you lose, he deals 1 DMG to you.",
+  [":quhu"] = "Once per action phase, you can point fight another player whose HP is higher than yours, if you win, he deals 1 DMG to another player of your choice within his ATK range; if you lose, he deals 1 DMG to you.",
   ["jieming"] = "Eternal Loyalty",
   [":jieming"] = "After you take 1 DMG, you can let a player to replenish his hand card to X(X=his maximum HP, max. 5)",
   ["#quhu-choose"] = "Rouse the Tiger: Choose a player within his ATK range",
@@ -92,7 +92,7 @@ return {
 
   ["taishici"] = "Taishi Ci",
   ["tianyi"] = "Justice of Heaven",
-  [":tianyi"] = "Once per play phase, you can point fight with another player, if you win, until the end of the turn, your Slash have no distance limit, you can use +1 extra Slash, and your Slash can target to +1 extra player; if you lose, you can't use Slash for the rest of this turn.",
+  [":tianyi"] = "Once per action phase, you can point fight with another player, if you win, until the end of the turn, your Slash have no distance limit, you can use +1 extra Slash, and your Slash can target to +1 extra player; if you lose, you can't use Slash for the rest of this turn.",
 
   ["pangde"] = "Pang De",
   ["mengjin"] = "Fearsome Advance",
@@ -150,7 +150,7 @@ return {
   ["haoshi"] = "Altruism",
   [":haoshi"] = "During your draw phase, you can draw +2 extra cards, then if your hand cards are more than 5, you must give half of them (rounded down) to another player with the lowest amount of hand cards.",
   ["dimeng"] = "Alliance",
-  [":dimeng"] = "Once per play phase: you can select 2 other players and discard X cards, then they exchange their hand cards. (X = difference between their amount of hand cards)",
+  [":dimeng"] = "Once per action phase: you can select 2 other players and discard X cards, then they exchange their hand cards. (X = difference between their amount of hand cards)",
   ["#haoshi-give"] = "Altruism: give %arg hand cards to whom has fewest hand cards",
   ["#haoshi_active"] = "Altruism[give]",
   ["#haoshi_give"] = "Altruism[give]",
@@ -174,7 +174,7 @@ return {
   ["wansha"] = "Unmitigated Murder",
   [":wansha"] = "<b>Compulsory skill</b>, during your turn, only you and the dying player can use Peach.",
   ["luanwu"] = "Descend into Chaos",
-  [":luanwu"] = "<b>Limited skill</b>, during you play phase, you can make all other players choose: 1. Use a Slash to the player in their least distance; 2. Lose 1 HP.",
+  [":luanwu"] = "<b>Limited skill</b>, during you action phase, you can make all other players choose: 1. Use a Slash to the player in their least distance; 2. Lose 1 HP.",
   ["weimu"] = "Behind the Curtain",
   [":weimu"] = "<b>Compulsory skill</b>, you can't be the target of black trick cards.",
 
@@ -184,7 +184,7 @@ return {
   ["mountain"] = "Mountain",
   ["zhanghe"] = "Zhang He",
   ["qiaobian"] = "Flexibility",
-  [":qiaobian"] = "You can discard 1 hand card and skip a phase. If you use this skill to skip: draw phase, you can take 1 hand card from up to 2 players; play phase, you can move a card on the board.",
+  [":qiaobian"] = "You can discard 1 hand card and skip a phase. If you use this skill to skip: draw phase, you can take 1 hand card from up to 2 players; action phase, you can move a card on the board.",
   ["#qiaobian-invoke"] = "Flexibility: you can discard 1 hand card to skip %arg",
   ["#qiaobian-choose"] = "Flexibility: you can take 1 hand card from up to %arg players in order",
   ["#qiaobian-move"] = "Flexibility: choose 2 players and move 1 card on the board",
@@ -200,7 +200,7 @@ return {
 
   ["jiangwei"] = "Jiang Wei",
   ["tiaoxin"] = "Provoke",
-  [":tiaoxin"] = "Once per play phase, you can select a player who has you within his attack range, then ask him to use a Slash to you. If he didn't use Slash, you discard him 1 card.",
+  [":tiaoxin"] = "Once per action phase, you can select a player who has you within his attack range, then ask him to use a Slash to you. If he didn't use Slash, you discard him 1 card.",
   ["zhiji"] = "Carry out Behest",
   [":zhiji"] = "<b>Awaken skill</b>, at the start of you prepare phase, if you don't have hand cards, you choose: 1. Draw 2 cards; 2. Heal 1 HP. Then you lose 1 max HP and acquire the skill Stargaze.",
   ["#tiaoxin-use"] = "Provoke: please use a Slash to him, otherwise he discard you 1 card",
@@ -213,7 +213,7 @@ return {
   [":xiangle"] = "<b>Compulsory skill</b>, after a player uses Slash to target you, the user choose: 1. Discard 1 basic card; 2. This Slash has no effect on you.",
   ["#xiangle-discard"] = "Indulged: you must discard 1 basic card, otherwise this Slash has no effect on %src",
   ["fangquan"] = "Devolution",
-  [":fangquan"] = "You can skip your play phase, and when this turn over, you discard 1 hand card and choose another player, he will play an extra turn.",
+  [":fangquan"] = "You can skip your action phase, and when this turn over, you discard 1 hand card and choose another player, he will play an extra turn.",
   ["#fangquan-give"] = "Devolution: you can discard 1 hand card to let another play an extra turn",
   ["ruoyu"] = "Like Fool",
   [":ruoyu"] = "<b>Lord skill, awaken skill</b>, at the start of you prepare phase, if you have the fewest HP, you heal 1 max HP and heal 1 HP, then acquire the skills Rouse.",
@@ -224,10 +224,10 @@ return {
   ["hunzi"] = "Divine Aura",
   [":hunzi"] = "<b>Awaken skill</b>, at the start of prepare phase, if you HP is 1, you lose 1 max HP and acquire the skills Soul of Hero and Handsome.",
   ["zhiba"] = "Hegemony",
-  [":zhiba"] = "<b>Lord skill</b>, once per play phase of another Wu character, he can point fight you (if you have activated Divine Aura you can refuse him), if he doesn't win, you can take both cards.",
+  [":zhiba"] = "<b>Lord skill</b>, once per action phase of another Wu character, he can point fight you (if you have activated Divine Aura you can refuse him), if he doesn't win, you can take both cards.",
 
   ["zhiba_other&"] = "Hegemony",
-  [":zhiba_other&"] = "Once per play phase, you can point fight Sun Ce, if you don't win, he can take both cards.",
+  [":zhiba_other&"] = "Once per action phase, you can point fight Sun Ce, if you don't win, he can take both cards.",
 
   ["#zhiba-ask"] = '%src want to point fight to you with "Hegemony", do you want to refuse?',
   ["zhiba_yes"] = 'Proceed "Hegemony" point fight',
@@ -235,7 +235,7 @@ return {
 
   ["zhangzhaozhanghong"] = "Zhang Zhao & Zhang Hong",
   ["zhijian"] = "Blunt Advice",
-  [":zhijian"] = "During your play phase, you can place 1 on-hand equip card to another player's equip area, then draw 1 cards.",
+  [":zhijian"] = "During your action phase, you can place 1 on-hand equip card to another player's equip area, then draw 1 cards.",
   ["guzheng"] = "Stabilization",
   [":guzheng"] = "At the end of another player's discard phase, you can give him 1 card that was discarded in this phase, then you can get the rest of discards.",
   ["#guzheng-invoke"] = "Stabilization: you can let %dest get 1 of the discarded cards and get the rest" ,
