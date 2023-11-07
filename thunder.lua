@@ -451,4 +451,153 @@ Fk:loadTranslationTable{
   ["~thunder__yuanshu"] = "仲朝国祚，本应千秋万代，薪传不息……",
 }
 
+local lukang = General(extension, "lukang", "wu", 4)
+-- TODO: prohibit pindian
+local qianjie = fk.CreateTriggerSkill{
+  name = "qianjie",
+  events = {fk.BeforeChainStateChange},
+  frequency = Skill.Compulsory,
+  can_trigger = function(self, event, target, player, data)
+    return target == player and player:hasSkill(self) and not player.chained
+  end,
+  on_use = Util.TrueFunc,
+}
+local qianjie_prohibit = fk.CreateProhibitSkill{
+  name = "#qianjie_prohibit",
+  frequency = Skill.Compulsory,
+  is_prohibited = function(self, from, to, card)
+    if to:hasSkill(self) then
+      return card.sub_type == Card.SubtypeDelayedTrick
+    end
+  end,
+}
+qianjie:addRelatedSkill(qianjie_prohibit)
+lukang:addSkill(qianjie)
+local jueyan = fk.CreateActiveSkill{
+  name = "jueyan",
+  can_use = function (self, player)
+    return #player:getAvailableEquipSlots() > 0 and player:usedSkillTimes(self.name, Player.HistoryPhase) == 0
+  end,
+  card_filter = Util.FalseFunc,
+  card_num = 0,
+  target_num = 0,
+  interaction = function()
+    return UI.ComboBox {choices = Self:getAvailableEquipSlots()}
+  end,
+  on_use = function(self, room, effect)
+    local player = room:getPlayerById(effect.from)
+    local choice = self.interaction.data
+    room:abortPlayerArea(player, choice)
+    if player.dead then return end
+    if choice == 'WeaponSlot' then
+      room:addPlayerMark(player, "jueyan_residue-turn", 3)
+    elseif choice == 'ArmorSlot' then
+      room:addPlayerMark(player, "jueyan_maxcards-turn", 3)
+      player:drawCards(3, self.name)
+    elseif choice == 'TreasureSlot' then
+      if not player:hasSkill("ex__jizhi",true) then
+        room:addPlayerMark(player, "jueyan_jizhi-turn")
+        room:handleAddLoseSkills(player, "ex__jizhi", nil, false)
+      end
+    else
+      room:addPlayerMark(player, "jueyan_distance-turn")
+    end
+  end,
+}
+local jueyan_maxcards = fk.CreateMaxCardsSkill{
+  name = "#jueyan_maxcards",
+  correct_func = function(self, player)
+    return player:getMark("jueyan_maxcards-turn")
+  end,
+}
+local jueyan_targetmod = fk.CreateTargetModSkill{
+  name = "#jueyan_targetmod",
+  residue_func = function(self, player, skill, scope, card)
+    if skill.trueName == "slash_skill" and scope == Player.HistoryPhase then
+      return player:getMark("jueyan_residue-turn")
+    end
+  end,
+  bypass_distances = function(self, player, skill, card, to)
+    return player:getMark("jueyan_distance-turn") > 0
+  end,
+}
+local jueyan_clean = fk.CreateTriggerSkill{
+  name = "#jueyan_clean",
+  refresh_events = {fk.TurnEnd},
+  can_refresh = function(self, event, target, player, data)
+    return target == player and player:getMark("jueyan_jizhi-turn") > 0
+  end,
+  on_refresh = function(self, event, target, player, data)
+    player.room:handleAddLoseSkills(player, "-ex__jizhi", nil, false)
+  end,
+}
+jueyan:addRelatedSkill(jueyan_maxcards)
+jueyan:addRelatedSkill(jueyan_targetmod)
+jueyan:addRelatedSkill(jueyan_clean)
+lukang:addSkill(jueyan)
+lukang:addRelatedSkill("ex__jizhi")
+local poshi = fk.CreateTriggerSkill{
+  name = "poshi",
+  frequency = Skill.Wake,
+  events = {fk.EventPhaseStart},
+  anim_type = "drawcard",
+  can_trigger = function(self, event, target, player, data)
+    return player:usedSkillTimes(self.name, Player.HistoryGame) == 0 and player:hasSkill(self) and target == player and player.phase == Player.Start
+  end,
+  can_wake = function(self, event, target, player, data)
+    return #player:getAvailableEquipSlots() == 0 or player.hp == 1
+  end,
+  on_use = function(self, event, target, player, data)
+    local room = player.room
+    room:changeMaxHp(player, -1)
+    if player.dead then return end
+    local x = player.maxHp - player:getHandcardNum()
+    if x > 0 then
+      player:drawCards(x, self.name)
+    end
+    room:handleAddLoseSkills(player, "-jueyan|huairou")
+  end,
+}
+lukang:addSkill(poshi)
+local huairou = fk.CreateActiveSkill{
+  name = "huairou",
+  anim_type = "drawcard",
+  can_use = function(self, player)
+    return not player:isNude()
+  end,
+  card_num = 1,
+  card_filter = function(self, to_select, selected)
+    return #selected < 3 and Fk:getCardById(to_select).type == Card.TypeEquip
+  end,
+  target_num = 0,
+  on_use = function(self, room, effect)
+    local player = room:getPlayerById(effect.from)
+    room:recastCard(effect.cards, player, self.name)
+  end,
+}
+lukang:addRelatedSkill(huairou)
+Fk:loadTranslationTable{
+  ["lukang"] = "陆抗",
+  ["qianjie"] = "谦节",
+  [":qianjie"] = "锁定技，你被横置前防止之，且不能成为延时类锦囊牌或其他角色拼点的目标（禁止拼点暂时无法实现）。",
+  ["#qianjie_prohibit"] = "谦节",
+  ["jueyan"] = "决堰",
+  [":jueyan"] = "出牌阶段限一次，你可以废除你装备区里的一种装备栏，然后执行对应的一项：武器栏，你于此回合内可以多使用三张【杀】；防具栏，摸三张牌，本回合手牌上限+3；坐骑栏，本回合你使用牌无距离限制；宝物栏，本回合获得〖集智〗。",
+  ["poshi"] = "破势",
+  [":poshi"] = "觉醒技，准备阶段，若你所有装备栏均被废除或体力值为1，则你减1点体力上限，然后将手牌摸至体力上限，失去〖决堰〗，获得〖怀柔〗。",
+  ["huairou"] = "怀柔",
+  [":huairou"] = "出牌阶段，你可以重铸一张装备牌。",
+  ["$qianjie1"] = "继父之节，谦逊恭毕。",
+  ["$qianjie2"] = "谦谦清廉德，节节卓尔茂。",
+  ["$jueyan1"] = "毁堰坝之计，实为阻晋粮道。",
+  ["$jueyan2"] = "堰坝毁之，可令敌军自退。",
+  ["$poshi1"] = "破羊祜之策，势在必行！",
+  ["$poshi2"] = "破晋军分进合击之势，牵晋军主力之实！",
+  ["$ex__jizhi_lukang"] = "智父安能有愚子乎？",
+  ["$huairou1"] = "各保分界，无求细利。",
+  ["$huairou2"] = "胸怀千万，彰其德，包其柔。",
+  ["~lukang"] = "吾即亡矣，吴又能存几时？",
+}
+
+
 return extension
