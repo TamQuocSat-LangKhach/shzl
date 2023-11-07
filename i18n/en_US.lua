@@ -13,7 +13,7 @@ return {
 
   ["huangzhong"] = "Huang Zhong",
   ["liegong"] = "Fearsome Archer",
-  [":liegong"] = "After you target with a Slash in you action phase, if the target's hand cards is not less than you HP or not more than you ATK range, you can make him can't use Jink to respond this Slash.",
+  [":liegong"] = "After you target with a Slash in you action phase, if the target's hand cards is not less than you HP or not more than you ATK range, you can make him can't use Dodge to respond this Slash.",
 
   ["weiyan"] = "Wei Yan",
   ["kuanggu"] = "Haughty Streak",
@@ -38,17 +38,17 @@ return {
 
   ["zhangjiao"] = "Zhang Jiao",
   ["leiji"] = "Lighting Strike",
-  [":leiji"] = "When you use/play Jink, you can let a player to perform a judgement, if the result is spade, you deal 2 Thunder DMG to him.",
+  [":leiji"] = "When you use/play Dodge, you can let a player to perform a judgement, if the result is spade, you deal 2 Thunder DMG to him.",
   ["guidao"] = "Dark Sorcery",
   [":guidao"] = "Before a player's judge card takes effect, you can play a black card to replace it.",
   ["huangtian"] = "Yellow Sky",
-  [":huangtian"] = "<b>Lord skill</b>, once per action phase of other Neutral characters, they can give you a Jink or a Lightning.",
+  [":huangtian"] = "<b>Lord skill</b>, once per action phase of other Neutral characters, they can give you a Dodge or a Lightning.",
 
   ["#leiji-choose"] = "Lighting Strike: you can let a player to perform judgement now",
   ["#guidao-ask"] = 'Dark Sorcery: you can play a black card to replace %dest\'s judge card (reason is "%arg")',
 
   ["huangtian_other&"] = "Yellow Sky",
-  [":huangtian_other&"] = "Once per action phase, you can give a Jink or a Lightning to Zhang Jiao.",
+  [":huangtian_other&"] = "Once per action phase, you can give a Dodge or a Lightning to Zhang Jiao.",
 
   ["yuji"] = "Yu Ji",
   ["guhuo"] = "Demagogue",
@@ -96,7 +96,7 @@ return {
 
   ["pangde"] = "Pang De",
   ["mengjin"] = "Fearsome Advance",
-  [":mengjin"] = "After you Slash is offseted by target's Jink, you can discard him 1 card.",
+  [":mengjin"] = "After you Slash is offseted by target's Dodge, you can discard him 1 card.",
 
   ["yanliangwenchou"] = "Yan L. & Wen C.",
   ["shuangxiong"] = "Dual Heroes",
@@ -161,7 +161,7 @@ return {
   ["jiuchi"] = "Drown in Wine",
   [":jiuchi"] = "You can use a spade hand card as Alcohol.",
   ["roulin"] = "Garden of Lust",
-  [":roulin"] = "<b>Compulsory skill</b>, when you use Slash target to a female character of when a famale character uses Slash target to you, the target needs to use 2 Jink to evade it.",
+  [":roulin"] = "<b>Compulsory skill</b>, when you use Slash target to a female character of when a famale character uses Slash target to you, the target needs to use 2 Dodge to evade it.",
   ["benghuai"] = "Disintegration",
   [":benghuai"] = "<b>Compulsory skill</b>, at the start of your finish phase, if you aren't the player with the lowest HP, you choose: 1. Lose 1 HP; 2. Lose 1 max HP.",
   ["baonve"] = "The Tyrant",
