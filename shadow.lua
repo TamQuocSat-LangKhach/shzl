@@ -127,6 +127,14 @@ local shenshi = fk.CreateActiveSkill{
       damage = 1,
       skillName = self.name,
     }
+    if target.dead and not player.dead and table.find(room.alive_players, function(p) return p:getHandcardNum() < 4 end) then
+      local targets = table.map(table.filter(room.alive_players, function(p) return p:getHandcardNum() < 4 end), Util.IdMapper)
+      local to = room:askForChoosePlayers(player, targets, 1, 1, "#shenshi-choose", self.name, true)
+      if #to > 0 then
+        local p = room:getPlayerById(to[1])
+        p:drawCards(4 - p:getHandcardNum(), self.name)
+      end
+    end
   end,
 }
 local shenshiYin = fk.CreateTriggerSkill{
@@ -147,12 +155,10 @@ local shenshiYin = fk.CreateTriggerSkill{
     room:notifySkillInvoked(player, "shenshi", "switch")
     room:setPlayerMark(player, MarkEnum.SwithSkillPreName .. "shenshi", player:getSwitchSkillState("shenshi", true))
     room:doIndicate(player.id, {data.from.id})
-    room:fillAG(player, data.from:getCardIds("h"))
-    room:delay(3000)
-    room:closeAG(player)
+    room:askForCardsChosen(player, data.from, 0, 0, {card_data = {{"$Hand", target:getCardIds(Player.Hand)}}}, self.name)
     if player:isNude() then return end
     local card = room:askForCard(player, 1, 1, true, "shenshi", false, ".", "#shenshi-give::"..data.from.id)
-    room:obtainCard(data.from.id, card[1], true, fk.ReasonGive)
+    room:obtainCard(data.from.id, card[1], false, fk.ReasonGive)
     room:setPlayerMark(player, "shenshi-turn", {data.from.id, card[1]})  --大概不可能出现一回合发动两次审时2
     room:setPlayerMark(data.from, "@shenshi-turn", Fk:getCardById(card[1]):toLogString())
   end,
@@ -160,42 +166,19 @@ local shenshiYin = fk.CreateTriggerSkill{
 local shenshi_trigger = fk.CreateTriggerSkill{
   name = "#shenshi_trigger",
   mute = true,
-  events = {fk.Deathed, fk.EventPhaseStart},
+  events = {fk.EventPhaseStart},
   can_trigger = function(self, event, target, player, data)
-    if event == fk.Deathed then
-      return data.damage and data.damage.skillName == "shenshi" and data.damage.from and data.damage.from == player and
-        table.find(player.room.alive_players, function(p) return p:getHandcardNum() < 4 end)
-    else
-      if target.phase == Player.Finish and player:getMark("shenshi-turn") ~= 0 and player:getHandcardNum() < 4 then
-        local p = player.room:getPlayerById(player:getMark("shenshi-turn")[1])
-        return not p.dead and table.find(p:getCardIds("he"), function(id) return id == player:getMark("shenshi-turn")[2] end)
-      end
+    if target.phase == Player.Finish and player:getMark("shenshi-turn") ~= 0 and player:getHandcardNum() < 4 then
+      local p = player.room:getPlayerById(player:getMark("shenshi-turn")[1])
+      return not p.dead and table.find(p:getCardIds("he"), function(id) return id == player:getMark("shenshi-turn")[2] end)
     end
   end,
-  on_cost = function(self, event, target, player, data)
-    if event == fk.Deathed then
-      local room = player.room
-      local targets = table.map(table.filter(room.alive_players, function(p) return p:getHandcardNum() < 4 end), Util.IdMapper)
-      local to = room:askForChoosePlayers(player, targets, 1, 1, "#shenshi-choose", "shenshi", true)
-      if #to > 0 then
-        self.cost_data = to[1]
-        return true
-      end
-    else
-      return true
-    end
-  end,
+  on_cost = Util.TrueFunc,
   on_use = function(self, event, target, player, data)
     local room = player.room
     player:broadcastSkillInvoke("shenshi")
-    if event == fk.Deathed then
-      room:notifySkillInvoked(player, "shenshi", "support")
-      local p = room:getPlayerById(self.cost_data)
-      p:drawCards(4 - p:getHandcardNum(), "shenshi")
-    else
-      room:notifySkillInvoked(player, "shenshi", "drawcard")
-      player:drawCards(4 - player:getHandcardNum(), "shenshi")
-    end
+    room:notifySkillInvoked(player, "shenshi", "drawcard")
+    player:drawCards(4 - player:getHandcardNum(), "shenshi")
   end,
 }
 shenshi:addRelatedSkill(shenshiYin)
@@ -207,7 +190,7 @@ Fk:loadTranslationTable{
   ["jianxiang"] = "荐降",
   [":jianxiang"] = "当你成为其他角色使用牌的目标后，你可以令手牌数最少的一名角色摸一张牌。",
   ["shenshi"] = "审时",
-  [":shenshi"] = "转换技，阳：出牌阶段限一次，你可以交给手牌数最多的其他角色一张牌，并对其造成1点伤害。若其因此死亡，你可以令一名角色将手牌摸至四张。"..
+  [":shenshi"] = "转换技，阳：出牌阶段限一次，你可以交给手牌数最多的其他角色一张牌，并对其造成1点伤害。然后若其死亡，你可以令一名角色将手牌摸至四张。"..
   "阴：当其他角色对你造成伤害后，你可以观看其手牌，并交给其一张牌；当前回合结束阶段，若此牌仍在其手牌或装备区，你将手牌摸至四张。",
   ["#jianxiang-invoke"] = "荐降：你可以令手牌数最少的一名角色摸一张牌",
   ["#shenshi"] = "审时：交给手牌数最多的其他角色一张牌，并对其造成1点伤害",

@@ -1819,7 +1819,6 @@ Fk:loadTranslationTable{
 }
 
 local godganning = General(extension, "godganning", "god", 3, 6)
-
 local poxi = fk.CreateActiveSkill{
   name = "poxi",
   anim_type = "control",
@@ -1836,26 +1835,15 @@ local poxi = fk.CreateActiveSkill{
   on_use = function(self, room, effect)
     local player = room:getPlayerById(effect.from)
     local target = room:getPlayerById(effect.tos[1])
-    local player_hands = player:getCardIds(Player.Hand)
-    local target_hands = target:getCardIds(Player.Hand)
-
-    local result = room:askForCustomDialog(player, self.name,
-      "packages/shzl/qml/PoxiBox.qml", {
-        player.general, player_hands,
-        target.general, target_hands,
-      })
-
-    if result == "" then return end
-    local cards = json.decode(result)
-
-    local cards1 = table.filter(cards, function(id)
-      return table.contains(player_hands, id)
-    end)
-    local cards2 = table.filter(cards, function(id)
-      return table.contains(target_hands, id)
-    end)
-    if #cards1 == 0 and #cards2 == 0 then return false end
-
+    local player_hands = player:getCardIds("h")
+    local target_hands = target:getCardIds("h")
+    local cards = room:askForPoxi(player, "poxi_discard", {
+      { player.general, player_hands },
+      { target.general, target_hands },
+    }, nil, true)
+    if #cards == 0 then return end
+    local cards1 = table.filter(cards, function(id) return table.contains(player_hands, id) end)
+    local cards2 = table.filter(cards, function(id) return table.contains(target_hands, id) end)
     local moveInfos = {}
     if #cards1 > 0 then
       table.insert(moveInfos, {
@@ -1897,6 +1885,20 @@ local poxi = fk.CreateActiveSkill{
     end
     return false
   end,
+}
+Fk:addPoxiMethod{
+  name = "poxi_discard",
+  card_filter = function(to_select, selected, data)
+    local suit = Fk:getCardById(to_select).suit
+    if suit == Card.NoSuit then return false end
+    return not table.find(selected, function(id) return Fk:getCardById(id).suit == suit end)
+  end,
+  feasible = function(selected)
+    return #selected == 4
+  end,
+  prompt = function ()
+    return "魄袭：弃置双方手里四张不同花色的牌"
+  end
 }
 local gn_jieying = fk.CreateTriggerSkill{
   name = "gn_jieying",

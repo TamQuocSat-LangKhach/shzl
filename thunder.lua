@@ -400,7 +400,7 @@ local liangyin = fk.CreateTriggerSkill{
             end
           end
         end
-        if move.toArea ~= Card.PlayerSpecial then
+        if move.toArea == Card.PlayerHand then
           for _, info in ipairs(move.moveInfo) do
             if info.fromArea == Card.PlayerSpecial then
               return table.find(player.room.alive_players, function(p)
@@ -467,6 +467,7 @@ local kongsheng = fk.CreateTriggerSkill{
   name = "kongsheng",
   anim_type = "special",
   events = {fk.EventPhaseStart},
+  expand_pile = "zhoufei_harp",
   can_trigger = function(self, event, target, player, data)
     return target == player and player:hasSkill(self) and (player.phase == Player.Start or
       (player.phase == Player.Finish and #player:getPile("zhoufei_harp") > 0))
@@ -492,15 +493,22 @@ local kongsheng = fk.CreateTriggerSkill{
       local room = player.room
       while true do
         if player.dead then break end
-        local to_use = table.find(player:getPile("zhoufei_harp"), function(id)
+        local ids = table.filter(player:getPile("zhoufei_harp"), function(id)
           local card = Fk:getCardById(id)
           return card.type == Card.TypeEquip and U.canUseCardTo(room, player, player, card, false, false)
         end)
-        if to_use == nil then break end
+        if #ids == 0 then break end
+        local id = room:askForCard(player, 1, 1, false, self.name, false,
+          ".|.|.|zhoufei_harp|.|.|"..table.concat(ids), "#kongsheng-use", "zhoufei_harp")
+        if #id > 0 then
+          id = id[1]
+        else
+          id = table.random(ids)
+        end
         room:useCard({
           from = player.id,
           tos = {{player.id}},
-          card = Fk:getCardById(to_use),
+          card = Fk:getCardById(id),
         })
       end
       local dummy = Fk:cloneCard("dilu")
@@ -521,6 +529,7 @@ Fk:loadTranslationTable{
   ["#liangyin-discard"] = "良姻：你可以令一名手牌数小于你的角色弃置一张牌",
   ["#kongsheng-invoke"] = "箜声：你可以将任意张牌作为“箜”置于武将牌上",
   ["zhoufei_harp"] = "箜",
+  ["#kongsheng-use"] = "箜声：请使用“箜”中的装备牌",
 
   ["$liangyin1"] = "结得良姻，固吴基业。",
   ["$liangyin2"] = "君恩之命，妾身良姻之福。",
