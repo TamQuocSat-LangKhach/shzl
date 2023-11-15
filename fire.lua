@@ -12,10 +12,10 @@ local qiangxi = fk.CreateActiveSkill{
   max_card_num = 1,
   target_num = 1,
   can_use = function(self, player)
-    return player:usedSkillTimes(self.name) == 0
+    return player:usedSkillTimes(self.name, Player.HistoryPhase) == 0
   end,
   card_filter = function(self, to_select, selected)
-    return Fk:getCardById(to_select).sub_type == Card.SubtypeWeapon
+    return Fk:getCardById(to_select).sub_type == Card.SubtypeWeapon and not Self:prohibitDiscard(Fk:getCardById(to_select))
   end,
   target_filter = function(self, to_select, selected, selected_cards)
     if #selected == 0 and to_select ~= Self.id then
@@ -60,7 +60,7 @@ local quhu = fk.CreateActiveSkill{
   card_num = 0,
   target_num = 1,
   can_use = function(self, player)
-    return not player:isKongcheng() and player:usedSkillTimes(self.name) == 0
+    return not player:isKongcheng() and player:usedSkillTimes(self.name, Player.HistoryPhase) == 0
   end,
   card_filter = Util.FalseFunc,
   target_filter = function(self, to_select, selected, selected_cards)
@@ -328,7 +328,7 @@ local tianyi = fk.CreateActiveSkill{
   card_num = 0,
   target_num = 1,
   can_use = function(self, player)
-    return not player:isKongcheng() and player:usedSkillTimes(self.name) == 0
+    return not player:isKongcheng() and player:usedSkillTimes(self.name, Player.HistoryPhase) == 0
   end,
   card_filter = Util.FalseFunc,
   target_filter = function(self, to_select, selected, selected_cards)

@@ -78,8 +78,10 @@ local fangzhu = fk.CreateTriggerSkill{
   end,
   on_use = function(self, event, target, player, data)
     local to = player.room:getPlayerById(self.cost_data)
-    to:drawCards(player:getLostHp(), self.name)
     to:turnOver()
+    if not to.dead then
+      to:drawCards(player:getLostHp(), self.name)
+    end
   end,
 }
 local songwei = fk.CreateTriggerSkill{
