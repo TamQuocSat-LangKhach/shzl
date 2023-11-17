@@ -1,6 +1,8 @@
 local extension = Package:new("mountain")
 extension.extensionName = "shzl"
 
+local U = require "packages/utility/utility"
+
 Fk:loadTranslationTable{
   ["mountain"] = "神话再临·山",
 }
@@ -546,47 +548,32 @@ local guzheng = fk.CreateTriggerSkill{
   end,
   on_cost = function(self, event, target, player, data)
     local room = player.room
-    local hand_cards = {}
-    local all_cards = {}
+    
     local mark_hand = target:getMark("guzheng_hand-phase")
-    local mark_all = target:getMark("guzheng_all-phase")
-    for _, id in ipairs(mark_hand) do
-      if room:getCardArea(id) == Card.DiscardPile then
-        table.insertIfNeed(hand_cards, id)
-      end
-    end
-    if #hand_cards > 0 and room:askForSkillInvoke(player, self.name, nil, "#guzheng-invoke::"..target.id) then
-      for _, id in ipairs(mark_all) do
-        if room:getCardArea(id) == Card.DiscardPile then
-          table.insertIfNeed(all_cards, id)
-        end
-      end
-      room:fillAG(player, all_cards)
-      for i = #all_cards, 1, -1 do
-        if not table.contains(hand_cards, all_cards[i]) then
-          room:takeAG(player, all_cards[i], room.players)
-        end
-      end
-      local id = room:askForAG(player, hand_cards, true, self.name)  --TODO: temporarily use AG. AG function need cancelable!
-      room:closeAG(player)
-      if id ~= nil then
-        self.cost_data = id
+    local hand_cards = table.filter(mark_hand, function(id)
+      return room:getCardArea(id) == Card.DiscardPile
+    end)
+    if #hand_cards > 0 then
+      local cards, choice = U.askforChooseCardsAndChoice(player, hand_cards, {"guzheng_yes", "guzheng_no"}, self.name, "#guzheng-invoke::" .. target.id, {"Cancel"})
+      if #cards > 0 then
+        self.cost_data = {cards[1], choice}
         return true
       end
     end
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room
-    room:obtainCard(target, self.cost_data, true, fk.ReasonJustMove)
-    local dummy = Fk:cloneCard("dilu")
-    local mark = target:getMark("guzheng_all-phase")
-    for _, id in ipairs(mark) do
-      if room:getCardArea(id) == Card.DiscardPile and id ~= self.cost_data then
-        dummy:addSubcard(id)
+    local card, choice = table.unpack(self.cost_data)
+    room:obtainCard(target, card, true, fk.ReasonJustMove)
+    if choice == "guzheng_yes" then
+      local all_cards = table.filter(target:getMark("guzheng_all-phase"), function(id)
+        return room:getCardArea(id) == Card.DiscardPile and id ~= card
+      end)
+      if #all_cards > 0 then
+        local dummy = Fk:cloneCard("dilu")
+        dummy:addSubcards(all_cards)
+        room:obtainCard(player, dummy, true, fk.ReasonJustMove)
       end
-    end
-    if #dummy.subcards > 0 then
-      room:obtainCard(player, dummy, true, fk.ReasonJustMove)
     end
   end,
   refresh_events = {fk.AfterCardsMove},
@@ -629,7 +616,7 @@ Fk:loadTranslationTable{
   ["guzheng"] = "固政",
   [":guzheng"] = "其他角色的弃牌阶段结束时，你可以令其获得一张弃牌堆中此阶段中因弃置而置入弃牌堆的该角色的手牌："..
   "若如此做，你获得弃牌堆中其余此阶段因弃置而置入弃牌堆的牌。",
-  ["#guzheng-invoke"] = "固政：你可以令 %dest 获得其弃置的其中一张牌。" ,
+  ["#guzheng-invoke"] = "固政：你可以令 %dest 获得其中一张牌",
 
   ["$zhijian1"] = "请恕老臣直言！",
   ["$zhijian2"] = "为臣者，当冒死以谏！",
