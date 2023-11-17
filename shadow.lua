@@ -154,13 +154,17 @@ local shenshiYin = fk.CreateTriggerSkill{
     player:broadcastSkillInvoke("shenshi")
     room:notifySkillInvoked(player, "shenshi", "switch")
     room:setPlayerMark(player, MarkEnum.SwithSkillPreName .. "shenshi", player:getSwitchSkillState("shenshi", true))
-    room:doIndicate(player.id, {data.from.id})
-    room:askForCardsChosen(player, data.from, 0, 0, {card_data = {{"$Hand", target:getCardIds(Player.Hand)}}}, self.name)
+    local from = data.from
+    room:doIndicate(player.id, {from.id})
+    if not from:isKongcheng() then
+      U.viewCards (player, from:getCardIds(Player.Hand), "shenshi")
+    end
     if player:isNude() then return end
     local card = room:askForCard(player, 1, 1, true, "shenshi", false, ".", "#shenshi-give::"..data.from.id)
-    room:obtainCard(data.from.id, card[1], false, fk.ReasonGive)
-    room:setPlayerMark(player, "shenshi-turn", {data.from.id, card[1]})  --大概不可能出现一回合发动两次审时2
-    room:setPlayerMark(data.from, "@shenshi-turn", Fk:getCardById(card[1]):toLogString())
+    room:obtainCard(from.id, card[1], false, fk.ReasonGive)
+    local mark = U.getMark(player, "shenshi-turn")
+    table.insert(mark, {from.id, card[1]})
+    room:setPlayerMark(player, "shenshi-turn", mark)
   end,
 }
 local shenshi_trigger = fk.CreateTriggerSkill{
@@ -169,8 +173,12 @@ local shenshi_trigger = fk.CreateTriggerSkill{
   events = {fk.EventPhaseStart},
   can_trigger = function(self, event, target, player, data)
     if target.phase == Player.Finish and player:getMark("shenshi-turn") ~= 0 and player:getHandcardNum() < 4 then
-      local p = player.room:getPlayerById(player:getMark("shenshi-turn")[1])
-      return not p.dead and table.find(p:getCardIds("he"), function(id) return id == player:getMark("shenshi-turn")[2] end)
+      for _, t in ipairs(player:getMark("shenshi-turn")) do
+        local p = player.room:getPlayerById(t[1])
+        if p and table.contains(p:getCardIds("he"), t[2]) then
+          return true
+        end
+      end
     end
   end,
   on_cost = Util.TrueFunc,
@@ -191,13 +199,12 @@ Fk:loadTranslationTable{
   [":jianxiang"] = "当你成为其他角色使用牌的目标后，你可以令手牌数最少的一名角色摸一张牌。",
   ["shenshi"] = "审时",
   [":shenshi"] = "转换技，阳：出牌阶段限一次，你可以交给手牌数最多的其他角色一张牌，并对其造成1点伤害。然后若其死亡，你可以令一名角色将手牌摸至四张。"..
-  "阴：当其他角色对你造成伤害后，你可以观看其手牌，并交给其一张牌；当前回合结束阶段，若此牌仍在其手牌或装备区，你将手牌摸至四张。",
+  "阴：当有手牌的其他角色对你造成伤害后，你可以观看其手牌，并交给其一张牌；当前回合结束阶段，若此牌仍在其手牌或装备区，你将手牌摸至四张。",
   ["#jianxiang-invoke"] = "荐降：你可以令手牌数最少的一名角色摸一张牌",
   ["#shenshi"] = "审时：交给手牌数最多的其他角色一张牌，并对其造成1点伤害",
   ["#shenshi-choose"] = "审时：你可以令一名角色将手牌摸至四张",
   ["#shenshi-invoke"] = "审时：你可以观看 %dest 的手牌并交给其一张牌",
   ["#shenshi-give"] = "审时：交给 %dest 一张牌，若本回合结束阶段仍属于其，你将手牌摸至四张",
-  ["@shenshi-turn"] = "审时",
 
   ["$jianxiang1"] = "得遇曹公，吾之幸也。",
   ["$jianxiang2"] = "曹公得荆不喜，喜得吾二人足矣。",
@@ -281,7 +288,7 @@ local feijun = fk.CreateActiveSkill{
     return player:usedSkillTimes(self.name, Player.HistoryPhase) == 0 and not player:isNude()
   end,
   card_filter = function(self, to_select, selected)
-    return #selected == 0 and not Self:prohibitDiscard(to_select)
+    return #selected == 0 and not Self:prohibitDiscard(Fk:getCardById(to_select))
   end,
   target_filter = Util.FalseFunc,
   on_use = function(self, room, effect)
@@ -313,26 +320,32 @@ local feijun = fk.CreateActiveSkill{
     else
       room:askForDiscard(to, 1, 1, true, self.name, false, ".|.|.|equip", "#feijun-discard")
     end
-    if not player.dead then
-      local mark = player:getMark("binglve")
-      if mark == 0 then mark = {} end
-      if not table.contains(mark, to.id) then
-        table.insert(mark, to.id)
-        room:setPlayerMark(player, "binglve", mark)
-        room.logic:trigger("fk.FeijunFinished", player, nil)
-      end
-    end
   end,
 }
 local binglve = fk.CreateTriggerSkill{
   name = "binglve",
   anim_type = "drawcard",
   frequency = Skill.Compulsory,
-  events = {"fk.FeijunFinished"},
+  events = {fk.AfterCardsMove},
   can_trigger = function(self, event, target, player, data)
-    return target == player and player:hasSkill(self)
+    if player:hasSkill(self) then
+      local e = player.room.logic:getCurrentEvent():findParent(GameEvent.SkillEffect)
+      if e and e.data[2] == player and e.data[3] == feijun then
+        local mark = U.getMark(player, "binglve")
+        for _, move in ipairs(data) do
+          if move.from ~= player.id and not table.contains(mark, move.from) then
+            self.cost_data = move.from
+            return true
+          end
+        end
+      end
+    end
   end,
   on_use = function(self, event, target, player, data)
+    local room = player.room
+    local mark = U.getMark(player, "binglve")
+    table.insert(mark, self.cost_data)
+    room:setPlayerMark(player, "binglve", mark)
     player:drawCards(2, self.name)
   end,
 }
