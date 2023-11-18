@@ -3,7 +3,7 @@ extension.extensionName = "shzl"
 Fk:loadTranslationTable{
   ["shadow"] = "神话再临·阴",
 }
-
+local U = require "packages/utility/utility"
 local wangji = General(extension, "wangji", "wei", 3)
 local qizhi = fk.CreateTriggerSkill{
   name = "qizhi",
