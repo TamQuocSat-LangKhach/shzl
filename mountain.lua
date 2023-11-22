@@ -544,26 +544,22 @@ local guzheng = fk.CreateTriggerSkill{
   anim_type = "support",
   events = {fk.EventPhaseEnd},
   can_trigger = function(self, event, target, player, data)
-    return target ~= player and player:hasSkill(self) and target.phase == Player.Discard and target:getMark("guzheng_hand-phase") ~= 0
-  end,
-  on_cost = function(self, event, target, player, data)
-    local room = player.room
-    
-    local mark_hand = target:getMark("guzheng_hand-phase")
-    local hand_cards = table.filter(mark_hand, function(id)
-      return room:getCardArea(id) == Card.DiscardPile
-    end)
-    if #hand_cards > 0 then
-      local cards, choice = U.askforChooseCardsAndChoice(player, hand_cards, {"guzheng_yes", "guzheng_no"}, self.name, "#guzheng-invoke::" .. target.id, {"Cancel"})
+    if target ~= player and player:hasSkill(self) and target.phase == Player.Discard then
+      local room = player.room
+      local cards = table.filter(U.getMark(target, "guzheng_hand-phase"), function(id)
+        return room:getCardArea(id) == Card.DiscardPile
+      end)
       if #cards > 0 then
-        self.cost_data = {cards[1], choice}
+        self.cost_data = cards
         return true
       end
     end
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room
-    local card, choice = table.unpack(self.cost_data)
+    local cards, choice = U.askforChooseCardsAndChoice(player, self.cost_data, {"guzheng_yes", "guzheng_no"}, self.name, "#guzheng-invoke::" .. target.id)
+    if #cards == 0 then return end
+    local card = cards[1]
     room:obtainCard(target, card, true, fk.ReasonJustMove)
     if choice == "guzheng_yes" then
       local all_cards = table.filter(target:getMark("guzheng_all-phase"), function(id)
