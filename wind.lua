@@ -4,7 +4,7 @@ extension.extensionName = "shzl"
 Fk:loadTranslationTable{
   ["wind"] = "神话再临·风",
 }
-
+local U = require "packages/utility/utility" 
 local xiahouyuan = General(extension, "xiahouyuan", "wei", 4)
 local shensu = fk.CreateTriggerSkill{
   name = "shensu",
@@ -80,8 +80,10 @@ local jushou = fk.CreateTriggerSkill{
     return target == player and player:hasSkill(self) and player.phase == Player.Finish
   end,
   on_use = function(self, event, target, player, data)
-    player.room:drawCards(player, 3, self.name)
-    player:turnOver()
+    player:drawCards(3, self.name)
+    if not player.dead then
+      player:turnOver()
+    end
   end,
 }
 caoren:addSkill(jushou)
@@ -116,22 +118,19 @@ local jiewei3 = fk.CreateTriggerSkill{
   on_use = function(self, event, target, player, data)
     local room = player.room
     room:drawCards(player, 1, self.name)
-    local use = room:askForUseCard(player, self.name, ".|.|.|.|.|trick,equip", "#y13__jiewei-use", true)
+    local use = U.askForUseRealCard(room, player, nil, ".|.|.|.|.|trick,equip", self.name, "#y13__jiewei-use")
     if use then
-      room:useCard(use)
       local t = use.card:getTypeString()
       local flag = t == "trick" and "j" or "e"
       local targets = table.filter(room.alive_players, function(p)
         return #p:getCardIds(flag) > 0
       end)
       if #targets > 0 then
-        local p = room:askForChoosePlayers(player, table.map(targets, Util.IdMapper),
-          1, 1, "#y13__jiewei-discard:::" .. t, self.name, true)[1]
-
+        local p = room:askForChoosePlayers(player, table.map(targets, Util.IdMapper), 1, 1, "#y13__jiewei-discard:::" .. t, self.name, true)[1]
         if p then
           local pl = room:getPlayerById(p)
           local c = room:askForCardChosen(player, pl, flag, self.name)
-          room:throwCard(c, self.name, pl, player)
+          room:throwCard({c}, self.name, pl, player)
         end
       end
     end
