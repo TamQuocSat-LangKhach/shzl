@@ -602,7 +602,7 @@ local wansha = fk.CreateTriggerSkill{
   frequency = Skill.Compulsory,
   refresh_events = {fk.EnterDying},
   can_refresh = function(self, event, target, player, data)
-    return player:hasSkill(self) and player.phase ~= Player.NotActive
+    return player:hasSkill(self) and player.phase ~= Player.NotActive and table.contains(player.player_skills, self)
   end,
   on_refresh = function(self, event, target, player, data)
     player.room:notifySkillInvoked(player, self.name)
@@ -614,7 +614,7 @@ local wansha_prohibit = fk.CreateProhibitSkill{
   prohibit_use = function(self, player, card)
     if card.name == "peach" and not player.dying then
       return table.find(Fk:currentRoom().alive_players, function(p)
-        return p.phase ~= Player.NotActive and p:hasSkill(wansha.name) and p ~= player
+        return p.phase ~= Player.NotActive and p:hasSkill(wansha) and p ~= player and table.contains(p.player_skills, wansha)
       end)
     end
   end,
