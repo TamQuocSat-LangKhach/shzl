@@ -160,12 +160,11 @@ local liegong = fk.CreateTriggerSkill{
   anim_type = "offensive",
   events = {fk.TargetSpecified},
   can_trigger = function(self, event, target, player, data)
-    if not (target == player and player:hasSkill(self)) then return end
+    if not (target == player and player:hasSkill(self) and data.card.trueName == "slash" and player.phase == Player.Play) then return end
     local room = player.room
     local to = room:getPlayerById(data.to)
-    local num = #to:getCardIds(Player.Hand)
-    local filter = num <= player:getAttackRange() or num >= player.hp
-    return data.card.trueName == "slash" and filter and player.phase == Player.Play
+    local num = to:getHandcardNum()
+    return num <= player:getAttackRange() or num >= player.hp
   end,
   on_use = function(self, event, target, player, data)
     data.disresponsiveList = data.disresponsiveList or {}
@@ -176,7 +175,7 @@ huangzhong:addSkill(liegong)
 Fk:loadTranslationTable{
   ["huangzhong"] = "黄忠",
   ["liegong"] = "烈弓",
-  [":liegong"] = "当你于出牌阶段内使用【杀】指定一个目标后，若该角色的手牌数不小于你的体力值或不大于你的攻击范围，则你可以令其不能使用【闪】响应此【杀】。",
+  [":liegong"] = "当你于出牌阶段内使用【杀】指定一个目标后，若其手牌数不小于你的体力值或不大于你的攻击范围，则你可以令其不能使用【闪】响应此【杀】。",
 
   ["$liegong1"] = "百步穿杨！",
   ["$liegong2"] = "中！",
@@ -234,12 +233,9 @@ local tianxiang = fk.CreateTriggerSkill{
   name = "tianxiang",
   anim_type = "defensive",
   events = {fk.DamageInflicted},
-  can_trigger = function(self, event, target, player, data)
-    return player:hasSkill(self) and target == player
-  end,
   on_cost = function(self, event, target, player, data)
-    local tar, card =  player.room:askForChooseCardAndPlayers(player, table.map(player.room:getOtherPlayers(player), function (p)
-      return p.id end), 1, 1, ".|.|heart|hand", "#tianxaing-choose", self.name, true)
+    local tar, card = player.room:askForChooseCardAndPlayers(player, table.map(player.room:getOtherPlayers(player), function (p)
+      return p.id end), 1, 1, ".|.|heart|hand", "#tianxiang-choose", self.name, true)
     if #tar > 0 and card then
       self.cost_data = {tar[1], card}
       return true
@@ -278,7 +274,7 @@ Fk:loadTranslationTable{
   ["xiaoqiao"] = "小乔",
   ["tianxiang"] = "天香",
   [":tianxiang"] = "当你受到伤害时，你可以弃置一张<font color='red'>♥</font>手牌并选择一名其他角色。若如此做，你将此伤害转移给该角色，然后其摸X张牌（X为其已损失体力值）。",
-  ["#tianxaing-choose" ] = "天香：弃置一张<font color='red'>♥</font>手牌将此伤害转移给一名其他角色，然后其摸X张牌（X为其已损失体力值）",
+  ["#tianxiang-choose" ] = "天香：弃置一张<font color='red'>♥</font>手牌将此伤害转移给一名其他角色，然后其摸X张牌（X为其已损失体力值）",
   ["hongyan"] = "红颜",
   [":hongyan"] = "锁定技，你的♠牌视为<font color='red'>♥</font>牌。",
 
@@ -542,7 +538,7 @@ local huangtian = fk.CreateTriggerSkill{
       return p.kingdom == "qun"
     end)
     ]]
-    local targets = room.alive_players
+    local targets = room:getOtherPlayers(player)
     if event == fk.GameStart or event == fk.EventAcquireSkill then
       if player:hasSkill(self.name, true) then
         table.forEach(targets, function(p)
@@ -636,24 +632,22 @@ local guhuo = fk.CreateViewAsSkill{
     return UI.ComboBox { choices = names }
   end,
   card_filter = function(self, to_select, selected)
-    return #selected == 0 and Fk:currentRoom():getCardArea(to_select) ~= Card.PlayerEquip
+    return #selected == 0 and Fk:currentRoom():getCardArea(to_select) == Card.PlayerHand
   end,
   view_as = function(self, cards)
     if #cards ~= 1 or not self.interaction.data then return end
     local card = Fk:cloneCard(self.interaction.data)
-    self.cost_data = cards
+    card.subcards = cards -- avoid updateColorAndNumber
     card.skillName = self.name
     return card
   end,
   before_use = function(self, player, use)
     local room = player.room
-    local cards = self.cost_data
-    local guhuo_mark = {}
-    table.insertIfNeed(guhuo_mark, cards[1])
-    room:setPlayerMark(player, "guhuo_use-phase", guhuo_mark)
+    local cards = use.card.subcards
+    room:setPlayerMark(player, "guhuo_use-phase", cards[1])
     room:moveCardTo(cards, Card.Void, nil, fk.ReasonPut, "guhuo", "", false)  --暂时放到Card.Void,理论上应该是Card.Processing,只要moveVisible可以false
     local targets = TargetGroup:getRealTargets(use.tos)
-    if targets and #targets > 0 then
+    if #targets > 0 then
       room:sendLog{
         type = "#guhuo_use",
         from = player.id,
@@ -674,7 +668,7 @@ local guhuo = fk.CreateViewAsSkill{
     return not player:isKongcheng()
   end,
   enabled_at_response = function(self, player, response)
-    return not response and not player:isKongcheng()
+    return not player:isKongcheng()
   end,
 }
 
@@ -685,7 +679,7 @@ local guhuoResponse = fk.CreateTriggerSkill{
   priority = 10,
   can_trigger = function(self, event, target, player, data)
     return target == player and player:hasSkill(self.name, true) and table.contains(data.card.skillNames, "guhuo") and
-    data.card:isVirtual() and #data.card.subcards == 0 and player:getMark("guhuo_use-phase") ~= 0
+    data.card:isVirtual() and player:getMark("guhuo_use-phase") ~= 0
   end,
   on_cost = function(self, event, target, player, data)
     local room = player.room
@@ -694,14 +688,13 @@ local guhuoResponse = fk.CreateTriggerSkill{
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room
-    local guhuo_mark = target:getMark("guhuo_use-phase")
-    local card_id = guhuo_mark[1]
+    local card_id = target:getMark("guhuo_use-phase")
     if not card_id then return true end
     local questioned = {}
     for _, p in ipairs(room:getOtherPlayers(player)) do
       if p.hp > 0 then
-        local choice = room:askForChoice(p, {"noquestion", "question"}, "guhuo", "", nil)
-        if choice ~= "noquestion" then
+        local choice = room:askForChoice(p, {"guhuo_noquestion", "guhuo_question"}, "guhuo", "#guhuo-ask:" .. player.id .. "::" .. data.card:toLogString(), nil)
+        if choice ~= "guhuo_noquestion" then
           table.insertIfNeed(questioned, p)
         end
         room:sendLog{
@@ -709,6 +702,7 @@ local guhuoResponse = fk.CreateTriggerSkill{
           from = p.id,
           arg = choice
         }
+        room:setPlayerMark(p, "@guhuo", choice)
       end
     end
     local success = false
@@ -732,13 +726,21 @@ local guhuoResponse = fk.CreateTriggerSkill{
 	--
     if success then
       for _, p in ipairs(questioned) do
-        room:loseHp(p, 1, "guhuo")
+        if not p.dead then
+          room:loseHp(p, 1, "guhuo")
+        end
       end
     else
       for _, p in ipairs(questioned) do
-        p:drawCards(1, "guhuo")
+        if not p.dead then
+          p:drawCards(1, "guhuo")
+        end
       end
     end
+    table.forEach(room.alive_players, function (p)
+      room:setPlayerMark(p, "@guhuo", 0)
+    end)
+    data.card.subcards = {}
     if canuse then
       data.card:addSubcard(card_id)
       return false
@@ -760,10 +762,12 @@ Fk:loadTranslationTable{
   [":guhuo"] = "你可以扣置一张手牌当做一张基本牌或非延时锦囊牌使用或打出，体力值大于0的其他角色选择是否质疑，然后你展示此牌："..
   "若无角色质疑，此牌按你所述继续结算；若有角色质疑：若此牌为真，质疑角色各失去1点体力，否则质疑角色各摸一张牌，"..
   "且若此牌为<font color='red'>♥</font>且为真，则按你所述继续结算，否则将之置入弃牌堆。",
-  ["question"] = "质疑",
-  ["noquestion"] = "不质疑",
-  ["#guhuo_use"] = "%from 发动了“%arg2”，声明此牌为 【%arg】，指定的目标为 %to",
-  ["#guhuo_no_target"] = "%from 发动了“%arg2”，声明此牌为 【%arg】",
+  ["#guhuo-ask"] = "蛊惑：是否质疑 %src 使用的 %arg",
+  ["guhuo_question"] = "质疑",
+  ["guhuo_noquestion"] = "不质疑",
+  ["@guhuo"] = "",
+  ["#guhuo_use"] = "%from 发动了“%arg2”，声明此牌为 %arg，指定的目标为 %to",
+  ["#guhuo_no_target"] = "%from 发动了“%arg2”，声明此牌为 %arg",
   ["#guhuo_query"] = "%from 表示 %arg",
 }
 return extension

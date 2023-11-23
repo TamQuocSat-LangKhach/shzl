@@ -194,8 +194,10 @@ local qingce = fk.CreateActiveSkill{
     local player = room:getPlayerById(effect.from)
     local target = room:getPlayerById(effect.tos[1])
     room:moveCardTo(effect.cards, Card.DiscardPile, player, fk.ReasonPutIntoDiscardPile, self.name, "guanqiujian__glory")
-    local card = room:askForCardChosen(player, target, "ej", self.name)
-    room:throwCard({card}, self.name, target, player)
+    if #target:getCardIds("ej") > 0 then
+      local card = room:askForCardChosen(player, target, "ej", self.name)
+      room:throwCard({card}, self.name, target, player)
+    end
   end,
 }
 guanqiujian:addSkill(zhengrong)
@@ -654,12 +656,11 @@ local huairou = fk.CreateActiveSkill{
   end,
   card_num = 1,
   card_filter = function(self, to_select, selected)
-    return #selected < 3 and Fk:getCardById(to_select).type == Card.TypeEquip
+    return #selected < 1 and Fk:getCardById(to_select).type == Card.TypeEquip
   end,
   target_num = 0,
   on_use = function(self, room, effect)
-    local player = room:getPlayerById(effect.from)
-    room:recastCard(effect.cards, player, self.name)
+    room:recastCard(effect.cards, room:getPlayerById(effect.from), self.name)
   end,
 }
 lukang:addRelatedSkill(huairou)

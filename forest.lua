@@ -58,7 +58,7 @@ local xingshang = fk.CreateTriggerSkill{
     local cards_id = target:getCardIds{Player.Hand, Player.Equip}
     local dummy = Fk:cloneCard'slash'
     dummy:addSubcards(cards_id)
-    room:obtainCard(player.id, dummy, false, fk.Discard)
+    room:obtainCard(player.id, dummy, false, fk.ReasonPrey)
   end,
 }
 local fangzhu = fk.CreateTriggerSkill{
