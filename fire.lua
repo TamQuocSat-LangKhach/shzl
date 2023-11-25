@@ -115,8 +115,7 @@ local jieming = fk.CreateTriggerSkill{
   end,
   on_cost = function(self, event, target, player, data)
     local room = player.room
-    local to = room:askForChoosePlayers(player, table.map(room.alive_players, function(p)
-      return p.id end), 1, 1, "#jieming-choose", self.name, true)
+    local to = room:askForChoosePlayers(player, table.map(room.alive_players, Util.IdMapper), 1, 1, "#jieming-choose", self.name, true)
     if #to > 0 then
       self.cost_data = to[1]
       return true
@@ -125,7 +124,10 @@ local jieming = fk.CreateTriggerSkill{
   end,
   on_use = function(self, event, target, player, data)
     local to = player.room:getPlayerById(self.cost_data)
-    to:drawCards(math.min(to.maxHp, 5) - #to.player_cards[Player.Hand])
+    local num = math.min(to.maxHp, 5) - to:getHandcardNum()
+    if num > 0 then
+      to:drawCards(num, self.name)
+    end
   end,
 }
 xunyu:addSkill(quhu)

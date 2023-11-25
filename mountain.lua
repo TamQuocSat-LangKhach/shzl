@@ -801,11 +801,7 @@ local beige = fk.CreateTriggerSkill{
       target:drawCards(2, self.name)
     elseif judge.card.suit == Card.Club then
       if data.from and not data.from.dead then
-        if #data.from:getCardIds{Player.Hand, Player.Equip} < 3 then
-          data.from:throwAllCards("he")
-        else
-          room:askForDiscard(data.from, 2, 2, true, self.name, false, ".")
-        end
+        room:askForDiscard(data.from, 2, 2, true, self.name, false)
       end
     elseif judge.card.suit == Card.Spade then
       if data.from and not data.from.dead then

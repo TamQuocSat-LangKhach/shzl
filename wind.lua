@@ -637,15 +637,17 @@ local guhuo = fk.CreateViewAsSkill{
   view_as = function(self, cards)
     if #cards ~= 1 or not self.interaction.data then return end
     local card = Fk:cloneCard(self.interaction.data)
-    card.subcards = cards -- avoid updateColorAndNumber
+    card:setMark("_guhuo", cards)
     card.skillName = self.name
     return card
   end,
   before_use = function(self, player, use)
     local room = player.room
-    local cards = use.card.subcards
+    local cards = use.card:getMark("_guhuo")
+    room:setCardMark(use.card, "_guhuo", 0)
     room:setPlayerMark(player, "guhuo_use-phase", cards[1])
     room:moveCardTo(cards, Card.Void, nil, fk.ReasonPut, "guhuo", "", false)  --暂时放到Card.Void,理论上应该是Card.Processing,只要moveVisible可以false
+    room:doBroadcastNotify("ShowToast", Fk:translate("guhuo_init") .. Fk:translate(use.card.name) .. '</font></b>')
     local targets = TargetGroup:getRealTargets(use.tos)
     if #targets > 0 then
       room:sendLog{
@@ -679,7 +681,7 @@ local guhuoResponse = fk.CreateTriggerSkill{
   priority = 10,
   can_trigger = function(self, event, target, player, data)
     return target == player and player:hasSkill(self.name, true) and table.contains(data.card.skillNames, "guhuo") and
-    data.card:isVirtual() and player:getMark("guhuo_use-phase") ~= 0
+    data.card:isVirtual() and player:getMark("guhuo_use-phase") ~= 0 and #data.card.subcards == 0
   end,
   on_cost = function(self, event, target, player, data)
     local room = player.room
@@ -690,12 +692,12 @@ local guhuoResponse = fk.CreateTriggerSkill{
     local room = player.room
     local card_id = target:getMark("guhuo_use-phase")
     if not card_id then return true end
-    local questioned = {}
+    local questioned = false
     for _, p in ipairs(room:getOtherPlayers(player)) do
       if p.hp > 0 then
         local choice = room:askForChoice(p, {"guhuo_noquestion", "guhuo_question"}, "guhuo", "#guhuo-ask:" .. player.id .. "::" .. data.card:toLogString(), nil)
-        if choice ~= "guhuo_noquestion" then
-          table.insertIfNeed(questioned, p)
+        if choice == "guhuo_question" and not questioned then
+          questioned = true
         end
         room:sendLog{
           type = "#guhuo_query",
@@ -708,7 +710,7 @@ local guhuoResponse = fk.CreateTriggerSkill{
     local success = false
     local canuse = false
     local guhuo_card = Fk:getCardById(card_id)
-    if #questioned > 0 then
+    if questioned then
       if data.card.name == guhuo_card.name then
         success = true
         if guhuo_card.suit == Card.Heart then
@@ -719,28 +721,23 @@ local guhuoResponse = fk.CreateTriggerSkill{
       canuse = true
     end
     player:showCards({card_id})
-	--暂时使用setCardArea,当moveVisible可以false之后,不必再移动到Card.Void,也就不必再setCardArea
+    -- 暂时使用setCardArea,当moveVisible可以false之后,不必再移动到Card.Void,也就不必再setCardArea
     table.removeOne(room.void, card_id)
     table.insert(room.processing_area, card_id)
     room:setCardArea(card_id, Card.Processing, nil)
-	--
-    if success then
-      for _, p in ipairs(questioned) do
-        if not p.dead then
-          room:loseHp(p, 1, "guhuo")
-        end
-      end
-    else
-      for _, p in ipairs(questioned) do
-        if not p.dead then
-          p:drawCards(1, "guhuo")
-        end
-      end
-    end
+    -- 
     table.forEach(room.alive_players, function (p)
+      if p:getMark("@guhuo") == "guhuo_question" then
+        if not p.dead then
+          if success then
+            room:loseHp(p, 1, "guhuo")
+          else
+            p:drawCards(1, "guhuo")
+          end
+        end
+      end
       room:setPlayerMark(p, "@guhuo", 0)
     end)
-    data.card.subcards = {}
     if canuse then
       data.card:addSubcard(card_id)
       return false
@@ -762,11 +759,12 @@ Fk:loadTranslationTable{
   [":guhuo"] = "你可以扣置一张手牌当做一张基本牌或非延时锦囊牌使用或打出，体力值大于0的其他角色选择是否质疑，然后你展示此牌："..
   "若无角色质疑，此牌按你所述继续结算；若有角色质疑：若此牌为真，质疑角色各失去1点体力，否则质疑角色各摸一张牌，"..
   "且若此牌为<font color='red'>♥</font>且为真，则按你所述继续结算，否则将之置入弃牌堆。",
-  ["#guhuo-ask"] = "蛊惑：是否质疑 %src 使用的 %arg",
+  ["guhuo_init"] = "<b><font color='#0598BC'>蛊惑</font></b>的牌为<b><font color='#0598BC'>",
+  ["#guhuo-ask"] = "蛊惑：是否质疑 %src 使用/打出的 %arg",
   ["guhuo_question"] = "质疑",
   ["guhuo_noquestion"] = "不质疑",
   ["@guhuo"] = "",
-  ["#guhuo_use"] = "%from 发动了“%arg2”，声明此牌为 %arg，指定的目标为 %to",
+  ["#guhuo_use"] = "%from 发动了 “%arg2”，声明此牌为 %arg，指定的目标为 %to",
   ["#guhuo_no_target"] = "%from 发动了“%arg2”，声明此牌为 %arg",
   ["#guhuo_query"] = "%from 表示 %arg",
 }
