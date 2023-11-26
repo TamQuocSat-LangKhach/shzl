@@ -374,43 +374,29 @@ Fk:loadTranslationTable{
 }
 
 local luji = General(extension, "luji", "wu", 3)
-local huaiju_effect = fk.CreateTriggerSkill{
-  name = "#huaiju_effect",
-  mute = true,
-  events = {fk.DrawNCards, fk.DamageInflicted},
+local huaiju = fk.CreateTriggerSkill{
+  name = "huaiju",
+  events = {fk.GameStart, fk.DrawNCards, fk.DamageInflicted},
+  frequency = Skill.Compulsory,
   can_trigger = function(self, event, target, player, data)
-    return target == player and player:getMark("@orange") > 0
-  end,
-  on_cost = Util.TrueFunc,
-  on_use = function(self, event, target, player, data)
-    local room = player.room
-    local _luji = table.find(room.alive_players, function(p)
-      return p:hasSkill("huaiju")
-    end)
-    if _luji then
-      _luji:broadcastSkillInvoke("huaiju")
-      room:notifySkillInvoked(_luji, "huaiju", event == fk.DamageInflicted and "defensive" or "drawcard")
+    if not player:hasSkill(self) then return false end
+    if event == fk.GameStart then
+      return true
+    else
+      return target:getMark("@orange") > 0
     end
+  end,
+  on_use = function(self, event, target, player, data)
     if event == fk.DamageInflicted then
-      room:removePlayerMark(player, "@orange")
+      player.room:removePlayerMark(target, "@orange")
       return true
     elseif event == fk.DrawNCards then
       data.n = data.n + 1
+    elseif event == fk.GameStart then
+      player.room:addPlayerMark(player, "@orange", 3)
     end
-  end
-}
-local huaiju = fk.CreateTriggerSkill{
-  name = "huaiju",
-  events = {fk.GameStart},
-  frequency = Skill.Compulsory,
-  can_trigger = function(self, event, target, player, data)
-    return player:hasSkill(self)
-  end,
-  on_use = function(self, event, target, player, data)
-    player.room:addPlayerMark(player, "@orange", 3)
   end,
 }
-huaiju:addRelatedSkill(huaiju_effect)
 local yili = fk.CreateTriggerSkill{
   name = "yili",
   anim_type = "support",
@@ -420,8 +406,7 @@ local yili = fk.CreateTriggerSkill{
   end,
   on_cost = function(self, event, target, player, data)
     local room = player.room
-    local targets = table.map(room:getOtherPlayers(player), Util.IdMapper)
-
+    local targets = table.map(room:getOtherPlayers(player, false), Util.IdMapper)
     local result = room:askForChoosePlayers(player, targets, 1, 1, "#yili-choose", self.name)
     if #result > 0 then
       local tgt = result[1]
@@ -447,10 +432,9 @@ local yili = fk.CreateTriggerSkill{
 }
 local zhenglun = fk.CreateTriggerSkill{
   name = "zhenglun",
-  events = { fk.EventPhaseStart },
+  events = { fk.EventPhaseChanging },
   can_trigger = function(self, event, target, player, data)
-    return target == player and player:hasSkill(self) and player.phase == Player.Draw and
-      player:getMark("@orange") == 0
+    return target == player and player:hasSkill(self) and data.to == Player.Draw and player:getMark("@orange") == 0
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room

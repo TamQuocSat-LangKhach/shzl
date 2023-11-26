@@ -583,8 +583,12 @@ local guzheng = fk.CreateTriggerSkill{
     local room = player.room
     local guzheng_hand, guzheng_all = self.cost_data[1], self.cost_data[2]
     guzheng_all = table.reverse(guzheng_all)
-    local to_return, choice = U.askforChooseCardsAndChoice(player, guzheng_hand, {"guzheng_yes", "guzheng_no"},
-    self.name, "#guzheng-title::" .. target.id, {}, 1, 1, guzheng_all)
+    local to_return = {guzheng_hand[1]}
+    local choice = "guzheng_no"
+    if #guzheng_all > 1 then
+      to_return, choice = U.askforChooseCardsAndChoice(player, guzheng_hand, {"guzheng_yes", "guzheng_no"},
+      self.name, "#guzheng-title::" .. target.id, {}, 1, 1, guzheng_all)
+    end
     local moveInfos = {}
     table.insert(moveInfos, {
       ids = to_return,
@@ -781,8 +785,10 @@ local beige = fk.CreateTriggerSkill{
     return player:hasSkill(self) and data.card and data.card.trueName == "slash" and not data.to.dead and not player:isNude()
   end,
   on_cost = function(self, event, target, player, data)
-    local card = player.room:askForDiscard(player, 1, 1, true, self.name, true, ".", "#beige-invoke::"..target.id, true)
+    local room = player.room
+    local card = room:askForDiscard(player, 1, 1, true, self.name, true, ".", "#beige-invoke::"..target.id, true)
     if #card > 0 then
+      room:doIndicate(player.id, {target.id})
       self.cost_data = card
       return true
     end
@@ -790,6 +796,7 @@ local beige = fk.CreateTriggerSkill{
   on_use = function(self, event, target, player, data)
     local room = player.room
     room:throwCard(self.cost_data, self.name, player, player)
+    if target.dead then return false end
     local judge = {
       who = target,
       reason = self.name,
@@ -797,7 +804,7 @@ local beige = fk.CreateTriggerSkill{
     }
     room:judge(judge)
     if judge.card.suit == Card.Heart then
-      if target:isWounded() then
+      if not target.dead and target:isWounded() then
         room:recover{
           who = target,
           num = 1,
@@ -806,7 +813,9 @@ local beige = fk.CreateTriggerSkill{
         }
       end
     elseif judge.card.suit == Card.Diamond then
-      target:drawCards(2, self.name)
+      if not target.dead then
+        target:drawCards(2, self.name)
+      end
     elseif judge.card.suit == Card.Club then
       if data.from and not data.from.dead then
         room:askForDiscard(data.from, 2, 2, true, self.name, false)

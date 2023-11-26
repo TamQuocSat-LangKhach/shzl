@@ -71,9 +71,7 @@ local zhengu_delay = fk.CreateTriggerSkill{
       return x < y or (x > y and y < 5)
     end
   end,
-  on_cost = function(self, event, target, player, data)
-    return true
-  end,
+  on_cost = Util.TrueFunc,
   on_use = function(self, event, target, player, data)
     local room = player.room
     room:notifySkillInvoked(player, zhengu.name)
@@ -839,9 +837,10 @@ local congjian = fk.CreateTriggerSkill{
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room
+    local x = Fk:getCardById(self.cost_data[2]).type == Card.TypeEquip and 2 or 1
     room:obtainCard(self.cost_data[1], self.cost_data[2], false, fk.ReasonGive)
     if not player.dead then
-      player:drawCards(Fk:getCardById(self.cost_data[2]).type == Card.TypeEquip and 2 or 1, self.name)
+      player:drawCards(x, self.name)
     end
   end,
 }
