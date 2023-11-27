@@ -17,14 +17,14 @@ return {
 
   ["weiyan"] = "Wei Yan",
   ["kuanggu"] = "Haughty Streak",
-  [":kuanggu"] = "<b>Compulsory skill</b>, after you cause 1 DMG to a player at distance 1, you heal 1 HP.",
+  [":kuanggu"] = "(forced) After you cause 1 DMG to a player at distance 1, you heal 1 HP.",
 
   ["xiaoqiao"] = "Xiao Qiao",
   ["tianxiang"] = "Heavenly Scent",
   [":tianxiang"] = "When you are about to take DMG, you can discard 1 heart hand card, transfer this DMG to another player, then he draws X cards (X=his lost HP).",
   ["#tianxaing-choose" ] = "Heavenly Scent: you may discard 1 heart hand card to transfer the DMG",
   ["hongyan"] = "Youthful Beauty",
-  [":hongyan"] = "<b>Compulsory skill</b>, your spade cards are regarded as heart cards.",
+  [":hongyan"] = "(forced) Your spade cards are regarded as heart cards.",
 
   ["zhoutai"] = "Zhou Tai",
   ["buqu"] = "Refusing Death",
@@ -33,7 +33,7 @@ return {
   ["#buqu_duplicate"] = '"%arg2" of %from fails: %arg duplicate pairs in the "Wound"',
   ["#buqu_duplicate_group"] = "Duplicated numbers #%arg: %arg2",
   ["#buqu_duplicate_item"] = 'Duplicated "Wound" cards: %arg',
-  ["#buqu_remove"] = '%from removes "Wound" cards：%arg',
+  ["#buqu_remove"] = '%from removes "Wound" cards: %arg',
   ["zhoutai_chuang"] = "Wound",
 
   ["zhangjiao"] = "Zhang Jiao",
@@ -42,7 +42,7 @@ return {
   ["guidao"] = "Dark Sorcery",
   [":guidao"] = "Before a player's judge card takes effect, you can play a black card to replace it.",
   ["huangtian"] = "Yellow Sky",
-  [":huangtian"] = "<b>Lord skill</b>, once per action phase of other Neutral characters, they can give you a Dodge or a Lightning.",
+  [":huangtian"] = "(lord) Once per action phase of other Neutral characters, they can give you a Dodge or a Lightning.",
 
   ["#leiji-choose"] = "Lighting Strike: you can let a player to perform judgement now",
   ["#guidao-ask"] = 'Dark Sorcery: you can play a black card to replace %dest\'s judge card (reason is "%arg")',
@@ -78,7 +78,7 @@ return {
 
   ["wolong"] = "Young Zhuge.",
   ["bazhen"] = "Eight Diagram",
-  [":bazhen"] = "<b>Compulsory skill</b>, If you don't have any armor equipped, you are regarded as having Eight Diagram equipped.",
+  [":bazhen"] = "(forced) If you don't have any armor equipped, you are regarded as having Eight Diagram equipped.",
   ["huoji"] = "Arson Tactic",
   [":huoji"] = "You can use red hand cards as Fire Attack.",
   ["kanpo"] = "See Through",
@@ -90,7 +90,7 @@ return {
   ["lianhuan"] = "Chaining",
   [":lianhuan"] = "You can use club hand card as Iron Chain or recast you club hand card.",
   ["niepan"] = "Nirvana",
-  [":niepan"] = "<b>Limited skill</b>, when you are dying, you can discard all of your cards, reset your character card, then draw 3 cards and heal to 3 HP.",
+  [":niepan"] = "(limited) When you are dying, you can discard all of your cards, reset your character card, then draw 3 cards and heal to 3 HP.",
   ["#lianhuan"] = "Chaining: use club hand card as Iron Chain or recast",
 
   ["taishici"] = "Taishi Ci",
@@ -111,7 +111,7 @@ return {
   ["luanji"] = "Chaos Archery",
   [":luanji"] = "You can use 2 hand cards with the same suit as Archery Attack.",
   ["xueyi"] = "Bloodline",
-  [":xueyi"] = "<b>Lord skill, compulsory skill</b>, you max card is increased by +2*X (X=the amount of other Neutral characters in the game)",
+  [":xueyi"] = "(lord, forced) Your max card is increased by +2*X (X=the amount of other Neutral characters in the game)",
 
   -- Forest package
   ["forest"] = "Forest",
@@ -125,20 +125,20 @@ return {
   ["fangzhu"] = "Banish into Exile",
   [":fangzhu"] = "After you take DMG, you can make another player turn over then draw X card(s). (X = your lost HP)",
   ["songwei"] = "Exalt the Powerful",
-  [":songwei"] = "<b>Lord skill</b>, after another Wei character's black judge card takes effect, he can let you draw 1 card.",
+  [":songwei"] = "(lord) After another Wei character's black judge card takes effect, he can let you draw 1 card.",
 
   ["#fangzhu-choose"] = "Banish into Exile: you can make another turn over and draw cards",
   ["#songwei-invoke"] = "Exalt the Powerful: you can let %src draw 1 card",
 
   ["menghuo"] = "Meng Huo",
   ["huoshou"] = "The Smoking Gun",
-  [":huoshou"] = "<b>Compulsory skill</b>, Savage Assault has no effect on you; when Savage Assault deals DMG, you become the DMG source.",
+  [":huoshou"] = "(forced) Savage Assault has no effect on you; when Savage Assault deals DMG, you become the DMG source.",
   ["zaiqi"] = "Great Again",
   [":zaiqi"] = "During you draw phase, if you are wounded, you can change to show X cards at the top of draw pile (X=your lost HP), you discard all heart cards of them and recover same amount of HP, then you get the rest of cards.",
 
   ["zhurong"] = "Zhu Rong",
   ["juxiang"] = "Giant Elephant",
-  [":juxiang"] = "<b>Compulsory skill</b>, Savage Assault has no effect on you; after Savage Assault used by another player have finished all effects, you get that card.",
+  [":juxiang"] = "(forced) Savage Assault has no effect on you; after Savage Assault used by another player have finished all effects, you get that card.",
   ["lieren"] = "Fearsome Blade",
   [":lieren"] = "After you deal DMG with Slash, you can point fight to the target, if you win, you take 1 card from the target.",
 
@@ -164,22 +164,22 @@ return {
   ["jiuchi"] = "Drown in Wine",
   [":jiuchi"] = "You can use a spade hand card as Alcohol.",
   ["roulin"] = "Garden of Lust",
-  [":roulin"] = "<b>Compulsory skill</b>, when you use Slash target to a female character of when a famale character uses Slash target to you, the target needs to use 2 Dodge to evade it.",
+  [":roulin"] = "(forced) When you use Slash target to a female character of when a famale character uses Slash target to you, the target needs to use 2 Dodge to evade it.",
   ["benghuai"] = "Disintegration",
-  [":benghuai"] = "<b>Compulsory skill</b>, at the start of your finish phase, if you aren't the player with the lowest HP, you choose: 1. Lose 1 HP; 2. Lose 1 max HP.",
+  [":benghuai"] = "(forced) At the start of your finish phase, if you aren't the player with the lowest HP, you choose: 1. Lose 1 HP; 2. Lose 1 max HP.",
   ["baonve"] = "The Tyrant",
-  [":baonve"] = "<b>Lord skill</b>, after other Neutral character deals 1 DMG, he can perform a judgement, if the result is spade, you heal 1 HP.",
+  [":baonve"] = "(lord) After other Neutral character deals 1 DMG, he can perform a judgement, if the result is spade, you heal 1 HP.",
   ["loseMaxHp"] = "Lose 1 max HP",
   ["loseHp"] = "Lose 1 HP",
   ["#baonve-invoke"] = "The Tyrant: you can perform judgement, if result is spade, %src heals 1 HP",
 
   ["jiaxu"] = "Jia Xu",
   ["wansha"] = "Unmitigated Murder",
-  [":wansha"] = "<b>Compulsory skill</b>, during your turn, only you and the dying player can use Peach.",
+  [":wansha"] = "(forced) During your turn, only you and the dying player can use Peach.",
   ["luanwu"] = "Descend into Chaos",
-  [":luanwu"] = "<b>Limited skill</b>, during you action phase, you can make all other players choose: 1. Use a Slash to the player in their least distance; 2. Lose 1 HP.",
+  [":luanwu"] = "(limited) During you action phase, you can make all other players choose: 1. Use a Slash to the player in their least distance; 2. Lose 1 HP.",
   ["weimu"] = "Behind the Curtain",
-  [":weimu"] = "<b>Compulsory skill</b>, you can't be the target of black trick cards.",
+  [":weimu"] = "(forced) You can't be the target of black trick cards.",
 
   ["#luanwu-use"] = "Descend into Chaos: use Slash or lose 1 HP",
 
@@ -196,7 +196,7 @@ return {
   ["tuntian"] = "Amassing Field",
   [":tuntian"] = 'After you lose card outside your turn, you can perform a judgement, if the result is NOT heart, you place the judge card on you character card, face-up ("Field"). The distance from you to other player is reduced by X. (X = the amount of "Fields")',
   ["zaoxian"] = "Conduit",
-  [":zaoxian"] = '<b>Awaken skill</b>, at the start of prepare phase, if you have 3 or 3+ "Fields", you lose 1 max HP and acquire the skill Blitz.',
+  [":zaoxian"] = '(awaken) At the start of prepare phase, if you have 3 or 3+ "Fields", you lose 1 max HP and acquire the skill Blitz.',
   ["jixi"] = "Blitz",
   [":jixi"] = 'You can use a "Field" as Snatch.',
   ["dengai_field"] = "Field",
@@ -205,7 +205,7 @@ return {
   ["tiaoxin"] = "Provoke",
   [":tiaoxin"] = "Once per action phase, you can select a player who has you within his attack range, then ask him to use a Slash to you. If he didn't use Slash, you discard him 1 card.",
   ["zhiji"] = "Carry out Behest",
-  [":zhiji"] = "<b>Awaken skill</b>, at the start of you prepare phase, if you don't have hand cards, you choose: 1. Draw 2 cards; 2. Heal 1 HP. Then you lose 1 max HP and acquire the skill Stargaze.",
+  [":zhiji"] = "(awaken) At the start of you prepare phase, if you don't have hand cards, you choose: 1. Draw 2 cards; 2. Heal 1 HP. Then you lose 1 max HP and acquire the skill Stargaze.",
   ["#tiaoxin-use"] = "Provoke: please use a Slash to him, otherwise he discard you 1 card",
   ["draw1"] = "Draw 1 card",
   ["draw2"] = "Draw 2 cards",
@@ -213,21 +213,21 @@ return {
 
   ["liushan"] = "Liu Shan",
   ["xiangle"] = "Indulged",
-  [":xiangle"] = "<b>Compulsory skill</b>, after a player uses Slash to target you, the user choose: 1. Discard 1 basic card; 2. This Slash has no effect on you.",
+  [":xiangle"] = "(forced) After a player uses Slash to target you, the user choose: 1. Discard 1 basic card; 2. This Slash has no effect on you.",
   ["#xiangle-discard"] = "Indulged: you must discard 1 basic card, otherwise this Slash has no effect on %src",
   ["fangquan"] = "Devolution",
   [":fangquan"] = "You can skip your action phase, and when this turn over, you discard 1 hand card and choose another player, he will play an extra turn.",
   ["#fangquan-give"] = "Devolution: you can discard 1 hand card to let another play an extra turn",
   ["ruoyu"] = "Like Fool",
-  [":ruoyu"] = "<b>Lord skill, awaken skill</b>, at the start of you prepare phase, if you have the fewest HP, you heal 1 max HP and heal 1 HP, then acquire the skills Rouse.",
+  [":ruoyu"] = "(lord, awaken) At the start of you prepare phase, if you have the fewest HP, you heal 1 max HP and heal 1 HP, then acquire the skills Rouse.",
 
   ["sunce"] = "Sun Ce",
   ["jiang"] = "Heated",
   [":jiang"] = "After you target with/you are targeted by Duel or red Slash, you can draw 1 card.",
   ["hunzi"] = "Divine Aura",
-  [":hunzi"] = "<b>Awaken skill</b>, at the start of prepare phase, if you HP is 1, you lose 1 max HP and acquire the skills Soul of Hero and Handsome.",
+  [":hunzi"] = "(awaken) At the start of prepare phase, if you HP is 1, you lose 1 max HP and acquire the skills Soul of Hero and Handsome.",
   ["zhiba"] = "Hegemony",
-  [":zhiba"] = "<b>Lord skill</b>, once per action phase of another Wu character, he can point fight you (if you have activated Divine Aura you can refuse him), if he doesn't win, you can take both cards.",
+  [":zhiba"] = "(lord) Once per action phase of another Wu character, he can point fight you (if you have activated Divine Aura you can refuse him), if he doesn't win, you can take both cards.",
 
   ["zhiba_other&"] = "Hegemony",
   [":zhiba_other&"] = "Once per action phase, you can point fight Sun Ce, if you don't win, he can take both cards.",
@@ -256,7 +256,7 @@ return {
   ["beige"] = "Dirge",
   [":beige"] = "After a player takes DMG from Slash, you can discard 1 card and let him perform a judgement, if the result is: heart, he heals 1 HP; diamond, he draws 2 cards; club, the DMG source discard 2 cards; spade, the DMG source turns over.",
   ["duanchang"] = "Sorrow",
-  [":duanchang"] = "<b>Compulsory skill</b>, when you died, the killer loses all of his skills.",
+  [":duanchang"] = "(forced) When you died, the killer loses all of his skills.",
   ["#beige-invoke"] = "Dirge: %dest takes DMG, you can discard 1 card and let him perform judgement",
 
   -- Shadow package
@@ -279,7 +279,7 @@ return {
 
   ["yanyan"] = "Yan Yan",
   ["juzhan"] = "Refusing Fight",
-  [":juzhan"] = "<b>Switch skill</b>, Yang: when you are targeted with Slash by another player, you can both draw 1 card with him, then he can not use card to you at the rest of this turn; Yin: when your used Slash targets to a player, you can take him 1 card, then you can not use card to him at the rest of this turn.",
+  [":juzhan"] = "(switch) Yang: when you are targeted with Slash by another player, you can both draw 1 card with him, then he can not use card to you at the rest of this turn; Yin: when your used Slash targets to a player, you can take him 1 card, then you can not use card to him at the rest of this turn.",
 
   -- Not available
   ["wangping"] = "Wang Ping",
@@ -291,7 +291,7 @@ return {
 
   ["luji"] = "Lu Ji",
   ["huaiju"] = "Take Oranges",
-  [":huaiju"] = '<b>Compulsory skill</b>, at the start of game, you get 3 tokens ("Orange"). When a player who has "Orange" is about to suffer DMG, prevent this DMG and remove 1 "Orange". The players that have "Orange" draw +1 extra card in their Draw Phase.',
+  [":huaiju"] = '(forced) At the start of game, you get 3 tokens ("Orange"). When a player who has "Orange" is about to suffer DMG, prevent this DMG and remove 1 "Orange". The players that have "Orange" draw +1 extra card in their Draw Phase.',
   ["yili"] = "Present Gift",
   [":yili"] = 'At the start of your Action Phase, you can choose to lose 1 HP or to remove 1 "Orange", then let another player to get 1 "Orange".',
   ["#yili-choose"] = "Present Gift: you can lose 1 HP or Orange, then give another player an Orange",
@@ -309,21 +309,21 @@ return {
   ["kuizhu_choice1"] = "Let up to X players draw 1 card",
   ["kuizhu_choice2"] = "Deal 1 DMG to players that sum of their HP equals to X",
   ["chezheng"] = "Impeded Ruler",
-  [":chezheng"] = "<b>Compulsory skill</b>, in your Action Phase, you can not use card to those who don't have you in their ATK range. At the end of your Action Phase, if # of your used cards in this phase is less than # of those players, you discard 1 card of one of them.",
+  [":chezheng"] = "(forced) In your Action Phase, you can not use card to those who don't have you in their ATK range. At the end of your Action Phase, if # of your used cards in this phase is less than # of those players, you discard 1 card of one of them.",
   ["#chezheng-throw"] = "Impeded Ruler: please choose a player who doesn't have you in his ATK range then discard him 1 card",
   ["#chezheng_prohibit"] = "Impeded Ruler",
   ["lijun"] = "Found Troop",
-  [":lijun"] = "<b>Lord skill</b>, after a Slash which is used by another Wu character in his Action Phase has finished all effects, he can give this Slash to you, then you can let him draw 1 card.",
+  [":lijun"] = "(lord) After a Slash which is used by another Wu character in his Action Phase has finished all effects, he can give this Slash to you, then you can let him draw 1 card.",
   ["#lijun-invoke"] = "Found Troop: you can give this Slash to %src, then he can let you draw 1 card",
   ["#lijun-draw"] = "Found Troop: you can let %src draw 1 card",
 
   ["xuyou"] = "Xu You",
   ["chenglve"] = "Devise Ploy",
-  [":chenglve"] = "<b>Switch skill</b>, once per Action Phase, Yang: you can draw 1 then discard 2 hand cards; Yin: you can draw 2 then discard 1 handcard. After your discard cards by this way, you can use any # of cards which has the same suit with your discarded cards without distance limit in this phase.",
+  [":chenglve"] = "(switch) Once per Action Phase, Yang: you can draw 1 then discard 2 hand cards; Yin: you can draw 2 then discard 1 handcard. After your discard cards by this way, you can use any # of cards which has the same suit with your discarded cards without distance limit in this phase.",
   ["shicai"] = "Rely on Ability",
   [":shicai"] = "After your used card has finished all effects, if its type (basic/trick/equip) is the first time you use in this turn, you can place it to the top of draw pile, then draw 1 card.",
   ["cunmu"] = "Short Sighted",
-  [":cunmu"] = "<b>Compulsory skill</b>, you draw cards from the bottom of draw pile.",
+  [":cunmu"] = "(forced) You draw cards from the bottom of draw pile.",
   ["@chenglve-phase"] = "Devi. P.",
   ["@shicai"] = "Rely A.",
 
@@ -340,7 +340,7 @@ return {
 
   ["zhangxiu"] = "Zhang Xiu",
   ["xiongluan"] = "Grand Rebellion",
-  [":xiongluan"] = "<b>Limited skill</b>, in your Action Phase, you can seal your judgement area and all of your equip slots, then choose another player. Until end of this turn, you can use any # of cards to him without distance limitation, and he can not use/play his hand cards.",
+  [":xiongluan"] = "(limited) In your Action Phase, you can seal your judgement area and all of your equip slots, then choose another player. Until end of this turn, you can use any # of cards to him without distance limitation, and he can not use/play his hand cards.",
   ["congjian"] = "Accept Advice",
   [":congjian"] = "When you are targeted by trick card, if # of targets is more than 1, you can give 1 card to another target then draw 1 card (if you give out equip card, draw 2 cards instead).",
   ["@@xiongluan-turn"] = "Grand Rebellion",
@@ -391,9 +391,9 @@ return {
 
   ["godguanyu"] = "Guan Yu",
   ["wushen"] = "God of War",
-  [":wushen"] = "<b>Compulsory skill</b>, your <font color='red'>♥</font> hand cards are regarded as Slash; your <font color='red'>♥</font> Slash has no distance limitation.",
+  [":wushen"] = "(forced) Your <font color='red'>♥</font> hand cards are regarded as Slash; your <font color='red'>♥</font> Slash has no distance limitation.",
   ["wuhun"] = "Warrior Spirit",
-  [":wuhun"] = '<b>Compulsory skill</b>, After you suffer 1 DMG, the DMG source gets 1 "Nightmare" token; when you die, you choose a player with the most "Nightmares", he performs a judgement, if the result is not Peach or God Salvation, he dies.',
+  [":wuhun"] = '(forced) After you suffer 1 DMG, the DMG source gets 1 "Nightmare" token; when you die, you choose a player with the most "Nightmares", he performs a judgement, if the result is not Peach or God Salvation, he dies.',
   ["@nightmare"] = "Nightmare",
   ["#wuhun-choose"] = "Warrior Spirit: please choose a player with the most \"Nightmares\"",
 
@@ -409,7 +409,7 @@ return {
   ["qinyin"] = "The Sound of Music",
   [":qinyin"] = "In your Discard Phase, if you discard 2 or more cards: you can force all players to heal 1 HP or lose 1 HP.",
   ["yeyan"] = "Searing Heat",
-  [":yeyan"] = "<b>Limited skill</b>, in your Action Phase: you can select up to 3 players and distribute up to 3 Fire DMG among them. If you allocate more than 1 DMG to any of them, you need to discard 1 card of each suit and lose 3 HP first.",
+  [":yeyan"] = "(limited) In your Action Phase: you can select up to 3 players and distribute up to 3 Fire DMG among them. If you allocate more than 1 DMG to any of them, you need to discard 1 card of each suit and lose 3 HP first.",
   ["#yeyan-choose"] = "Searing Heat: choose the target to deal #%arg DMG to",
 
   ["godzhugeliang"] = "Zhuge Liang",
@@ -429,9 +429,9 @@ return {
 
   ["godlvbu"] = "Lv Bu",
   ["kuangbao"] = "Violent Rage",
-  [":kuangbao"] = '<b>Compulsory skill</b>, at the beginning of the game: you get 2 "Rage". After you cause/suffer 1 DMG: you get 1 "Rage".',
+  [":kuangbao"] = '(forced) At the beginning of the game: you get 2 "Rage". After you cause/suffer 1 DMG: you get 1 "Rage".',
   ["wumou"] = "Simpleton",
-  [":wumou"] = '<b>Compulsory skill</b>, when you use a non-delay trick card, you choose: 1. Remove 1 "Rage". 2. Lose 1 HP.',
+  [":wumou"] = '(forced) When you use a non-delay trick card, you choose: 1. Remove 1 "Rage". 2. Lose 1 HP.',
   ["wuqian"] = "Unprecedented",
   [":wuqian"] = 'In your Action Phase: you can remove 2 "Rage" and select a player. This turn, that player\'s armor becomes ineffective and you acquire "Without Equal".',
   ["shenfen"] = "Asura's Fury",
@@ -450,7 +450,7 @@ return {
   ["guixin"] = "Homage",
   [":guixin"] = "After you suffer 1 DMG: you can take 1 card from every other player in any of his areas; then, turn over your character.",
   ["feiying"] = "Flying Shadow",
-  [":feiying"] = "<b>Compulsory skill</b>, You always have a bonus +1 horse.",
+  [":feiying"] = "(forced) You always have a bonus +1 horse.",
 
   ["nos__godzhaoyun"] = "神赵云",
   ["nos__juejing"] = "绝境",
