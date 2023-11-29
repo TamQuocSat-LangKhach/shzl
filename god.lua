@@ -291,7 +291,7 @@ local yeyan = fk.CreateActiveSkill{
     return player:usedSkillTimes(self.name, Player.HistoryGame) == 0
   end,
   card_filter = function(self, to_select, selected)
-    if Fk:currentRoom():getCardArea(to_select) == Player.Equip then return end
+    if Fk:currentRoom():getCardArea(to_select) == Player.Equip or Self:prohibitDiscard(Fk:getCardById(to_select)) then return end
     if #selected == 0 then
       return true
     else
@@ -1892,6 +1892,7 @@ Fk:addPoxiMethod{
     local suit = Fk:getCardById(to_select).suit
     if suit == Card.NoSuit then return false end
     return not table.find(selected, function(id) return Fk:getCardById(id).suit == suit end)
+    and not (Self:prohibitDiscard(Fk:getCardById(to_select)) and table.contains(data[1][2], to_select))
   end,
   feasible = function(selected)
     return #selected == 4
@@ -1989,7 +1990,8 @@ Fk:loadTranslationTable{
   [":poxi"] = "出牌阶段限一次，你可以观看一名其他角色的手牌，然后你可以弃置你与其手里共计四张不同花色的牌。若如此做，根据此次弃置你的牌数量执行以下效果：没有，体力上限减1；一张，结束出牌阶段且本回合手牌上限-1；三张，回复1点体力；四张，摸四张牌。",
   ["gn_jieying"] = "劫营",
   [":gn_jieying"] = "回合开始时，若没有角色有“营”标记，你获得一个“营”标记；结束阶段你可以将“营”标记交给一名其他角色；有“营”的角色摸牌阶段多摸一张牌、使用【杀】的次数上限+1、手牌上限+1。有“营”的其他角色的结束阶段，你获得其“营”标记及所有手牌。",
-
+  
+  ["poxi_discard"] = "魄袭",
   ["#poxi-prompt"] = "魄袭：选择一名有手牌的其他角色，并可弃置你与其手牌中共计四张花色各不相同的牌",
   ["@@jieying_camp"] = "营",
   ["#poxi-choose"] = "魄袭：从双方的手牌中选出四张不同花色的牌弃置，或者点取消",
@@ -2042,9 +2044,7 @@ local meihun = fk.CreateTriggerSkill{
     else
       player:broadcastSkillInvoke(self.name, math.random(3, 4))
     end
-
-    local choice = room:askForChoice(player,
-      {"spade", "heart", "club", "diamond"}, self.name)
+    local choice = room:askForChoice(player, {"spade", "heart", "club", "diamond"}, self.name)
 
     local to = room:getPlayerById(self.cost_data)
     local c = table.find(to:getCardIds{ Player.Hand, Player.Equip }, function(id)
@@ -2054,17 +2054,9 @@ local meihun = fk.CreateTriggerSkill{
     if c then
       local card = room:askForCard(to, 1, 1, true, self.name, false,
         ".|.|" .. choice, "#meihun-give:" .. player.id .. "::" .. choice)
-
       room:obtainCard(player, card[1], false, fk.ReasonGive)
-    else
-      local cids = to:getCardIds(Player.Hand)
-      if #cids == 0 then return end
-      room:fillAG(player, cids)
-
-      local id = room:askForAG(player, cids, false, self.name)
-      room:closeAG(player)
-
-      if not id then return false end
+    elseif not to:isKongcheng() then
+      local id = room:askForCardChosen(player, to, {card_data = { { "$Hand", to:getCardIds(Player.Hand) } } }, self.name)
       room:throwCard(id, self.name, to, player)
     end
   end,
