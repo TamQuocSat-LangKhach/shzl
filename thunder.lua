@@ -498,7 +498,7 @@ local kongsheng = fk.CreateTriggerSkill{
           return card.type == Card.TypeEquip and U.canUseCardTo(room, player, player, card, false, false)
         end)
         if #ids == 0 then break end
-        local id = room:askForCard(player, 1, 1, false, self.name, false,
+        local id = room:askForCard(player, 1, 1, false, self.name, true, -- FIXME：默认返回值bug
           ".|.|.|zhoufei_harp|.|.|"..table.concat(ids), "#kongsheng-use", "zhoufei_harp")
         if #id > 0 then
           id = id[1]
