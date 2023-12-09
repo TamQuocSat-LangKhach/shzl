@@ -473,10 +473,9 @@ local kuangfeng = fk.CreateTriggerSkill{
     end
   end,
 
-  refresh_events = {fk.EventPhaseChanging, fk.Death},
+  refresh_events = {fk.TurnStart, fk.Death},
   can_refresh = function(self, event, target, player, data)
-    if target ~= player or player:getMark("_kuangfeng") == 0 then return false end
-    return event == fk.Death or data.from == Player.NotActive
+    return target == player and player:getMark("_kuangfeng") ~= 0
   end,
   on_refresh = function(self, event, target, player, data)
     local room = player.room
@@ -523,10 +522,9 @@ local dawu = fk.CreateTriggerSkill{
     end
   end,
 
-  refresh_events = {fk.EventPhaseChanging, fk.Death},
+  refresh_events = {fk.TurnStart, fk.Death},
   can_refresh = function(self, event, target, player, data)
-    if target ~= player or player:getMark("_dawu") == 0 then return false end
-    return event == fk.Death or data.from == Player.NotActive
+    return target == player and player:getMark("_dawu") ~= 0
   end,
   on_refresh = function(self, event, target, player, data)
     local room = player.room
@@ -1904,11 +1902,11 @@ Fk:addPoxiMethod{
 local gn_jieying = fk.CreateTriggerSkill{
   name = "gn_jieying",
   anim_type = "drawcard",
-  events = {fk.DrawNCards, fk.EventPhaseStart, fk.EventPhaseChanging},
+  events = {fk.DrawNCards, fk.EventPhaseStart, fk.TurnStart},
   can_trigger = function(self, event, target, player, data)
     if not player:hasSkill(self) then return false end
-    if event == fk.EventPhaseChanging then
-      return player == target and data.from == Player.RoundStart and table.every(player.room.alive_players, function (p)
+    if event == fk.TurnStart then
+      return player == target and table.every(player.room.alive_players, function (p)
         return p:getMark("@@jieying_camp") == 0 end)
     elseif event == fk.EventPhaseStart and target.phase ~= Player.Finish then
       return false
@@ -1929,7 +1927,7 @@ local gn_jieying = fk.CreateTriggerSkill{
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room
-    if event == fk.EventPhaseChanging then
+    if event == fk.TurnStart then
       room:addPlayerMark(player, "@@jieying_camp")
     elseif event == fk.DrawNCards then
       data.n = data.n + 1
