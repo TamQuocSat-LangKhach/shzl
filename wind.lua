@@ -261,8 +261,9 @@ local tianxiang = fk.CreateTriggerSkill{
 }
 local hongyan = fk.CreateFilterSkill{
   name = "hongyan",
-  card_filter = function(self, to_select, player)
-    return to_select.suit == Card.Spade and player:hasSkill(self)
+  card_filter = function(self, to_select, player, isJudgeEvent)
+    return to_select.suit == Card.Spade and player:hasSkill(self) and
+    (table.contains(player:getCardIds("he"), to_select.id) or isJudgeEvent)
   end,
   view_as = function(self, to_select)
     return Fk:cloneCard(to_select.name, Card.Heart, to_select.number)

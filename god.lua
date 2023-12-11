@@ -12,8 +12,7 @@ local wushen = fk.CreateFilterSkill{
   name = "wushen",
   card_filter = function(self, to_select, player)
     return player:hasSkill(self) and to_select.suit == Card.Heart and
-    not table.contains(player.player_cards[Player.Equip], to_select.id) and
-    not table.contains(player.player_cards[Player.Judge], to_select.id)
+    table.contains(player.player_cards[Player.Hand], to_select.id)
   end,
   view_as = function(self, to_select)
     local card = Fk:cloneCard("slash", Card.Heart, to_select.number)
@@ -1410,7 +1409,8 @@ local longnu = fk.CreateTriggerSkill{
 local longnu_filter = fk.CreateFilterSkill{
   name = "#longnu_filter",
   card_filter = function(self, to_select, player)
-    if player:hasSkill("longnu") and player.phase == Player.Play then
+    if player:hasSkill("longnu") and player.phase == Player.Play and
+    table.contains(player.player_cards[Player.Hand], to_select.id) then
       if player:getSwitchSkillState("longnu", true) == fk.SwitchYang then
         return to_select.color == Card.Red
       else
