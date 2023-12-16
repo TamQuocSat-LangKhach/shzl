@@ -633,24 +633,22 @@ local guhuo = fk.CreateViewAsSkill{
     return UI.ComboBox { choices = names }
   end,
   card_filter = function(self, to_select, selected)
-    return #selected == 0 and Fk:currentRoom():getCardArea(to_select) == Card.PlayerHand
+    return #selected == 0 and Fk:currentRoom():getCardArea(to_select) ~= Card.PlayerEquip
   end,
   view_as = function(self, cards)
     if #cards ~= 1 or not self.interaction.data then return end
     local card = Fk:cloneCard(self.interaction.data)
-    card:setMark("_guhuo", cards)
+    self.cost_data = cards
     card.skillName = self.name
     return card
   end,
   before_use = function(self, player, use)
     local room = player.room
-    local cards = use.card:getMark("_guhuo")
-    room:setCardMark(use.card, "_guhuo", 0)
-    room:setPlayerMark(player, "guhuo_use-phase", cards[1])
+    local cards = self.cost_data
+    local card_id = cards[1]
     room:moveCardTo(cards, Card.Void, nil, fk.ReasonPut, "guhuo", "", false)  --暂时放到Card.Void,理论上应该是Card.Processing,只要moveVisible可以false
-    room:doBroadcastNotify("ShowToast", Fk:translate("guhuo_init") .. Fk:translate(use.card.name) .. '</font></b>')
     local targets = TargetGroup:getRealTargets(use.tos)
-    if #targets > 0 then
+    if targets and #targets > 0 then
       room:sendLog{
         type = "#guhuo_use",
         from = player.id,
@@ -658,6 +656,8 @@ local guhuo = fk.CreateViewAsSkill{
         arg = use.card.name,
         arg2 = self.name
       }
+
+      room:doIndicate(player.id, targets)
     else
       room:sendLog{
         type = "#guhuo_no_target",
@@ -666,53 +666,26 @@ local guhuo = fk.CreateViewAsSkill{
         arg2 = self.name
       }
     end
-  end,
-  enabled_at_play = function(self, player)
-    return not player:isKongcheng()
-  end,
-  enabled_at_response = function(self, player, response)
-    return not player:isKongcheng()
-  end,
-}
 
-local guhuoResponse = fk.CreateTriggerSkill{
-  name = "#guhuoResponse",
-  events = {fk.PreCardUse, fk.PreCardRespond},
-  mute = true,
-  priority = 10,
-  can_trigger = function(self, event, target, player, data)
-    return target == player and player:hasSkill(self.name, true) and table.contains(data.card.skillNames, "guhuo") and
-    data.card:isVirtual() and player:getMark("guhuo_use-phase") ~= 0 and #data.card.subcards == 0
-  end,
-  on_cost = function(self, event, target, player, data)
-    local room = player.room
-    room:doIndicate(player.id, TargetGroup:getRealTargets(data.tos))
-    return true
-  end,
-  on_use = function(self, event, target, player, data)
-    local room = player.room
-    local card_id = target:getMark("guhuo_use-phase")
-    if not card_id then return true end
-    local questioned = false
+    local questioned = {}
     for _, p in ipairs(room:getOtherPlayers(player)) do
       if p.hp > 0 then
-        local choice = room:askForChoice(p, {"guhuo_noquestion", "guhuo_question"}, "guhuo", "#guhuo-ask:" .. player.id .. "::" .. data.card:toLogString(), nil)
-        if choice == "guhuo_question" and not questioned then
-          questioned = true
+        local choice = room:askForChoice(p, {"noquestion", "question"}, "guhuo", "", nil)
+        if choice ~= "noquestion" then
+          table.insertIfNeed(questioned, p)
         end
         room:sendLog{
           type = "#guhuo_query",
           from = p.id,
           arg = choice
         }
-        room:setPlayerMark(p, "@guhuo", choice)
       end
     end
     local success = false
     local canuse = false
     local guhuo_card = Fk:getCardById(card_id)
-    if questioned then
-      if data.card.name == guhuo_card.name then
+    if #questioned > 0 then
+      if use.card.name == guhuo_card.name then
         success = true
         if guhuo_card.suit == Card.Heart then
           canuse = true
@@ -722,34 +695,35 @@ local guhuoResponse = fk.CreateTriggerSkill{
       canuse = true
     end
     player:showCards({card_id})
-    -- 暂时使用setCardArea,当moveVisible可以false之后,不必再移动到Card.Void,也就不必再setCardArea
+	--暂时使用setCardArea,当moveVisible可以false之后,不必再移动到Card.Void,也就不必再setCardArea
     table.removeOne(room.void, card_id)
     table.insert(room.processing_area, card_id)
     room:setCardArea(card_id, Card.Processing, nil)
-    -- 
-    table.forEach(room.alive_players, function (p)
-      if p:getMark("@guhuo") == "guhuo_question" then
-        if not p.dead then
-          if success then
-            room:loseHp(p, 1, "guhuo")
-          else
-            p:drawCards(1, "guhuo")
-          end
-        end
+	--
+    if success then
+      for _, p in ipairs(questioned) do
+        room:loseHp(p, 1, "guhuo")
       end
-      room:setPlayerMark(p, "@guhuo", 0)
-    end)
+    else
+      for _, p in ipairs(questioned) do
+        p:drawCards(1, "guhuo")
+      end
+    end
     if canuse then
-      data.card:addSubcard(card_id)
-      return false
+      use.card:addSubcard(card_id)
     else
       room:moveCardTo(card_id, Card.DiscardPile, nil, fk.ReasonPutIntoDiscardPile, "guhuo")
+      return ""
     end
-    return true
+  end,
+  enabled_at_play = function(self, player)
+    return not player:isKongcheng()
+  end,
+  enabled_at_response = function(self, player, response)
+    return not response and not player:isKongcheng()
   end,
 }
 
-guhuo:addRelatedSkill(guhuoResponse)
 yuji:addSkill(guhuo)
 Fk:loadTranslationTable{
   ["yuji"] = "于吉",
