@@ -413,7 +413,7 @@ local zhiba = fk.CreateTriggerSkill{
       return p.kingdom == "wu"
     end)
     ]]
-    local targets = room.alive_players
+    local targets = room:getOtherPlayers(player)
     if event == fk.GameStart or event == fk.EventAcquireSkill then
       if player:hasSkill(self.name, true) then
         table.forEach(targets, function(p)
@@ -433,7 +433,7 @@ local zhiba_other = fk.CreateActiveSkill{
   mute = true,
   can_use = function(self, player)
     if player:usedSkillTimes(self.name, Player.HistoryPhase) < 1 and player.kingdom == "wu" and not player:isKongcheng() then
-      return table.find(Fk:currentRoom().alive_players, function(p) return p:hasSkill("zhiba") and p ~= player and not p:isKongcheng() end)
+      return table.find(Fk:currentRoom().alive_players, function(p) return p:hasSkill(zhiba) and p ~= player and player:canPindian(p) end)
     end
     return false
   end,
@@ -442,7 +442,7 @@ local zhiba_other = fk.CreateActiveSkill{
   target_num = 0,
   on_use = function(self, room, effect)
     local player = room:getPlayerById(effect.from)
-    local targets = table.filter(room.alive_players, function(p) return p:hasSkill("zhiba") and p ~= player and not p:isKongcheng() end)
+    local targets = table.filter(room.alive_players, function(p) return p:hasSkill(zhiba) and p ~= player and player:canPindian(p) end)
     local target
     if #targets == 1 then
       target = targets[1]

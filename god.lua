@@ -2098,7 +2098,10 @@ local huoxin = fk.CreateActiveSkill{
   card_num = 2,
   target_num = 2,
   target_filter = function(self, to_select, selected)
-    return #selected < 2 and to_select ~= Self.id
+    if #selected >= 2 or to_select == Self.id then return false end
+    if #selected < 1 then return true end
+    local room = Fk:currentRoom()
+    return room:getPlayerById(selected[1]):canPindian(room:getPlayerById(to_select))
   end,
   card_filter = function(self, to_select, selected)
     if #selected == 1 then 

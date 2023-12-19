@@ -65,7 +65,7 @@ local quhu = fk.CreateActiveSkill{
   card_filter = Util.FalseFunc,
   target_filter = function(self, to_select, selected, selected_cards)
     local target = Fk:currentRoom():getPlayerById(to_select)
-    return #selected == 0 and not target:isKongcheng() and target.hp > Self.hp
+    return #selected == 0 and Self:canPindian(target) and target.hp > Self.hp
   end,
   on_use = function(self, room, effect)
     local player = room:getPlayerById(effect.from)
@@ -335,7 +335,7 @@ local tianyi = fk.CreateActiveSkill{
   end,
   card_filter = Util.FalseFunc,
   target_filter = function(self, to_select, selected, selected_cards)
-    return #selected == 0 and to_select ~= Self.id and not Fk:currentRoom():getPlayerById(to_select):isKongcheng()
+    return #selected == 0 and to_select ~= Self.id and Self:canPindian(Fk:currentRoom():getPlayerById(to_select))
   end,
   on_use = function(self, room, effect)
     local player = room:getPlayerById(effect.from)

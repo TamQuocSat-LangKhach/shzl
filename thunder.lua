@@ -539,7 +539,6 @@ Fk:loadTranslationTable{
 }
 
 local lukang = General(extension, "lukang", "wu", 4)
--- TODO: prohibit pindian
 local qianjie = fk.CreateTriggerSkill{
   name = "qianjie",
   events = {fk.BeforeChainStateChange},
@@ -557,6 +556,9 @@ local qianjie_prohibit = fk.CreateProhibitSkill{
       return card.sub_type == Card.SubtypeDelayedTrick
     end
   end,
+  prohibit_pindian = function(self, from, to)
+    return to:hasSkill(self)
+  end
 }
 qianjie:addRelatedSkill(qianjie_prohibit)
 lukang:addSkill(qianjie)
@@ -665,7 +667,7 @@ lukang:addRelatedSkill(huairou)
 Fk:loadTranslationTable{
   ["lukang"] = "陆抗",
   ["qianjie"] = "谦节",
-  [":qianjie"] = "锁定技，你被横置前防止之，且不能成为延时类锦囊牌或其他角色拼点的目标（禁止拼点暂时无法实现）。",
+  [":qianjie"] = "锁定技，你被横置前防止之，且不能成为延时类锦囊牌或其他角色拼点的目标。",
   ["#qianjie_prohibit"] = "谦节",
   ["jueyan"] = "决堰",
   [":jueyan"] = "出牌阶段限一次，你可以废除你装备区里的一种装备栏，然后执行对应的一项：武器栏，你于此回合内可以多使用三张【杀】；防具栏，摸三张牌，本回合手牌上限+3；坐骑栏，本回合你使用牌无距离限制；宝物栏，本回合获得〖集智〗。",
