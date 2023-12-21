@@ -581,22 +581,18 @@ local jueyan = fk.CreateActiveSkill{
     if choice == 'WeaponSlot' then
       room:addPlayerMark(player, "jueyan_residue-turn", 3)
     elseif choice == 'ArmorSlot' then
-      room:addPlayerMark(player, "jueyan_maxcards-turn", 3)
+      room:addPlayerMark(player, MarkEnum.AddMaxCardsInTurn, 3)
       player:drawCards(3, self.name)
     elseif choice == 'TreasureSlot' then
       if not player:hasSkill("ex__jizhi",true) then
-        room:addPlayerMark(player, "jueyan_jizhi-turn")
         room:handleAddLoseSkills(player, "ex__jizhi", nil, false)
+        room.logic:getCurrentEvent():findParent(GameEvent.Turn):addCleaner(function()
+          room:handleAddLoseSkills(player, "-ex__jizhi", nil, false)
+        end)
       end
     else
       room:addPlayerMark(player, "jueyan_distance-turn")
     end
-  end,
-}
-local jueyan_maxcards = fk.CreateMaxCardsSkill{
-  name = "#jueyan_maxcards",
-  correct_func = function(self, player)
-    return player:getMark("jueyan_maxcards-turn")
   end,
 }
 local jueyan_targetmod = fk.CreateTargetModSkill{
@@ -610,19 +606,7 @@ local jueyan_targetmod = fk.CreateTargetModSkill{
     return player:getMark("jueyan_distance-turn") > 0
   end,
 }
-local jueyan_clean = fk.CreateTriggerSkill{
-  name = "#jueyan_clean",
-  refresh_events = {fk.TurnEnd},
-  can_refresh = function(self, event, target, player, data)
-    return target == player and player:getMark("jueyan_jizhi-turn") > 0
-  end,
-  on_refresh = function(self, event, target, player, data)
-    player.room:handleAddLoseSkills(player, "-ex__jizhi", nil, false)
-  end,
-}
-jueyan:addRelatedSkill(jueyan_maxcards)
 jueyan:addRelatedSkill(jueyan_targetmod)
-jueyan:addRelatedSkill(jueyan_clean)
 lukang:addSkill(jueyan)
 lukang:addRelatedSkill("ex__jizhi")
 local poshi = fk.CreateTriggerSkill{
