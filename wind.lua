@@ -13,7 +13,7 @@ local shensu = fk.CreateTriggerSkill{
   can_trigger = function(self, event, target, player, data)
     if target == player and player:hasSkill(self) then
       if data.to == Player.Judge then
-        return true
+        return not player.skipped_phases[Player.Draw]
       elseif data.to == Player.Play then
         return not player:isNude()
       end
@@ -37,7 +37,6 @@ local shensu = fk.CreateTriggerSkill{
         return true
       end
     elseif data.to == Player.Play then
-      --FIXME: 这个方法在没有装备牌的时候不会询问！会暴露手牌信息！
       local tos, id = room:askForChooseCardAndPlayers(player, targets, 1, max_num, ".|.|.|.|.|equip", "#shensu2-choose", self.name, true)
       if #tos > 0 then
         self.cost_data = {tos[1], id}
@@ -48,12 +47,11 @@ local shensu = fk.CreateTriggerSkill{
   on_use = function(self, event, target, player, data)
     local room = player.room
     if data.to == Player.Judge then
-      player:skip(Player.Judge)
       player:skip(Player.Draw)
     elseif data.to == Player.Play then
-      player:skip(Player.Play)
       room:throwCard({self.cost_data[2]}, self.name, player, player)
     end
+    if player.dead then return false end
     room:useVirtualCard("slash", nil, player, table.map(self.cost_data, Util.Id2PlayerMapper), self.name, true)
     return true
   end,
@@ -94,7 +92,7 @@ Fk:loadTranslationTable{
 
   ["$jushou1"] = "我先休息一会！",
   ["$jushou2"] = "尽管来吧！",
-  ["~caoren"] = "实在是守不住！",
+  ["~caoren"] = "实在是守不住了……",
 }
 
 local caoren3 = General(extension, "y13__caoren", "wei", 4)
@@ -107,7 +105,9 @@ local jushou3 = fk.CreateTriggerSkill{
   end,
   on_use = function(self, event, target, player, data)
     player.room:drawCards(player, 1, self.name)
-    player:turnOver()
+    if not player.dead then
+      player:turnOver()
+    end
   end,
 }
 caoren3:addSkill(jushou3)
@@ -161,9 +161,7 @@ local liegong = fk.CreateTriggerSkill{
   events = {fk.TargetSpecified},
   can_trigger = function(self, event, target, player, data)
     if not (target == player and player:hasSkill(self) and data.card.trueName == "slash" and player.phase == Player.Play) then return end
-    local room = player.room
-    local to = room:getPlayerById(data.to)
-    local num = to:getHandcardNum()
+    local num = player.room:getPlayerById(data.to):getHandcardNum()
     return num <= player:getAttackRange() or num >= player.hp
   end,
   on_use = function(self, event, target, player, data)
@@ -410,12 +408,9 @@ local buqu = fk.CreateTriggerSkill{
           arg = #duplicate_numbers,
           arg2 = self.name
         }
-        for i = 1, #duplicate_numbers , 1 do
+        for i = 1, #duplicate_numbers, 1 do
           local number = duplicate_numbers[i]
-          --getNumberStr(number)
-          local number_string = "A23456789-JQK"
-          local str = number_string[number]
-          if number == 10 then str = "10" end
+          local str = Card:getNumberStr(number)
           --
           room:sendLog{
             type = "#buqu_duplicate_group",
@@ -720,7 +715,7 @@ local guhuo = fk.CreateViewAsSkill{
     return not player:isKongcheng()
   end,
   enabled_at_response = function(self, player, response)
-    return not response and not player:isKongcheng()
+    return not player:isKongcheng()
   end,
 }
 
@@ -731,7 +726,7 @@ Fk:loadTranslationTable{
   ["$guhuo1"] = "你信吗？",
   ["$guhuo2"] = "猜猜看呐~",
   ["~yuji"] = "竟然…被猜到了…",
-  [":guhuo"] = "你可以扣置一张手牌当做一张基本牌或非延时锦囊牌使用或打出，体力值大于0的其他角色选择是否质疑，然后你展示此牌："..
+  [":guhuo"] = "你可以扣置一张手牌当做一张基本牌或普通锦囊牌使用或打出，体力值大于0的其他角色选择是否质疑，然后你展示此牌："..
   "若无角色质疑，此牌按你所述继续结算；若有角色质疑：若此牌为真，质疑角色各失去1点体力，否则质疑角色各摸一张牌，"..
   "且若此牌为<font color='red'>♥</font>且为真，则按你所述继续结算，否则将之置入弃牌堆。",
   ["guhuo_init"] = "<b><font color='#0598BC'>蛊惑</font></b>的牌为<b><font color='#0598BC'>",
