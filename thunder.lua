@@ -579,7 +579,7 @@ local jueyan = fk.CreateActiveSkill{
     room:abortPlayerArea(player, choice)
     if player.dead then return end
     if choice == 'WeaponSlot' then
-      room:addPlayerMark(player, "jueyan_residue-turn", 3)
+      room:addPlayerMark(player, MarkEnum.SlashResidue.."-turn", 3)
     elseif choice == 'ArmorSlot' then
       room:addPlayerMark(player, MarkEnum.AddMaxCardsInTurn, 3)
       player:drawCards(3, self.name)
@@ -597,11 +597,6 @@ local jueyan = fk.CreateActiveSkill{
 }
 local jueyan_targetmod = fk.CreateTargetModSkill{
   name = "#jueyan_targetmod",
-  residue_func = function(self, player, skill, scope, card)
-    if skill.trueName == "slash_skill" and scope == Player.HistoryPhase then
-      return player:getMark("jueyan_residue-turn")
-    end
-  end,
   bypass_distances = function(self, player, skill, card, to)
     return player:getMark("jueyan_distance-turn") > 0
   end,
@@ -684,12 +679,10 @@ local thunder__yongsi = fk.CreateTriggerSkill{
       else
         if player.phase == Player.Play then
           local n = 0
-          player.room.logic:getEventsOfScope(GameEvent.ChangeHp, 999, function(e)
-            local damage = e.data[5]
-            if damage and player == damage.from then
-              n = n + damage.damage
-            end
-          end, Player.HistoryTurn)
+          for _, e in ipairs(U.getActualDamageEvents(player.room, 999, function(e) return e.data[1].from == player end)) do
+            local damage = e.data[1]
+            n = n + damage.damage
+          end
           return (n == 0 and player:getHandcardNum() < player.hp) or n > 1
         end
       end
@@ -705,12 +698,10 @@ local thunder__yongsi = fk.CreateTriggerSkill{
       data.n = #kingdoms
     else
       local n = 0
-      player.room.logic:getEventsOfScope(GameEvent.ChangeHp, 999, function(e)
-        local damage = e.data[5]
-        if damage and player == damage.from then
-          n = n + damage.damage
-        end
-      end, Player.HistoryTurn)
+      for _, e in ipairs(U.getActualDamageEvents(room, 999, function(e) return e.data[1].from == player end)) do
+        local damage = e.data[1]
+        n = n + damage.damage
+      end
       if n == 0 and player:getHandcardNum() < player.hp then
         player:drawCards(player.hp - player:getHandcardNum(), self.name)
       elseif n > 1 then
@@ -729,14 +720,36 @@ local yongsi_maxcards = fk.CreateMaxCardsSkill{
 }
 thunder__yongsi:addRelatedSkill(yongsi_maxcards)
 yuanshu:addSkill(thunder__yongsi)
+local thunder__weidi = fk.CreateTriggerSkill{
+  name = "thunder__weidi$",
+  anim_type = "support",
+  events = {fk.EventPhaseStart},
+  can_trigger = function(self, event, target, player, data)
+    return target == player and player:hasSkill(self) and player.phase == Player.Discard
+    and player:getHandcardNum() > player:getMaxCards()
+  end,
+  on_use = function(self, event, target, player, data)
+    local room = player.room
+    local targets = table.filter(player.room:getOtherPlayers(player), function(p) return p.kingdom == "qun" end)
+    if #targets > 0 then
+      local n = player:getHandcardNum() - player:getMaxCards()
+      U.askForDistribution(player, player:getCardIds("h"), targets, self.name, 0, n, "#thunder__weidi-give:::"..n, nil, false, 1)
+    end
+  end,
+}
+yuanshu:addSkill(thunder__weidi)
 Fk:loadTranslationTable{
   ["thunder__yuanshu"] = "袁术",
   ["thunder__yongsi"] = "庸肆",
-  [":thunder__yongsi"] = "锁定技，摸牌阶段，你改为摸X张牌（X为场上现存势力数）。出牌阶段结束时，若你本回合没有造成过伤害，你将手牌补至当前体力值；"..
-  "若造成过伤害且大于1点，你本回合手牌上限改为已损失体力值。",
+  [":thunder__yongsi"] = "锁定技，摸牌阶段，你改为摸X张牌（X为场上现存势力数）。出牌阶段结束时，若你本回合没有造成过伤害，你将手牌补至当前体力值；若造成过伤害且大于1点，你本回合手牌上限改为已损失体力值。",
+  ["thunder__weidi"] = "伪帝",
+  [":thunder__weidi"] = "主公技，弃牌阶段开始时，若X大于0，你可将至多X张手牌交给等量的其他群雄角色（X=你的手牌数-你的手牌上限）。",
+  ["#thunder__weidi-give"] = "伪帝：你可以将至多 %arg 张手牌交给其他群雄角色各一张",
 
   ["$thunder__yongsi1"] = "天下，即将尽归吾袁公路！",
   ["$thunder__yongsi2"] = "朕今日雄踞淮南，明日便可一匡天下。",
+  ["$thunder__weidi1"] = "传国玉玺在手，朕语便是天言。",
+  ["$thunder__weidi2"] = "传朕旨意，诸部遵旨即可。",
   ["~thunder__yuanshu"] = "仲朝国祚，本应千秋万代，薪传不息……",
 }
 
