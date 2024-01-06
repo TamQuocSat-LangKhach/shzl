@@ -747,10 +747,9 @@ local nos__longhun = fk.CreateViewAsSkill{
   name = "nos__longhun",
   pattern = "peach,slash,jink,nullification",
   card_filter = function(self, to_select, selected)
-    if #selected == 2 then
+    if #selected >= math.max(Self.hp, 1) then
       return false
-    elseif #selected == 1 then
-      if math.max(Self.hp, 1) == 1 then return false end
+    elseif #selected > 0 then
       return Fk:getCardById(to_select):compareSuitWith(Fk:getCardById(selected[1]))
     else
       local suit = Fk:getCardById(to_select).suit
@@ -766,7 +765,8 @@ local nos__longhun = fk.CreateViewAsSkill{
       else
         return false
       end
-      return (Fk.currentResponsePattern == nil and c.skill:canUse(Self, c)) or (Fk.currentResponsePattern and Exppattern:Parse(Fk.currentResponsePattern):match(c))
+      return (Fk.currentResponsePattern == nil and c.skill:canUse(Self, c))
+      or (Fk.currentResponsePattern and Exppattern:Parse(Fk.currentResponsePattern):match(c))
     end
   end,
   view_as = function(self, cards)
