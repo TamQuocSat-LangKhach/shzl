@@ -516,41 +516,32 @@ local guidao = fk.CreateTriggerSkill{
 local huangtian = fk.CreateTriggerSkill{
   name = "huangtian$",
   mute = true,
-  frequency = Skill.Compulsory,
-  refresh_events = {fk.GameStart, fk.EventAcquireSkill, fk.EventLoseSkill, fk.Deathed},
+  refresh_events = {fk.EventAcquireSkill, fk.EventLoseSkill, fk.BuryVictim, fk.AfterPropertyChange},
   can_refresh = function(self, event, target, player, data)
-    if event == fk.GameStart then
-      return player:hasSkill(self.name, true)
-    elseif event == fk.EventAcquireSkill or event == fk.EventLoseSkill then
-      return data == self and target == player
-    else
-      return target == player and player:hasSkill(self.name, true, true)
+    if event == fk.EventAcquireSkill or event == fk.EventLoseSkill then
+      return data == self
+    elseif event == fk.BuryVictim then
+      return target:hasSkill(self, true, true)
+    elseif event == fk.AfterPropertyChange then
+      return target == player
     end
   end,
   on_refresh = function(self, event, target, player, data)
     local room = player.room
-    --[[
-    local targets = table.filter(room:getOtherPlayers(player), function(p)
-      return p.kingdom == "qun"
+    local attached_huangtian = player.kingdom == "qun" and table.find(room.alive_players, function (p)
+      return p ~= player and p:hasSkill(self, true)
     end)
-    ]]
-    local targets = room:getOtherPlayers(player)
-    if event == fk.GameStart or event == fk.EventAcquireSkill then
-      if player:hasSkill(self.name, true) then
-        table.forEach(targets, function(p)
-          room:handleAddLoseSkills(p, "huangtian_other&", nil, false, true)
-        end)
-      end
-    elseif event == fk.EventLoseSkill or event == fk.Deathed then
-      table.forEach(targets, function(p)
-        room:handleAddLoseSkills(p, "-huangtian_other&", nil, false, true)
-      end)
+    if attached_huangtian and not player:hasSkill("huangtian_other&", true, true) then
+      room:handleAddLoseSkills(player, "huangtian_other&", nil, false, true)
+    elseif not attached_huangtian and player:hasSkill("huangtian_other&", true, true) then
+      room:handleAddLoseSkills(player, "-huangtian_other&", nil, false, true)
     end
   end,
 }
 local huangtian_other = fk.CreateActiveSkill{
   name = "huangtian_other&",
   anim_type = "support",
+  prompt = "#huangtian-active",
   mute = true,
   can_use = function(self, player)
     if player:usedSkillTimes(self.name, Player.HistoryPhase) < 1 and player.kingdom == "qun" then
@@ -599,6 +590,7 @@ Fk:loadTranslationTable{
 
   ["huangtian_other&"] = "黄天",
   [":huangtian_other&"] = "出牌阶段限一次，你可将一张【闪】或【闪电】（正面朝上移动）交给张角。",
+  ["#huangtian-active"] = "发动黄天，选择一张【闪】或【闪电】交给一名拥有“黄天”的角色",
 
   ["$leiji1"] = "以我之真气，合天地之造化！",
   ["$leiji2"] = "雷公助我！",
