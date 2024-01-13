@@ -247,8 +247,9 @@ local tianxiang = fk.CreateTriggerSkill{
       from = data.from,
       to = to,
       damage = data.damage,
-      damageType = data.type,
-      skillName = self.name,
+      damageType = data.damageType,
+      skillName = data.skillName,
+      chain = data.chain,
       card = data.card,
     }
     if not to.dead then
