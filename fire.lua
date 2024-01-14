@@ -5,6 +5,8 @@ Fk:loadTranslationTable{
   ["fire"] = "神话再临·火",
 }
 
+local U = require "packages/utility/utility"
+
 local dianwei = General(extension, "dianwei", "wei", 4)
 local qiangxi = fk.CreateActiveSkill{
   name = "qiangxi",
@@ -412,33 +414,6 @@ Fk:loadTranslationTable{
   ["~pangde"] = "四面都是水，我命休矣……",
 }
 
-local shuangxiongJudge = fk.CreateTriggerSkill{
-  name = "#shuangxiongJude",
-  anim_type = "offensive",
-  events = {fk.EventPhaseStart},
-  mute = true,
-  can_trigger = function(self, event, target, player, data)
-    return target == player and player:hasSkill(self) and player.phase == Player.Draw
-  end,
-  on_use = function(self, event, target, player, data)
-    local room = player.room
-    local judge = {
-      who = player,
-      reason = self.name,
-    }
-    room:notifySkillInvoked(player, "shuangxiong", "offensive")
-    player:broadcastSkillInvoke("shuangxiong")
-    room:judge(judge)
-    if judge.card then
-      local color = judge.card:getColorString()
-      local colorsRecorded = type(player:getMark("@shuangxiong-turn")) == "table" and player:getMark("@shuangxiong-turn") or {}
-      table.insertIfNeed(colorsRecorded, color)
-      room:setPlayerMark(player, "@shuangxiong-turn", colorsRecorded)
-      room:obtainCard(player.id, judge.card)
-    end
-    return true
-  end,
-}
 local shuangxiong = fk.CreateViewAsSkill{
   name = "shuangxiong",
   anim_type = "offensive",
@@ -471,7 +446,47 @@ local shuangxiong = fk.CreateViewAsSkill{
     return type(player:getMark("@shuangxiong-turn")) == "table"
   end,
 }
+local shuangxiongJudge = fk.CreateTriggerSkill{
+  name = "#shuangxiongJudge",
+  anim_type = "offensive",
+  events = {fk.EventPhaseStart},
+  mute = true,
+  main_skill = shuangxiong,
+  can_trigger = function(self, event, target, player, data)
+    return target == player and player:hasSkill(shuangxiong) and player.phase == Player.Draw
+  end,
+  on_use = function(self, event, target, player, data)
+    local room = player.room
+    local judge = {
+      who = player,
+      reason = "shuangxiong",
+    }
+    room:notifySkillInvoked(player, "shuangxiong", "offensive")
+    player:broadcastSkillInvoke("shuangxiong")
+    player:revealBySkillName("shuangxiong") -- 先这样
+    room:judge(judge)
+    local color = judge.card:getColorString()
+    local colorsRecorded = U.getMark(player, "@shuangxiong-turn")
+    table.insertIfNeed(colorsRecorded, color)
+    room:setPlayerMark(player, "@shuangxiong-turn", colorsRecorded)
+    return true
+  end,
+}
+local shuangxiongGet = fk.CreateTriggerSkill{
+  name = "#shuangxiong_get",
+  mute = true,
+  events = {fk.FinishJudge},
+  can_trigger = function(self, event, target, player, data)
+    return target == player and not player.dead and data.reason == "shuangxiong" and
+    player.room:getCardArea(data.card) == Card.Processing
+  end,
+  on_cost = Util.TrueFunc,
+  on_use = function(self, event, target, player, data)
+    player.room:obtainCard(player.id, data.card)
+  end,
+}
 shuangxiong:addRelatedSkill(shuangxiongJudge)
+shuangxiong:addRelatedSkill(shuangxiongGet)
 local yanliangwenchou = General:new(extension, "yanliangwenchou", "qun", 4)
 yanliangwenchou:addSkill(shuangxiong)
 Fk:loadTranslationTable{
@@ -479,7 +494,8 @@ Fk:loadTranslationTable{
   ["shuangxiong"] = "双雄",
   [":shuangxiong"] = "摸牌阶段，你可以选择放弃摸牌并进行一次判定：你获得此判定牌并且此回合可以将任意一张与该判定牌不同颜色的手牌当【决斗】使用。",
   ["@shuangxiong-turn"] = "双雄",
-  ["#shuangxiongJude"] = "双雄",
+  ["#shuangxiongJudge"] = "双雄",
+  ["#shuangxiong_get"] = "双雄",
 
   ["$shuangxiong1"] = "吾乃河北上将颜良文丑是也！",
   ["$shuangxiong2"] = "快来与我等决一死战！",
@@ -491,13 +507,12 @@ local luanji = fk.CreateViewAsSkill{
   anim_type = "offensive",
   pattern = "archery_attack",
   card_filter = function(self, to_select, selected)
-    if #selected == 1 then 
-      return Fk:currentRoom():getCardArea(to_select) ~= Player.Equip and Fk:getCardById(to_select).suit == Fk:getCardById(selected[1]).suit
+    if #selected == 1 then
+      return table.contains(Self:getHandlyIds(true), to_select) and Fk:getCardById(to_select).suit == Fk:getCardById(selected[1]).suit
     elseif #selected == 2 then
       return false
     end
-
-    return Fk:currentRoom():getCardArea(to_select) ~= Player.Equip
+    return table.contains(Self:getHandlyIds(true), to_select)
   end,
   view_as = function(self, cards)
     if #cards ~= 2 then
