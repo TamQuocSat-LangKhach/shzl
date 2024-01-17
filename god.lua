@@ -100,6 +100,35 @@ Fk:loadTranslationTable {
 }
 
 local godlvmeng = General(extension, "godlvmeng", "god", 3)
+Fk:addPoxiMethod{
+  name = "shelie",
+  card_filter = function(to_select, selected)
+    return #selected == 0 or table.every(selected, function(id) return Fk:getCardById(id).suit ~= Fk:getCardById(to_select).suit end)
+  end,
+  feasible = function(selected, data)
+    if not data then return false end
+    local suits = {}
+    for _, id in ipairs(data[1][2]) do
+      table.insertIfNeed(suits, Fk:getCardById(id).suit)
+    end
+    return #selected == #suits
+  end,
+  default_choice = function(data)
+    if not data then return {} end
+    local ids,suits = {},{}
+    for _, id in ipairs(data[1][2]) do
+      local suit = Fk:getCardById(id).suit
+      if not table.contains(suits, suit) then
+        table.insert(suits, suit)
+        table.insert(ids, id)
+      end
+    end
+    return ids
+  end,
+  prompt = function ()
+    return Fk:translate("#shelie-choose")
+  end,
+}
 local shelie = fk.CreateTriggerSkill{
   name = "shelie",
   anim_type = "drawcard",
@@ -109,45 +138,24 @@ local shelie = fk.CreateTriggerSkill{
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room
-    local card_ids = room:getNCards(5)
-    local get, throw = {}, {}
+    local cards = room:getNCards(5)
     room:moveCards({
-      ids = card_ids,
+      ids = cards,
       toArea = Card.Processing,
       moveReason = fk.ReasonPut,
     })
-    table.forEach(room.players, function(p)
-      room:fillAG(p, card_ids)
-    end)
-    while true do
-      local card_suits = {}
-      table.forEach(get, function(id)
-        table.insert(card_suits, Fk:getCardById(id).suit)
-      end)
-      for i = #card_ids, 1, -1 do
-        local id = card_ids[i]
-        if table.contains(card_suits, Fk:getCardById(id).suit) then
-          room:takeAG(player, id)
-          table.insert(throw, id)
-          table.removeOne(card_ids, id)
-        end
-      end
-      if #card_ids == 0 then break end
-      local card_id = room:askForAG(player, card_ids, false, self.name)
-      room:takeAG(player, card_id)
-      table.insert(get, card_id)
-      table.removeOne(card_ids, card_id)
-      if #card_ids == 0 then break end
-    end
-    room:closeAG()
+    local get = room:askForPoxi(player, "shelie", {
+      { self.name, cards },
+    }, nil, false)
     if #get > 0 then
       local dummy = Fk:cloneCard("dilu")
       dummy:addSubcards(get)
-      room:obtainCard(player.id, dummy, true, fk.ReasonPrey)
+      room:obtainCard(player, dummy, true, fk.ReasonPrey)
     end
-    if #throw > 0 then
+    cards = table.filter(cards, function(id) return room:getCardArea(id) == Card.Processing end)
+    if #cards > 0 then
       room:moveCards({
-        ids = throw,
+        ids = cards,
         toArea = Card.DiscardPile,
         moveReason = fk.ReasonPutIntoDiscardPile,
       })
@@ -191,6 +199,7 @@ Fk:loadTranslationTable{
   ["gongxin"] = "攻心",
   [":gongxin"] = "出牌阶段限一次，你可以观看一名其他角色的手牌并可以展示其中的一张<font color='red'>♥</font>牌，"..
   "选择：1. 弃置此牌；2. 将此牌置于牌堆顶。",
+  ["#shelie-choose"] = "获得不同花色的牌各一张",
   ["#gongxin-active"] = "发动 攻心，观看一名其他角色的手牌",
   ["#gongxin-view"] = "攻心：观看%dest的手牌",
   ["gongxin_discard"] = "弃置此牌",
