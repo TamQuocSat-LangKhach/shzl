@@ -47,6 +47,8 @@ local qiangxi = fk.CreateActiveSkill{
 dianwei:addSkill(qiangxi)
 Fk:loadTranslationTable{
   ["dianwei"] = "典韦",
+  ["#dianwei"] = "古之恶来",
+  ["illustrator:dianwei"] = "小冷",
   ["qiangxi"] = "强袭",
   [":qiangxi"] = "出牌阶段限一次，你可以失去1点体力或弃置一张武器牌，并选择你攻击范围内的一名其他角色，对其造成1点伤害。",
 
@@ -82,15 +84,9 @@ local quhu = fk.CreateActiveSkill{
       end
       if #targets == 0 then return end
       local tos = room:askForChoosePlayers(player, targets, 1, 1, "#quhu-choose", self.name)
-      local to
-      if #tos > 0 then
-        to = tos[1]
-      else
-        to = table.random(targets)
-      end
       room:damage{
         from = target,
-        to = room:getPlayerById(to),
+        to = room:getPlayerById(tos[1]),
         damage = 1,
         skillName = self.name,
       }
@@ -111,7 +107,7 @@ local jieming = fk.CreateTriggerSkill{
   on_trigger = function(self, event, target, player, data)
     self.cancel_cost = false
     for i = 1, data.damage do
-      if self.cancel_cost then break end
+      if self.cancel_cost or player.dead then break end
       self:doCost(event, target, player, data)
     end
   end,
@@ -136,6 +132,8 @@ xunyu:addSkill(quhu)
 xunyu:addSkill(jieming)
 Fk:loadTranslationTable{
   ["xunyu"] = "荀彧",
+  ["#xunyu"] = "王佐之才",
+  ["illustrator:xunyu"] = "LiuHeng",
   ["quhu"] = "驱虎",
   [":quhu"] = "出牌阶段限一次，你可以与一名体力值大于你的角色拼点。若你赢，该角色对其攻击范围内你指定的另一名角色造成1点伤害；若你没赢，其对你造成1点伤害。",
   ["jieming"] = "节命",
@@ -232,6 +230,8 @@ wolong:addSkill(huoji)
 wolong:addSkill(kanpo)
 Fk:loadTranslationTable{
   ["wolong"] = "卧龙诸葛亮",
+  ["#wolong"] = "卧龙",
+  ["illustrator:wolong"] = "北",
   ["bazhen"] = "八阵",
   [":bazhen"] = "锁定技，若你没有装备防具，视为你装备着【八卦阵】。",
   ["huoji"] = "火计",
@@ -313,6 +313,8 @@ pangtong:addSkill(lianhuan)
 pangtong:addSkill(niepan)
 Fk:loadTranslationTable{
   ["pangtong"] = "庞统",
+  ["#pangtong"] = "凤雏",
+  ["illustrator:pangtong"] = "KayaK",
   ["lianhuan"] = "连环",
   [":lianhuan"] = "你可以将一张♣手牌当【铁索连环】使用或重铸。",
   ["niepan"] = "涅槃",
@@ -377,6 +379,8 @@ tianyi:addRelatedSkill(tianyi_prohibit)
 taishici:addSkill(tianyi)
 Fk:loadTranslationTable{
   ["taishici"] = "太史慈",
+  ["#taishici"] = "笃烈之士",
+  ["illustrator:taishici"] = "Tuu.",
   ["tianyi"] = "天义",
   [":tianyi"] = "出牌阶段限一次，你可以与一名角色拼点：若你赢，在本回合结束之前，你可以多使用一张【杀】、使用【杀】无距离限制且可以多选择一个目标；"..
   "若你没赢，本回合你不能使用【杀】。",
@@ -397,15 +401,17 @@ local mengjin = fk.CreateTriggerSkill{
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room
-    local target = room:getPlayerById(data.to)
-    local cid = room:askForCardChosen(player, target, "he", self.name)
-    room:throwCard(cid, self.name, target)
+    local to = room:getPlayerById(data.to)
+    local cid = room:askForCardChosen(player, to, "he", self.name)
+    room:throwCard(cid, self.name, to)
   end,
 }
 pangde:addSkill("mashu")
 pangde:addSkill(mengjin)
 Fk:loadTranslationTable{
   ["pangde"] = "庞德",
+  ["#pangde"] = "人马一体",
+  ["illustrator:pangde"] = "LiuHeng",
   ["mengjin"] = "猛进",
   [":mengjin"] = "每当你使用的【杀】被目标角色使用的【闪】抵消时，你可以弃置其一张牌。",
 
@@ -491,6 +497,8 @@ local yanliangwenchou = General:new(extension, "yanliangwenchou", "qun", 4)
 yanliangwenchou:addSkill(shuangxiong)
 Fk:loadTranslationTable{
   ["yanliangwenchou"] = "颜良文丑",
+  ["#yanliangwenchou"] = "虎狼兄弟",
+  ["illustrator:yanliangwenchou"] = "KayaK",
   ["shuangxiong"] = "双雄",
   [":shuangxiong"] = "摸牌阶段，你可以选择放弃摸牌并进行一次判定：你获得此判定牌并且此回合可以将任意一张与该判定牌不同颜色的手牌当【决斗】使用。",
   ["@shuangxiong-turn"] = "双雄",
@@ -530,7 +538,7 @@ local xueyi = fk.CreateMaxCardsSkill{
     if player:hasSkill(self) then
       local hmax = 0
       for _, p in ipairs(Fk:currentRoom().alive_players) do
-        if p ~= player and p.kingdom == "qun" then 
+        if p ~= player and p.kingdom == "qun" then
           hmax = hmax + 1
         end
       end
@@ -545,6 +553,8 @@ yuanshao:addSkill(luanji)
 yuanshao:addSkill(xueyi)
 Fk:loadTranslationTable{
   ["yuanshao"] = "袁绍",
+  ["#yuanshao"] = "高贵的名门",
+  ["illustrator:yuanshao"] = "SoniaTang",
   ["luanji"] = "乱击",
   [":luanji"] = "出牌阶段，你可以将任意两张相同花色的手牌当【万箭齐发】使用。",
   ["xueyi"] = "血裔",

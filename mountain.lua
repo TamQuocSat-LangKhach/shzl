@@ -63,6 +63,8 @@ local qiaobian = fk.CreateTriggerSkill{
 zhanghe:addSkill(qiaobian)
 Fk:loadTranslationTable{
   ["zhanghe"] = "张郃",
+  ["#zhanghe"] = "料敌机先",
+  ["illustrator:zhanghe"] = "张帅",
   ["qiaobian"] = "巧变",
   [":qiaobian"] = "你的阶段开始前（准备阶段和结束阶段除外），你可以弃置一张手牌跳过该阶段。若以此法跳过摸牌阶段，"..
   "你可以获得至多两名其他角色的各一张手牌；若以此法跳过出牌阶段，你可以将场上的一张牌移动至另一名角色相应的区域内。",
@@ -163,6 +165,8 @@ dengai:addSkill(zaoxian)
 dengai:addRelatedSkill(jixi)
 Fk:loadTranslationTable{
   ["dengai"] = "邓艾",
+  ["#dengai"] = "矫然的壮士",
+  ["illustrator:dengai"] = "KayaK",
   ["tuntian"] = "屯田",
   [":tuntian"] = "当你于回合外失去牌后，你可以进行判定：若结果不为<font color='red'>♥</font>，你将生效后的判定牌置于你的武将牌上，称为“田”；"..
   "你计算与其他角色的距离-X（X为“田”的数量）。",
@@ -246,6 +250,8 @@ jiangwei:addSkill(zhiji)
 jiangwei:addRelatedSkill("guanxing")
 Fk:loadTranslationTable{
   ["jiangwei"] = "姜维",
+  ["#jiangwei"] = "龙的衣钵",
+  ["illustrator:jiangwei"] = "KayaK",
   ["tiaoxin"] = "挑衅",
   [":tiaoxin"] = "出牌阶段限一次，你可以指定一名你在其攻击范围内的角色，其需包括你在内的角色使用一张【杀】，否则你弃置其一张牌。",
   ["zhiji"] = "志继",
@@ -340,6 +346,8 @@ liushan:addSkill(ruoyu)
 liushan:addRelatedSkill("jijiang")
 Fk:loadTranslationTable{
   ["liushan"] = "刘禅",
+  ["#liushan"] = "无为的真命主",
+  ["illustrator:liushan"] = "LiuHeng",
   ["xiangle"] = "享乐",
   [":xiangle"] = "锁定技，每当你成为【杀】的目标时，【杀】的使用者须弃置一张基本牌，否则此【杀】对你无效。",
   ["#xiangle-discard"] = "享乐：你须弃置一张基本牌，否则此【杀】对 %src 无效",
@@ -482,6 +490,8 @@ sunce:addSkill(zhiba)
 Fk:addSkill(zhiba_other)
 Fk:loadTranslationTable{
   ["sunce"] = "孙策",
+  ["#sunce"] = "江东的小霸王",
+  ["illustrator:sunce"] = "KayaK",
   ["jiang"] = "激昂",
   [":jiang"] = "当你使用【决斗】或红色【杀】指定目标后，或成为【决斗】或红色【杀】的目标后，你可以摸一张牌。",
   ["hunzi"] = "魂姿",
@@ -616,6 +626,8 @@ zhangzhaozhanghong:addSkill(zhijian)
 zhangzhaozhanghong:addSkill(guzheng)
 Fk:loadTranslationTable{
   ["zhangzhaozhanghong"] = "张昭张纮",
+  ["#zhangzhaozhanghong"] = "经天纬地",
+  ["illustrator:zhangzhaozhanghong"] = "废柴男",
   ["zhijian"] = "直谏",
   [":zhijian"] = "出牌阶段，你可以将手牌中的一张装备牌置于其他角色的装备区里，然后摸一张牌。",
   ["guzheng"] = "固政",
@@ -634,7 +646,7 @@ Fk:loadTranslationTable{
 }
 
 local zuoci = General(extension, "zuoci", "qun", 3)
-local function DoHuanshen(player)
+local function DoHuashen(player)
   local room = player.room
   local huashens = player:getMark("@&huanshen")
   if huashens == 0 or #huashens == 0 then return end
@@ -660,21 +672,23 @@ local function DoHuanshen(player)
   room:broadcastProperty(player, "general")
 
   local skills = {}
-  for _, s in ipairs(general.skills) do
+  for _, skill_name in ipairs(general:getSkillNameList()) do
+    local s = Fk.skills[skill_name]
     if not (s.lordSkill or s.switchSkillName or s.frequency > 3) then
       if #s.attachedKingdom == 0 or table.contains(s.attachedKingdom, player.kingdom) then
         table.insert(skills, s.name)
       end
     end
   end
-  if #skills == 0 then return end
-  local skill = room:askForChoice(player, skills, "huashen", "#huashen", true)
-  local huanshen_skill = skill
-  if player:getMark("@huanshen_skill") ~= 0 then huanshen_skill = "-"..player:getMark("@huanshen_skill").."|"..skill end
+  if #skills > 0 then
+    local skill = room:askForChoice(player, skills, "huashen", "#huashen", true)
+    local huanshen_skill = skill
+    if player:getMark("@huanshen_skill") ~= 0 then huanshen_skill = "-"..player:getMark("@huanshen_skill").."|"..skill end
+    room:setPlayerMark(player, "@huanshen_skill", skill)
+    room:handleAddLoseSkills(player, huanshen_skill, nil, true, false)
+  end
   player.general = original_general
   room:broadcastProperty(player, "general")
-  room:setPlayerMark(player, "@huanshen_skill", skill)
-  room:handleAddLoseSkills(player, huanshen_skill, nil, true, false)
 end
 local huashen = fk.CreateTriggerSkill{
   name = "huashen",
@@ -699,31 +713,10 @@ local huashen = fk.CreateTriggerSkill{
   on_use = function(self, event, target, player, data)
     local room = player.room
     if event == fk.GamePrepared then
-      local generalPile = room:getTag("generalPile") or {}
-      if #generalPile == 0 then
-        for _, general in pairs(Fk:getAllGenerals()) do
-          if (not general.hidden and not general.total_hidden) and
-            not table.find(generalPile, function(g) return Fk.generals[g].trueName == general.trueName end) and
-            not table.find(room.alive_players, function(p)
-              return Fk.generals[p.general].trueName == general.trueName or
-                (p.deputyGeneral ~= "" and Fk.generals[p.deputyGeneral].trueName == general.trueName)
-                --TODO: 国战暗将不考虑
-            end) then
-            table.insert(generalPile, general.name)
-          end
-        end
-        if #generalPile > 0 then
-          room:setTag("generalPile", generalPile)
-        end
-      end
-      local generals = table.random(room:getTag("generalPile"), 2)
-      if #generals == 0 then return end
-      for _, g in ipairs(generals) do
-        table.removeOne(room:getTag("generalPile"), g)
-      end
+      local generals = room:getNGenerals(2)
       room:setPlayerMark(player, "@&huanshen", generals)
     end
-    DoHuanshen(player)
+    DoHuashen(player)
   end,
 }
 local xinsheng = fk.CreateTriggerSkill{
@@ -731,12 +724,12 @@ local xinsheng = fk.CreateTriggerSkill{
   anim_type = "masochism",
   events = {fk.Damaged},
   can_trigger = function(self, event, target, player, data)
-    return target == player and player:hasSkill(self) and player.room:getTag("generalPile") and #player.room:getTag("generalPile") > 0
+    return target == player and player:hasSkill(self) and #player.room.general_pile > 0
   end,
   on_trigger = function(self, event, target, player, data)
     self.cancel_cost = false
     for i = 1, data.damage do
-      if self.cancel_cost or #player.room:getTag("generalPile") == 0 then break end
+      if self.cancel_cost or #player.room.general_pile == 0 then break end
       self:doCost(event, target, player, data)
     end
   end,
@@ -748,11 +741,9 @@ local xinsheng = fk.CreateTriggerSkill{
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room
-    local general = table.random(room:getTag("generalPile"))
-    table.removeOne(room:getTag("generalPile"), general)
     local generals = player:getMark("@&huanshen")
     if generals == 0 then generals = {} end
-    table.insert(generals, general)
+    table.insert(generals, room:getNGenerals(1)[1])
     room:setPlayerMark(player, "@&huanshen", generals)
   end,
 }
@@ -760,6 +751,8 @@ zuoci:addSkill(huashen)
 zuoci:addSkill(xinsheng)
 Fk:loadTranslationTable{
   ["zuoci"] = "左慈",
+  ["#zuoci"] = "迷之仙人",
+  ["illustrator:zuoci"] = "废柴男",
   ["huashen"] = "化身",
   [":huashen"] = "游戏开始前，你获得两张未加入游戏的武将牌，称为“化身”，然后选择一张“化身”的一个技能（主公技、限定技、觉醒技除外）。"..
   "回合开始时和回合结束后，你可以重新选择一张“化身”的一个技能。你获得你以此法选择的技能且性别与势力改为与此“化身”相同。",
@@ -857,6 +850,8 @@ caiwenji:addSkill(beige)
 caiwenji:addSkill(duanchang)
 Fk:loadTranslationTable{
   ["caiwenji"] = "蔡文姬",
+  ["#caiwenji"] = "异乡的孤女",
+  ["illustrator:caiwenji"] = "SoniaTang",
   ["beige"] = "悲歌",
   [":beige"] = "当一名角色受到【杀】造成的伤害后，你可以弃置一张牌，然后令其进行判定，若结果为：<font color='red'>♥</font>，其回复1点体力；"..
   "<font color='red'>♦</font>，其摸两张牌；♣，伤害来源弃置两张牌；♠，伤害来源翻面。",

@@ -59,6 +59,8 @@ local shensu = fk.CreateTriggerSkill{
 xiahouyuan:addSkill(shensu)
 Fk:loadTranslationTable{
   ["xiahouyuan"] = "夏侯渊",
+  ["#xiahouyuan"] = "疾行的猎豹",
+  ["illustrator:xiahouyuan"] = "KayaK",
   ["shensu"] = "神速",
   [":shensu"] = "你可以做出如下选择：1.跳过判定阶段和摸牌阶段；2.跳过出牌阶段并弃置一张装备牌。你每选择一项，便视为你使用一张无距离限制的【杀】。",
   ["#shensu1-choose"] = "神速：你可以跳过判定阶段和摸牌阶段，视为使用一张无距离限制的【杀】",
@@ -87,6 +89,8 @@ local jushou = fk.CreateTriggerSkill{
 caoren:addSkill(jushou)
 Fk:loadTranslationTable{
   ["caoren"] = "曹仁",
+  ["#caoren"] = "大将军",
+  ["illustrator:caoren"] = "KayaK",
   ["jushou"] = "据守",
   [":jushou"] = "结束阶段，你可以摸三张牌，然后翻面。",
 
@@ -140,6 +144,8 @@ caoren3:addSkill(jiewei3)
 Fk:loadTranslationTable{
   ["y13"] = "2013",
   ["y13__caoren"] = "曹仁",
+  ["#y13__caoren"] = "大将军",
+  ["illustrator:y13__caoren"] = "Ccat",
   ["y13__jushou"] = "据守",
   [":y13__jushou"] = "结束阶段，你可以摸一张牌并翻面。",
   ["y13__jiewei"] = "解围",
@@ -172,6 +178,8 @@ local liegong = fk.CreateTriggerSkill{
 huangzhong:addSkill(liegong)
 Fk:loadTranslationTable{
   ["huangzhong"] = "黄忠",
+  ["#huangzhong"] = "老当益壮",
+  ["illustrator:huangzhong"] = "KayaK",
   ["liegong"] = "烈弓",
   [":liegong"] = "当你于出牌阶段内使用【杀】指定一个目标后，若其手牌数不小于你的体力值或不大于你的攻击范围，则你可以令其不能使用【闪】响应此【杀】。",
 
@@ -218,6 +226,8 @@ local kuanggu = fk.CreateTriggerSkill{
 weiyan:addSkill(kuanggu)
 Fk:loadTranslationTable{
   ["weiyan"] = "魏延",
+  ["#weiyan"] = "嗜血的独狼",
+  ["illustrator:weiyan"] = "SoniaTang",
   ["kuanggu"] = "狂骨",
   [":kuanggu"] = "锁定技，当你对距离1以内的一名角色造成1点伤害后，你回复1点体力。",
 
@@ -272,6 +282,8 @@ xiaoqiao:addSkill(tianxiang)
 xiaoqiao:addSkill(hongyan)
 Fk:loadTranslationTable{
   ["xiaoqiao"] = "小乔",
+  ["#xiaoqiao"] = "矫情之花",
+  ["illustrator:xiaoqiao"] = "KayaK",
   ["tianxiang"] = "天香",
   [":tianxiang"] = "当你受到伤害时，你可以弃置一张<font color='red'>♥</font>手牌并选择一名其他角色。若如此做，你将此伤害转移给该角色，然后其摸X张牌（X为其已损失体力值）。",
   ["#tianxiang-choose" ] = "天香：弃置一张<font color='red'>♥</font>手牌将此伤害转移给一名其他角色，然后其摸X张牌（X为其已损失体力值）",
@@ -444,6 +456,8 @@ local buqu = fk.CreateTriggerSkill{
 zhoutai:addSkill(buqu)
 Fk:loadTranslationTable{
   ["zhoutai"] = "周泰",
+  ["#zhoutai"] = "历战之躯",
+  ["illustrator:zhoutai"] = "Thinking",
   ["buqu"] = "不屈",
   [":buqu"] = "当你扣减1点体力时，若你的体力值为0，你可以将牌堆顶的一张牌置于你的武将牌上：若此牌的点数与你武将牌上的其他牌均不同，你不会死亡；"..
   "若你的武将牌上有点数相同的牌，你进入濒死状态。",
@@ -579,6 +593,8 @@ Fk:addSkill(huangtian_other)
 
 Fk:loadTranslationTable{
   ["zhangjiao"] = "张角",
+  ["#zhangjiao"] = "天公将军",
+  ["illustrator:zhangjiao"] = "LiuHeng",
   ["leiji"] = "雷击",
   [":leiji"] = "当你使用或打出【闪】时，你可以令一名角色进行判定，若结果为♠，你对其造成2点雷电伤害。",
   ["guidao"] = "鬼道",
@@ -714,6 +730,8 @@ local guhuo = fk.CreateViewAsSkill{
 yuji:addSkill(guhuo)
 Fk:loadTranslationTable{
   ["yuji"] = "于吉",
+  ["#yuji"] = "太平道人",
+  ["illustrator:yuji"] = "KayaK",
   ["guhuo"] = "蛊惑",
   ["$guhuo1"] = "你信吗？",
   ["$guhuo2"] = "猜猜看呐~",

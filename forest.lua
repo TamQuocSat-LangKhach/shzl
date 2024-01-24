@@ -37,6 +37,8 @@ duanliang:addRelatedSkill(duanliang_targetmod)
 xuhuang:addSkill(duanliang)
 Fk:loadTranslationTable{
   ["xuhuang"] = "徐晃",
+  ["#xuhuang"] = "周亚夫之风",
+  ["illustrator:xuhuang"] = "Tuu.",
   ["duanliang"] = "断粮",
   [":duanliang"] = "你可以将一张黑色基本牌或黑色装备牌当【兵粮寸断】使用；你可以对距离为2的角色使用【兵粮寸断】。",
 
@@ -102,6 +104,8 @@ caopi:addSkill(fangzhu)
 caopi:addSkill(songwei)
 Fk:loadTranslationTable{
   ["caopi"] = "曹丕",
+  ["#caopi"] = "霸业的继承者",
+  ["illustrator:caopi"] = "SoniaTang",
   ["xingshang"] = "行殇",
   [":xingshang"] = "当其他角色死亡时，你可以获得其所有牌。",
   ["fangzhu"] = "放逐",
@@ -215,6 +219,8 @@ menghuo:addSkill(huoshou)
 menghuo:addSkill(zaiqi)
 Fk:loadTranslationTable{
   ["menghuo"] = "孟获",
+  ["#menghuo"] = "南蛮王",
+  ["illustrator:menghuo"] = "废柴男",
   ["huoshou"] = "祸首",
   [":huoshou"] = "锁定技，【南蛮入侵】对你无效；当其他角色使用【南蛮入侵】指定目标后，你代替其成为此牌造成的伤害的来源。",
   ["zaiqi"] = "再起",
@@ -272,6 +278,8 @@ zhurong:addSkill(juxiang)
 zhurong:addSkill(lieren)
 Fk:loadTranslationTable{
   ["zhurong"] = "祝融",
+  ["#zhurong"] = "野性的女王",
+  ["illustrator:zhurong"] = "废柴男",
   ["juxiang"] = "巨象",
   [":juxiang"] = "锁定技，【南蛮入侵】对你无效；其他角色使用的【南蛮入侵】结算结束后，你获得之。",
   ["lieren"] = "烈刃",
@@ -322,6 +330,8 @@ local sunjian = General:new(extension, "sunjian", "wu", 4)
 sunjian:addSkill(yinghun)
 Fk:loadTranslationTable{
   ["sunjian"] = "孙坚",
+  ["#sunjian"] = "武烈帝",
+  ["illustrator:sunjian"] = "LiuHeng",
   ["yinghun"] = "英魂",
   [":yinghun"] = "准备阶段，若你已受伤，你可以选择一名其他角色并选择一项：1.令其摸X张牌，然后弃置一张牌；2.令其摸一张牌，然后弃置X张牌（X为你已损失的体力值）。",
   ["#yinghun-choose"] = "英魂：你可以令一名其他角色：摸%arg张牌然后弃置一张牌，或摸一张牌然后弃置%arg2张牌",
@@ -462,6 +472,8 @@ lusu:addSkill(haoshi)
 lusu:addSkill(dimeng)
 Fk:loadTranslationTable{
   ["lusu"] = "鲁肃",
+  ["#lusu"] = "独断的外交家",
+  ["illustrator:lusu"] = "LiuHeng",
   ["haoshi"] = "好施",
   [":haoshi"] = "摸牌阶段，你可以多摸两张牌，然后若你的手牌数大于5，你将半数（向下取整）手牌交给手牌牌最少的一名其他角色。",
   ["dimeng"] = "缔盟",
@@ -572,6 +584,8 @@ dongzhuo:addSkill(benghuai)
 dongzhuo:addSkill(baonve)
 Fk:loadTranslationTable{
   ["dongzhuo"] = "董卓",
+  ["#dongzhuo"] = "魔王",
+  ["illustrator:dongzhuo"] = "小冷",
   ["jiuchi"] = "酒池",
   [":jiuchi"] = "你可以将一张♠手牌当【酒】使用。",
   ["roulin"] = "肉林",
@@ -669,6 +683,8 @@ jiaxu:addSkill(weimu)
 
 Fk:loadTranslationTable{
   ["jiaxu"] = "贾诩",
+  ["#jiaxu"] = "冷酷的毒士",
+  ["illustrator:jiaxu"] = "KayaK",
   ["wansha"] = "完杀",
   [":wansha"] = "锁定技，除进行濒死流程的角色以外的其他角色于你的回合内不能使用【桃】。",
   ["luanwu"] = "乱武",
