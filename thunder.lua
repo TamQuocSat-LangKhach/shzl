@@ -93,6 +93,8 @@ zhengu:addRelatedSkill(zhengu_delay)
 haozhao:addSkill(zhengu)
 Fk:loadTranslationTable{
   ["haozhao"] = "郝昭",
+  ["#haozhao"] = "扣弦的豪将",
+  ["illustrator:haozhao"] = "秋呆呆",
   ["zhengu"] = "镇骨",
   [":zhengu"] = "结束阶段，你可以选择一名其他角色，本回合结束时和其下个回合结束时，其将手牌摸或弃至与你手牌数量相同（至多摸至五张）。",
 
@@ -203,6 +205,8 @@ guanqiujian:addSkill(hongju)
 guanqiujian:addRelatedSkill(qingce)
 Fk:loadTranslationTable{
   ["guanqiujian"] = "毌丘俭",
+  ["#guanqiujian"] = "镌功铭征荣",
+  ["illustrator:guanqiujian"] = "凝聚永恒",
   ["zhengrong"] = "征荣",
   [":zhengrong"] = "当你对其他角色造成伤害后，若其手牌数大于你，你可以将其一张牌置于你的武将牌上，称为“荣”。",
   ["hongju"] = "鸿举",
@@ -267,6 +271,8 @@ wangliec:addRelatedSkill(wanglie_prohibit)
 chendao:addSkill(wangliec)
 Fk:loadTranslationTable{
   ["chendao"] = "陈到",
+  ["#chendao"] = "白毦督",
+  ["illustrator:chendao"] = "王立雄",
   ["wangliec"] = "往烈",
   [":wangliec"] = "出牌阶段，你使用的第一张牌无距离限制。你于出牌阶段使用【杀】或普通锦囊牌时，你可以令此牌无法响应，然后本阶段你不能再使用牌。",
   ["#wangliec-invoke"] = "往烈：你可以令%arg无法响应，然后你本阶段不能再使用牌",
@@ -368,6 +374,8 @@ zhugezhan:addSkill(zuilun)
 zhugezhan:addSkill(fuyin)
 Fk:loadTranslationTable{
   ["zhugezhan"] = "诸葛瞻",
+  ["#zhugezhan"] = "临难死义",
+  ["illustrator:zhugezhan"] = "zoo",
   ["zuilun"] = "罪论",
   [":zuilun"] = "结束阶段，你可以观看牌堆顶三张牌，你每满足以下一项便获得其中的一张，然后以任意顺序放回其余的牌：1.你于此回合内造成过伤害；"..
   "2.你于此回合内未弃置过牌；3.手牌数为全场最少。若均不满足，你与一名其他角色失去1点体力。",
@@ -521,6 +529,8 @@ zhoufei:addSkill(liangyin)
 zhoufei:addSkill(kongsheng)
 Fk:loadTranslationTable{
   ["zhoufei"] = "周妃",
+  ["#zhoufei"] = "软玉温香",
+  ["illustrator:zhoufei"] = "眉毛子",
   ["liangyin"] = "良姻",
   [":liangyin"] = "当有牌移出游戏时，你可以令手牌数大于你的一名角色摸一张牌；当有牌从游戏外加入任意角色手牌时，你可以令手牌数小于你的一名角色弃置一张牌。",
   ["kongsheng"] = "箜声",
@@ -645,6 +655,8 @@ local huairou = fk.CreateActiveSkill{
 lukang:addRelatedSkill(huairou)
 Fk:loadTranslationTable{
   ["lukang"] = "陆抗",
+  ["#lukang"] = "社稷之瑰宝",
+  ["illustrator:lukang"] = "zoo",
   ["qianjie"] = "谦节",
   [":qianjie"] = "锁定技，你被横置前防止之，且不能成为延时类锦囊牌或其他角色拼点的目标。",
   ["#qianjie_prohibit"] = "谦节",
@@ -740,6 +752,8 @@ local thunder__weidi = fk.CreateTriggerSkill{
 yuanshu:addSkill(thunder__weidi)
 Fk:loadTranslationTable{
   ["thunder__yuanshu"] = "袁术",
+  ["#thunder__yuanshu"] = "仲家帝",
+  ["illustrator:thunder__yuanshu"] = "KayaK",
   ["thunder__yongsi"] = "庸肆",
   [":thunder__yongsi"] = "锁定技，摸牌阶段，你改为摸X张牌（X为场上现存势力数）。出牌阶段结束时，若你本回合没有造成过伤害，你将手牌补至当前体力值；若造成过伤害且大于1点，你本回合手牌上限改为已损失体力值。",
   ["thunder__weidi"] = "伪帝",
@@ -847,6 +861,8 @@ zhangxiu:addSkill(xiongluan)
 zhangxiu:addSkill(congjian)
 Fk:loadTranslationTable{
   ["zhangxiu"] = "张绣",
+  ["#zhangxiu"] = "北地枪王",
+  ["illustrator:zhangxiu"] = "PCC",
   ["xiongluan"] = "雄乱",
   [":xiongluan"] = "限定技，出牌阶段，你可以废除你的判定区和装备区，然后指定一名其他角色。直到回合结束，你对其使用牌无距离和次数限制，其不能使用和打出手牌。",
   ["congjian"] = "从谏",

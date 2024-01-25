@@ -54,6 +54,8 @@ wangji:addSkill(qizhi)
 wangji:addSkill(jinqu)
 Fk:loadTranslationTable{
   ["wangji"] = "王基",
+  ["#wangji"] = "经行合一",
+  ["illustrator:wangji"] = "雪君S",
   ["qizhi"] = "奇制",
   [":qizhi"] = "当你于回合内使用非装备牌指定目标后，你可以弃置一名不为目标的角色的一张牌，然后令其摸一张牌。",
   ["jinqu"] = "进趋",
@@ -140,6 +142,7 @@ local shenshi = fk.CreateActiveSkill{
 local shenshiYin = fk.CreateTriggerSkill{
   name = "#shenshiYin",
   main_skill = shenshi,
+  switch_skill_name = "shenshi",
   mute = true,
   events = {fk.Damaged},
   can_trigger = function(self, event, target, player, data)
@@ -153,7 +156,6 @@ local shenshiYin = fk.CreateTriggerSkill{
     local room = player.room
     player:broadcastSkillInvoke("shenshi")
     room:notifySkillInvoked(player, "shenshi", "switch")
-    room:setPlayerMark(player, MarkEnum.SwithSkillPreName .. "shenshi", player:getSwitchSkillState("shenshi", true))
     local from = data.from
     room:doIndicate(player.id, {from.id})
     if not from:isKongcheng() then
@@ -195,6 +197,8 @@ kuailiangkuaiyue:addSkill(jianxiang)
 kuailiangkuaiyue:addSkill(shenshi)
 Fk:loadTranslationTable{
   ["kuailiangkuaiyue"] = "蒯良蒯越",
+  ["#kuailiangkuaiyue"] = "雍论臼谋",
+  ["illustrator:kuailiangkuaiyue"] = "北辰菌",
   ["jianxiang"] = "荐降",
   [":jianxiang"] = "当你成为其他角色使用牌的目标后，你可以令手牌数最少的一名角色摸一张牌。",
   ["shenshi"] = "审时",
@@ -205,6 +209,7 @@ Fk:loadTranslationTable{
   ["#shenshi-choose"] = "审时：你可以令一名角色将手牌摸至四张",
   ["#shenshi-invoke"] = "审时：你可以观看 %dest 的手牌并交给其一张牌",
   ["#shenshi-give"] = "审时：交给 %dest 一张牌，若本回合结束阶段仍属于其，你将手牌摸至四张",
+  ["#shenshiYin"] = "审时",
 
   ["$jianxiang1"] = "得遇曹公，吾之幸也。",
   ["$jianxiang2"] = "曹公得荆不喜，喜得吾二人足矣。",
@@ -267,6 +272,8 @@ juzhan:addRelatedSkill(juzhan_prohibit)
 yanyan:addSkill(juzhan)
 Fk:loadTranslationTable{
   ["yanyan"] = "严颜",
+  ["#yanyan"] = "断头将军",
+  ["illustrator:yanyan"] = "Town",
   ["juzhan"] = "拒战",
   [":juzhan"] = "转换技，阳：当你成为其他角色使用【杀】的目标后，你可以与其各摸一张牌，然后其本回合不能再对你使用牌。"..
   "阴：当你使用【杀】指定一名角色为目标后，你可以获得其一张牌，然后你本回合不能再对其使用牌。",
@@ -353,6 +360,8 @@ wangping:addSkill(feijun)
 wangping:addSkill(binglve)
 Fk:loadTranslationTable{
   ["wangping"] = "王平",
+  ["#wangping"] = "兵谋以致用",
+  ["illustrator:wangping"] = "Yanbai",
   ["feijun"] = "飞军",
   [":feijun"] = "出牌阶段限一次，你可以弃置一张牌，然后选择一项：1.令一名手牌数大于你的角色交给你一张牌；2.令一名装备区里牌数大于你的角色"..
   "弃置一张装备区里的牌。",
@@ -447,6 +456,8 @@ luji:addSkill(yili)
 luji:addSkill(zhenglun)
 Fk:loadTranslationTable{
   ["luji"] = "陆绩",
+  ["#luji"] = "瑚琏之器",
+  ["illustrator:luji"] = "秋呆呆",
   ["huaiju"] = "怀橘",
   [":huaiju"] = "锁定技，游戏开始时，你获得3枚“橘”标记。当有“橘”的角色受到伤害时，防止此伤害并移除1枚“橘”。有“橘”的角色摸牌阶段多摸一张牌。",
   ["yili"] = "遗礼",
@@ -636,6 +647,8 @@ local lijun = fk.CreateTriggerSkill{
 sunliang:addSkill(lijun)
 Fk:loadTranslationTable{
   ["sunliang"] = "孙亮",
+  ["#sunliang"] = "寒江枯水",
+  ["illustrator:sunliang"] = "眉毛子",
   ["kuizhu"] = "溃诛",
   [":kuizhu"] = "弃牌阶段结束时，你可以选择一项：1. 令至多X名角色各摸一张牌；2. 对任意名体力值之和为X的角色造成1点伤害，若不少于2名角色，你失去1点体力（X为你此阶段弃置的牌数）。",
   ["kuizhu_active"] = "溃诛",
@@ -793,6 +806,8 @@ xuyou:addSkill(shicai)
 xuyou:addSkill(cunmu)
 Fk:loadTranslationTable{
   ["xuyou"] = "许攸",
+  ["#xuyou"] = "朝秦暮楚",
+  ["illustrator:xuyou"] = "兴游",
   ["chenglve"] = "成略",
   [":chenglve"] = "转换技，出牌阶段限一次，阳：你可以摸一张牌，然后弃置两张手牌；阴：你可以摸两张牌，然后弃置一张手牌。"..
   "若如此做，你于此阶段内使用与你以此法弃置的牌花色相同的牌无距离和次数限制。",
@@ -814,6 +829,8 @@ Fk:loadTranslationTable{
 
 Fk:loadTranslationTable{
   ["luzhi"] = "卢植",
+  ["#luzhi"] = "国之桢干",
+  ["illustrator:luzhi"] = "biou09",
   ["mingren"] = "明任",
   [":mingren"] = "游戏开始时，你摸两张牌，然后将一张手牌置于你的武将牌上，称为“任”。结束阶段，你可以用手牌替换“任”。",
   ["zhenliang"] = "贞良",

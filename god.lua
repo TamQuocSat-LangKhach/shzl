@@ -85,6 +85,8 @@ godguanyu:addSkill(wushen)
 godguanyu:addSkill(wuhun)
 Fk:loadTranslationTable {
   ["godguanyu"] = "神关羽",
+  ["#godguanyu"] = "神鬼再临",
+  ["illustrator:godguanyu"] = "KayaK",
   ["wushen"] = "武神",
   [":wushen"] = "锁定技，你的<font color='red'>♥</font>手牌视为【杀】；你使用<font color='red'>♥</font>【杀】无距离限制。",
   ["wuhun"] = "武魂",
@@ -194,6 +196,8 @@ godlvmeng:addSkill(shelie)
 godlvmeng:addSkill(gongxin)
 Fk:loadTranslationTable{
   ["godlvmeng"] = "神吕蒙",
+  ["#godlvmeng"] = "圣光之国士",
+  ["illustrator:godlvmeng"] = "KayaK",
   ["shelie"] = "涉猎",
   [":shelie"] = "摸牌阶段，你可以改为亮出牌堆顶五张牌，获得不同花色的牌各一张。",
   ["gongxin"] = "攻心",
@@ -346,6 +350,8 @@ godzhouyu:addSkill(qinyin)
 godzhouyu:addSkill(yeyan)
 Fk:loadTranslationTable{
   ["godzhouyu"] = "神周瑜",
+  ["#godzhouyu"] = "赤壁的火神",
+  ["illustrator:godzhouyu"] = "KayaK",
   ["qinyin"] = "琴音",
   [":qinyin"] = "弃牌阶段结束时，若你此阶段弃置过至少两张手牌，你可以选择：1. 令所有角色各回复1点体力；2. 令所有角色各失去1点体力。",
   ["yeyan"] = "业炎",
@@ -519,6 +525,8 @@ godzhugeliang:addSkill(kuangfeng)
 godzhugeliang:addSkill(dawu)
 Fk:loadTranslationTable{
   ["godzhugeliang"] = "神诸葛亮",
+  ["#godzhugeliang"] = "赤壁的妖术师",
+  ["illustrator:godzhugeliang"] = "KayaK",
   ["qixing"] = "七星",
   [":qixing"] = "游戏开始时，你将牌堆顶的七张牌扣置于武将牌上，称为“星”，然后你可以用任意张手牌替换等量的“星”；摸牌阶段结束时，你可以用任意张手牌替换等量的“星”。",
   ["kuangfeng"] = "狂风",
@@ -647,6 +655,8 @@ godlvbu:addSkill(shenfen)
 godlvbu:addRelatedSkill("wushuang")
 Fk:loadTranslationTable{
   ["godlvbu"] = "神吕布",
+  ["#godlvbu"] = "修罗之道",
+  ["illustrator:godlvbu"] = "KayaK",
   ["kuangbao"] = "狂暴",
   [":kuangbao"] = "锁定技，游戏开始时，你获得2枚“暴怒”；当你造成或受到1点伤害后，你获得1枚“暴怒”。",
   ["wumou"] = "无谋",
@@ -722,6 +732,8 @@ godcaocao:addSkill(guixin)
 godcaocao:addSkill(feiying)
 Fk:loadTranslationTable{
   ["godcaocao"] = "神曹操",
+  ["#godcaocao"] = "超世之英杰",
+  ["illustrator:godcaocao"] = "KayaK",
   ["guixin"] = "归心",
   [":guixin"] = "当你受到1点伤害后，你可获得所有其他角色区域中的一张牌，然后你翻面。",
   ["feiying"] = "飞影",
@@ -806,6 +818,8 @@ nos__godzhaoyun:addSkill(nos__longhun)
 
 Fk:loadTranslationTable{
   ["nos__godzhaoyun"] = "神赵云",
+  ["#nos__godzhaoyun"] = "神威如龙",
+  ["illustrator:nos__godzhaoyun"] = "KayaK",
   ["nos__juejing"] = "绝境",
   [":nos__juejing"] = "锁定技，摸牌阶段，你令额定摸牌数+X（X为你已损失的体力值）；你的手牌上限+2。",
   ["nos__longhun"] = "龙魂",
@@ -916,6 +930,8 @@ godzhaoyun:addSkill(juejing)
 godzhaoyun:addSkill(longhun)
 Fk:loadTranslationTable{
   ["godzhaoyun"] = "神赵云",
+  ["#godzhaoyun"] = "神威如龙",
+  ["illustrator:godzhaoyun"] = "铁杵文化",
   ["juejing"] = "绝境",
   [":juejing"] = "锁定技，你的手牌上限+2；当你进入濒死状态时或你的濒死结算结束后，你摸一张牌。",
   ["longhun"] = "龙魂",
@@ -1088,6 +1104,8 @@ gundam:addSkill(gundam__longhun)
 Fk:loadTranslationTable{
   --["gundam__godzhaoyun"] = "高达一号",
   ["gundam"] = "高达一号",
+  ["#gundam"] = "神威如龙",
+  ["illustrator:gundam"] = "巴萨小马",
   ["gundam__juejing"] = "绝境",
   [":gundam__juejing"] = "锁定技，你跳过摸牌阶段；当你的手牌数大于4/小于4时，你将手牌弃置至4/摸至4张。",
   ["gundam__longhun"] = "龙魂",
@@ -1343,6 +1361,8 @@ godsimayi:addRelatedSkill("ex__zhiheng")
 godsimayi:addRelatedSkill("ol_ex__wansha")
 Fk:loadTranslationTable{
   ["godsimayi"] = "神司马懿",
+  ["#godsimayi"] = "晋国之祖",
+  ["illustrator:godsimayi"] = "KayaK",
   ["renjie"] = "忍戒",
   [":renjie"] = "锁定技，当你受到伤害后/于弃牌阶段弃置手牌后，你获得X枚“忍”（X为伤害值/你弃置的手牌数）。",
   ["baiyin"] = "拜印",
@@ -1482,6 +1502,8 @@ godliubei:addSkill(longnu)
 godliubei:addSkill(jieying)
 Fk:loadTranslationTable{
   ["godliubei"] = "神刘备",
+  ["#godliubei"] = "誓守桃园义",
+  ["illustrator:godliubei"] = "zoo",
   ["longnu"] = "龙怒",
   [":longnu"] = "转换技，锁定技，出牌阶段开始时，阳：你失去1点体力，摸一张牌，你的红色手牌于此阶段内均视为火【杀】，你于此阶段内使用火【杀】无距离限制；"..
   "阴：你减1点体力上限，摸一张牌，你的锦囊牌于此阶段内均视为雷【杀】，你于此阶段内使用雷【杀】无次数限制。",
@@ -1613,6 +1635,8 @@ local zhanhuo = fk.CreateActiveSkill{
 godluxun:addSkill(zhanhuo)
 Fk:loadTranslationTable{
   ["godluxun"] = "神陆逊",
+  ["#godluxun"] = "红莲业火",
+  ["illustrator:godluxun"] = "Thinking",
   ["junlue"] = "军略",
   [":junlue"] = "锁定技，当你造成或受到1点伤害后，你获得一枚“军略”。",
   ["@junlue"] = "军略",
@@ -1788,6 +1812,8 @@ godzhangliao:addSkill(zhiti)
 
 Fk:loadTranslationTable{
   ["godzhangliao"] = "神张辽",
+  ["#godzhangliao"] = "雁门之刑天",
+  ["illustrator:godzhangliao"] = "Town",
   ["duorui"] = "夺锐",
   [":duorui"] = "当你于出牌阶段内对一名其他角色造成伤害后，你可以废除你的一个装备栏，然后选择该角色的武将牌上的一个技能"..
   "（限定技、觉醒技、使命技、主公技除外），令其于其下回合结束之前此技能无效，然后你于其下回合结束或其死亡之前拥有此技能且不能发动〖夺锐〗。",
@@ -1976,6 +2002,8 @@ godganning:addSkill(poxi)
 godganning:addSkill(gn_jieying)
 Fk:loadTranslationTable{
   ["godganning"] = "神甘宁",
+  ["#godganning"] = "江表之力牧",
+  ["illustrator:godganning"] = "depp",
   ["poxi"] = "魄袭",
   [":poxi"] = "出牌阶段限一次，你可以观看一名其他角色的手牌，然后你可以弃置你与其手里共计四张不同花色的牌。若如此做，根据此次弃置你的牌数量执行以下效果：没有，体力上限减1；一张，结束出牌阶段且本回合手牌上限-1；三张，回复1点体力；四张，摸四张牌。",
   ["gn_jieying"] = "劫营",
@@ -2145,6 +2173,8 @@ goddiaochan:addSkill(meihun)
 goddiaochan:addSkill(huoxin)
 Fk:loadTranslationTable{
   ["goddiaochan"] = "神貂蝉",
+  ["#goddiaochan"] = "欲界非天",
+  ["illustrator:goddiaochan"] = "KayaK",
   ["meihun"] = "魅魂",
   [":meihun"] = "结束阶段或当你成为【杀】目标后，你可以令一名其他角色" ..
     "交给你一张你声明的花色的牌，若其没有则你观看其手牌然后弃置其中一张。",
