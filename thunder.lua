@@ -94,6 +94,7 @@ haozhao:addSkill(zhengu)
 Fk:loadTranslationTable{
   ["haozhao"] = "郝昭",
   ["#haozhao"] = "扣弦的豪将",
+  ["cv:haozhao"] = "王宇航",
   ["illustrator:haozhao"] = "秋呆呆",
   ["zhengu"] = "镇骨",
   [":zhengu"] = "结束阶段，你可以选择一名其他角色，本回合结束时和其下个回合结束时，其将手牌摸或弃至与你手牌数量相同（至多摸至五张）。",
@@ -272,6 +273,7 @@ chendao:addSkill(wangliec)
 Fk:loadTranslationTable{
   ["chendao"] = "陈到",
   ["#chendao"] = "白毦督",
+  ["cv:chendao"] = "漠桀",
   ["illustrator:chendao"] = "王立雄",
   ["wangliec"] = "往烈",
   [":wangliec"] = "出牌阶段，你使用的第一张牌无距离限制。你于出牌阶段使用【杀】或普通锦囊牌时，你可以令此牌无法响应，然后本阶段你不能再使用牌。",
@@ -375,6 +377,7 @@ zhugezhan:addSkill(fuyin)
 Fk:loadTranslationTable{
   ["zhugezhan"] = "诸葛瞻",
   ["#zhugezhan"] = "临难死义",
+  ["cv:zhugezhan"] = "漠桀",
   ["illustrator:zhugezhan"] = "zoo",
   ["zuilun"] = "罪论",
   [":zuilun"] = "结束阶段，你可以观看牌堆顶三张牌，你每满足以下一项便获得其中的一张，然后以任意顺序放回其余的牌：1.你于此回合内造成过伤害；"..
@@ -862,6 +865,7 @@ zhangxiu:addSkill(congjian)
 Fk:loadTranslationTable{
   ["zhangxiu"] = "张绣",
   ["#zhangxiu"] = "北地枪王",
+  ["cv:zhangxiu"] = "Aaron", -- 秦宇
   ["illustrator:zhangxiu"] = "PCC",
   ["xiongluan"] = "雄乱",
   [":xiongluan"] = "限定技，出牌阶段，你可以废除你的判定区和装备区，然后指定一名其他角色。直到回合结束，你对其使用牌无距离和次数限制，其不能使用和打出手牌。",

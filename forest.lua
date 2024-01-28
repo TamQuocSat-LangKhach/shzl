@@ -105,6 +105,7 @@ caopi:addSkill(songwei)
 Fk:loadTranslationTable{
   ["caopi"] = "曹丕",
   ["#caopi"] = "霸业的继承者",
+  ["cv:caopi"] = "曹真",
   ["illustrator:caopi"] = "SoniaTang",
   ["xingshang"] = "行殇",
   [":xingshang"] = "当其他角色死亡时，你可以获得其所有牌。",
@@ -279,6 +280,7 @@ zhurong:addSkill(lieren)
 Fk:loadTranslationTable{
   ["zhurong"] = "祝融",
   ["#zhurong"] = "野性的女王",
+  ["cv:zhurong"] = "水原",
   ["illustrator:zhurong"] = "废柴男",
   ["juxiang"] = "巨象",
   [":juxiang"] = "锁定技，【南蛮入侵】对你无效；其他角色使用的【南蛮入侵】结算结束后，你获得之。",

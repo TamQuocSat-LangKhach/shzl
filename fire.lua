@@ -48,6 +48,7 @@ dianwei:addSkill(qiangxi)
 Fk:loadTranslationTable{
   ["dianwei"] = "典韦",
   ["#dianwei"] = "古之恶来",
+  ["cv:dianwei"] = "冷泉月夜",
   ["illustrator:dianwei"] = "小冷",
   ["qiangxi"] = "强袭",
   [":qiangxi"] = "出牌阶段限一次，你可以失去1点体力或弃置一张武器牌，并选择你攻击范围内的一名其他角色，对其造成1点伤害。",
@@ -554,6 +555,7 @@ yuanshao:addSkill(xueyi)
 Fk:loadTranslationTable{
   ["yuanshao"] = "袁绍",
   ["#yuanshao"] = "高贵的名门",
+  ["cv:yuanshao"] = "北村",
   ["illustrator:yuanshao"] = "SoniaTang",
   ["luanji"] = "乱击",
   [":luanji"] = "出牌阶段，你可以将任意两张相同花色的手牌当【万箭齐发】使用。",

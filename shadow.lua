@@ -648,6 +648,7 @@ sunliang:addSkill(lijun)
 Fk:loadTranslationTable{
   ["sunliang"] = "孙亮",
   ["#sunliang"] = "寒江枯水",
+  ["cv:sunliang"] = "徐刚",
   ["illustrator:sunliang"] = "眉毛子",
   ["kuizhu"] = "溃诛",
   [":kuizhu"] = "弃牌阶段结束时，你可以选择一项：1. 令至多X名角色各摸一张牌；2. 对任意名体力值之和为X的角色造成1点伤害，若不少于2名角色，你失去1点体力（X为你此阶段弃置的牌数）。",
@@ -807,6 +808,7 @@ xuyou:addSkill(cunmu)
 Fk:loadTranslationTable{
   ["xuyou"] = "许攸",
   ["#xuyou"] = "朝秦暮楚",
+  ["cv:xuyou"] = "曹毅",
   ["illustrator:xuyou"] = "兴游",
   ["chenglve"] = "成略",
   [":chenglve"] = "转换技，出牌阶段限一次，阳：你可以摸一张牌，然后弃置两张手牌；阴：你可以摸两张牌，然后弃置一张手牌。"..
