@@ -198,6 +198,7 @@ kuailiangkuaiyue:addSkill(shenshi)
 Fk:loadTranslationTable{
   ["kuailiangkuaiyue"] = "蒯良蒯越",
   ["#kuailiangkuaiyue"] = "雍论臼谋",
+  ["cv:kuailiangkuaiyue"] = "曹真",
   ["illustrator:kuailiangkuaiyue"] = "北辰菌",
   ["jianxiang"] = "荐降",
   [":jianxiang"] = "当你成为其他角色使用牌的目标后，你可以令手牌数最少的一名角色摸一张牌。",
@@ -457,6 +458,7 @@ luji:addSkill(zhenglun)
 Fk:loadTranslationTable{
   ["luji"] = "陆绩",
   ["#luji"] = "瑚琏之器",
+  ["cv:luji"] = "曹真",
   ["illustrator:luji"] = "秋呆呆",
   ["huaiju"] = "怀橘",
   [":huaiju"] = "锁定技，游戏开始时，你获得3枚“橘”标记。当有“橘”的角色受到伤害时，防止此伤害并移除1枚“橘”。有“橘”的角色摸牌阶段多摸一张牌。",
@@ -832,6 +834,7 @@ Fk:loadTranslationTable{
 Fk:loadTranslationTable{
   ["luzhi"] = "卢植",
   ["#luzhi"] = "国之桢干",
+  ["cv:luzhi"] = "袁国庆",
   ["illustrator:luzhi"] = "biou09",
   ["mingren"] = "明任",
   [":mingren"] = "游戏开始时，你摸两张牌，然后将一张手牌置于你的武将牌上，称为“任”。结束阶段，你可以用手牌替换“任”。",

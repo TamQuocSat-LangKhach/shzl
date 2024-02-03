@@ -251,6 +251,7 @@ jiangwei:addRelatedSkill("guanxing")
 Fk:loadTranslationTable{
   ["jiangwei"] = "姜维",
   ["#jiangwei"] = "龙的衣钵",
+  ["cv:jiangwei"] = "彭尧", -- 冷泉? 汤旸?
   ["illustrator:jiangwei"] = "KayaK",
   ["tiaoxin"] = "挑衅",
   [":tiaoxin"] = "出牌阶段限一次，你可以指定一名你在其攻击范围内的角色，其需包括你在内的角色使用一张【杀】，否则你弃置其一张牌。",
@@ -347,6 +348,7 @@ liushan:addRelatedSkill("jijiang")
 Fk:loadTranslationTable{
   ["liushan"] = "刘禅",
   ["#liushan"] = "无为的真命主",
+  ["cv:liushan"] = "彭尧", -- 汤旸?
   ["illustrator:liushan"] = "LiuHeng",
   ["xiangle"] = "享乐",
   [":xiangle"] = "锁定技，每当你成为【杀】的目标时，【杀】的使用者须弃置一张基本牌，否则此【杀】对你无效。",
@@ -491,6 +493,7 @@ Fk:addSkill(zhiba_other)
 Fk:loadTranslationTable{
   ["sunce"] = "孙策",
   ["#sunce"] = "江东的小霸王",
+  ["cv:sunce"] = "彭尧",
   ["illustrator:sunce"] = "KayaK",
   ["jiang"] = "激昂",
   [":jiang"] = "当你使用【决斗】或红色【杀】指定目标后，或成为【决斗】或红色【杀】的目标后，你可以摸一张牌。",
@@ -648,7 +651,7 @@ Fk:loadTranslationTable{
 local zuoci = General(extension, "zuoci", "qun", 3)
 local function DoHuashen(player)
   local room = player.room
-  local huashens = player:getMark("@&huanshen")
+  local huashens = player:getMark("@[private]&huanshen")
   if huashens == 0 or #huashens == 0 then return end
   local name = room:askForGeneral(player, huashens, 1)
   local general = Fk.generals[name]
@@ -699,7 +702,7 @@ local huashen = fk.CreateTriggerSkill{
       if event == fk.GamePrepared then
         return true
       else
-        return target == player and player:getMark("@&huanshen") ~= 0
+        return target == player and player:getMark("@[private]&huanshen") ~= 0
       end
     end
   end,
@@ -714,7 +717,7 @@ local huashen = fk.CreateTriggerSkill{
     local room = player.room
     if event == fk.GamePrepared then
       local generals = room:getNGenerals(2)
-      room:setPlayerMark(player, "@&huanshen", generals)
+      room:setPlayerMark(player, "@[private]&huanshen", generals)
     end
     DoHuashen(player)
   end,
@@ -741,10 +744,10 @@ local xinsheng = fk.CreateTriggerSkill{
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room
-    local generals = player:getMark("@&huanshen")
+    local generals = player:getMark("@[private]&huanshen")
     if generals == 0 then generals = {} end
     table.insert(generals, room:getNGenerals(1)[1])
-    room:setPlayerMark(player, "@&huanshen", generals)
+    room:setPlayerMark(player, "@[private]&huanshen", generals)
   end,
 }
 zuoci:addSkill(huashen)
@@ -758,7 +761,7 @@ Fk:loadTranslationTable{
   "回合开始时和回合结束后，你可以重新选择一张“化身”的一个技能。你获得你以此法选择的技能且性别与势力改为与此“化身”相同。",
   ["xinsheng"] = "新生",
   [":xinsheng"] = "当你受到1点伤害后，你可以获得一张“化身”。",
-  ["@&huanshen"] = "化身",
+  ["@[private]&huanshen"] = "化身",
   ["#huashen"] = "化身：请选择要化身的技能",
   ["@huanshen_skill"] = "化身",
 

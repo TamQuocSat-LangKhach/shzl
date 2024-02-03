@@ -248,7 +248,7 @@ return {
   [":huashen"] = 'At the start of the game, you pick 2 character cards randomly and place them on you character card, face-down ("Incarnation"), then you reveal 1 "Incarnation" and choose a skill on it to acquire (except Limited skill, Awaken skill, Lord skill, Duty skill and Lurk skill), then your gender and nationality are regarded as the same of this "Incarnation". At the start of your prepare phase or finish phase, you can change your "Incarnation" to change a new skill.',
   ["xinsheng"] = "Rebirth",
   [":xinsheng"] = 'After you take 1 DMG, you can get 1 new "Incarnation".',
-  ["@&huanshen"] = "Incarnation",
+  ["@[private]&huanshen"] = "Incarnation",
   ["#huashen"] = "Incarnation: choose the skill you want to acquire",
   ["@huanshen_skill"] = "Inca.",
 

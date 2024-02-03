@@ -225,6 +225,9 @@ local kanpo = fk.CreateViewAsSkill{
     card:addSubcard(cards[1])
     return card
   end,
+  enabled_at_response = function (self, player, response)
+    return not response and not player:isKongcheng()
+  end,
 }
 wolong:addSkill(bazhen)
 wolong:addSkill(huoji)
@@ -232,6 +235,7 @@ wolong:addSkill(kanpo)
 Fk:loadTranslationTable{
   ["wolong"] = "卧龙诸葛亮",
   ["#wolong"] = "卧龙",
+  ["cv:wolong"] = "彭尧",
   ["illustrator:wolong"] = "北",
   ["bazhen"] = "八阵",
   [":bazhen"] = "锁定技，若你没有装备防具，视为你装备着【八卦阵】。",
@@ -499,6 +503,7 @@ yanliangwenchou:addSkill(shuangxiong)
 Fk:loadTranslationTable{
   ["yanliangwenchou"] = "颜良文丑",
   ["#yanliangwenchou"] = "虎狼兄弟",
+  ["cv:yanliangwenchou"] = "彭尧",
   ["illustrator:yanliangwenchou"] = "KayaK",
   ["shuangxiong"] = "双雄",
   [":shuangxiong"] = "摸牌阶段，你可以选择放弃摸牌并进行一次判定：你获得此判定牌并且此回合可以将任意一张与该判定牌不同颜色的手牌当【决斗】使用。",
@@ -555,7 +560,7 @@ yuanshao:addSkill(xueyi)
 Fk:loadTranslationTable{
   ["yuanshao"] = "袁绍",
   ["#yuanshao"] = "高贵的名门",
-  ["cv:yuanshao"] = "北村",
+  ["cv:yuanshao"] = "彭尧", -- 北村?
   ["illustrator:yuanshao"] = "SoniaTang",
   ["luanji"] = "乱击",
   [":luanji"] = "出牌阶段，你可以将任意两张相同花色的手牌当【万箭齐发】使用。",

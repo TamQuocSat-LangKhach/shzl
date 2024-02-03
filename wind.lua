@@ -283,6 +283,7 @@ xiaoqiao:addSkill(hongyan)
 Fk:loadTranslationTable{
   ["xiaoqiao"] = "小乔",
   ["#xiaoqiao"] = "矫情之花",
+  ["cv:xiaoqiao"] = "侯小菲",
   ["illustrator:xiaoqiao"] = "KayaK",
   ["tianxiang"] = "天香",
   [":tianxiang"] = "当你受到伤害时，你可以弃置一张<font color='red'>♥</font>手牌并选择一名其他角色。若如此做，你将此伤害转移给该角色，然后其摸X张牌（X为其已损失体力值）。",
