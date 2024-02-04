@@ -112,6 +112,7 @@ local guanqiujian = General(extension, "guanqiujian", "wei", 4)
 local zhengrong = fk.CreateTriggerSkill{
   name = "zhengrong",
   anim_type = "control",
+  derived_piles = "guanqiujian__glory",
   events = {fk.Damage},
   can_trigger = function(self, event, target, player, data)
     return target == player and player:hasSkill(self) and not data.to.dead and data.to:getHandcardNum() > player:getHandcardNum()

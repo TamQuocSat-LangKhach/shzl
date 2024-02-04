@@ -56,6 +56,7 @@ Fk:loadTranslationTable{
   ["wangji"] = "王基",
   ["#wangji"] = "经行合一",
   ["illustrator:wangji"] = "雪君S",
+  ["designer:wangji"] = "韩旭",
   ["qizhi"] = "奇制",
   [":qizhi"] = "当你于回合内使用非装备牌指定目标后，你可以弃置一名不为目标的角色的一张牌，然后令其摸一张牌。",
   ["jinqu"] = "进趋",

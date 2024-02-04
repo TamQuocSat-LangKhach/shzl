@@ -301,6 +301,7 @@ local zhoutai = General(extension, "zhoutai", "wu", 4)
 local buqu = fk.CreateTriggerSkill{
   name = "buqu",
   anim_type = "defensive",
+  derived_piles = "zhoutai_chuang",
   events = {fk.BeforeHpChanged, fk.HpRecover},
   can_trigger = function(self, event, target, player, data)
     if target == player and player:hasSkill(self) then

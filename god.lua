@@ -2175,6 +2175,8 @@ Fk:loadTranslationTable{
   ["goddiaochan"] = "神貂蝉",
   ["#goddiaochan"] = "欲界非天",
   ["illustrator:goddiaochan"] = "KayaK",
+  ["cv:goddiaochan"] = "桃妮儿（新月杀原创）",
+  ["designer:goddiaochan"] = "KayaK",
   ["meihun"] = "魅魂",
   [":meihun"] = "结束阶段或当你成为【杀】目标后，你可以令一名其他角色" ..
     "交给你一张你声明的花色的牌，若其没有则你观看其手牌然后弃置其中一张。",
@@ -2193,7 +2195,6 @@ Fk:loadTranslationTable{
   ["#huoxin_trig"] = "惑心",
 
   -- CV: 桃妮儿
-  ["cv:goddiaochan"] = "桃妮儿",
   ["~goddiaochan"] = "也许，你们日后的所闻所望，都是我某天的所叹所想…",
   ["$meihun1"] = "将军还记得那晚的话么？弄疼人家，要赔不是哦~",
   ["$meihun2"] = "让我看看，将军这次会为我心软，还是耳根子软~",
