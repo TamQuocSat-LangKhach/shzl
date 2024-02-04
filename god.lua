@@ -1183,7 +1183,7 @@ local baiyin = fk.CreateTriggerSkill{
     local room = player.room
     room:changeMaxHp(player, -1)
     if player.dead then return end
-    room:handleAddLoseSkills(player, "jilve", nil, true, false)
+    room:handleAddLoseSkills(player, "jilue", nil, true, false)
   end,
 }
 local lianpo = fk.CreateTriggerSkill{
@@ -1207,8 +1207,8 @@ local lianpo = fk.CreateTriggerSkill{
     player:gainAnExtraTurn(true)
   end,
 }
-local jilve = fk.CreateActiveSkill{
-  name = "jilve",
+local jilue = fk.CreateActiveSkill{
+  name = "jilue",
   mute = true,
   min_card_num = function(self)
     if self.interaction.data == "ex__zhiheng" then
@@ -1229,9 +1229,9 @@ local jilve = fk.CreateActiveSkill{
   target_num = 0,
   prompt = function(self, selected, selected_cards)
     if self.interaction.data == "ex__zhiheng" then
-      return "#jilve-zhiheng"
+      return "#jilue-zhiheng"
     elseif self.interaction.data == "ol_ex__wansha" then
-      return "#jilve-wansha"
+      return "#jilue-wansha"
     end
   end,
   interaction = function(self)
@@ -1254,7 +1254,7 @@ local jilve = fk.CreateActiveSkill{
     room:removePlayerMark(player, "@godsimayi_bear", 1)
     if self.interaction.data == "ex__zhiheng" then
       player:broadcastSkillInvoke("ex__zhiheng")
-      room:notifySkillInvoked(player, "jilve", "drawcard")
+      room:notifySkillInvoked(player, "jilue", "drawcard")
       player:setSkillUseHistory("ex__zhiheng", player:usedSkillTimes("ex__zhiheng", Player.HistoryPhase) + 1, Player.HistoryPhase)
       local hand = player:getCardIds(Player.Hand)
       local more = #hand > 0
@@ -1268,18 +1268,18 @@ local jilve = fk.CreateActiveSkill{
       room:drawCards(player, #effect.cards + (more and 1 or 0), "ex__zhiheng")
     elseif self.interaction.data == "ol_ex__wansha" then
       player:broadcastSkillInvoke("ol_ex__wansha")
-      room:notifySkillInvoked(player, "jilve", "offensive")
-      room:setPlayerMark(player, "jilve-turn", 1)
+      room:notifySkillInvoked(player, "jilue", "offensive")
+      room:setPlayerMark(player, "jilue-turn", 1)
       room:handleAddLoseSkills(player, "ol_ex__wansha", nil, true, false)
     end
   end
 }
-local jilve_trigger = fk.CreateTriggerSkill{
-  name = "#jilve_trigger",
+local jilue_trigger = fk.CreateTriggerSkill{
+  name = "#jilue_trigger",
   mute = true,
   events = {fk.AskForRetrial, fk.Damaged, fk.CardUsing, fk.TurnEnd},
   can_trigger = function(self, event, target, player, data)
-    if player:hasSkill("jilve") and player:getMark("@godsimayi_bear") > 0 then
+    if player:hasSkill("jilue") and player:getMark("@godsimayi_bear") > 0 then
       if event == fk.AskForRetrial then
         return not player:isNude()
       elseif event == fk.Damaged then
@@ -1288,7 +1288,7 @@ local jilve_trigger = fk.CreateTriggerSkill{
         return target == player and data.card.type == Card.TypeTrick and not data.card:isVirtual()
       end
     end
-    if player:getMark("jilve-turn") > 0 and event == fk.TurnEnd then
+    if player:getMark("jilue-turn") > 0 and event == fk.TurnEnd then
       return true
     end
   end,
@@ -1327,7 +1327,7 @@ local jilve_trigger = fk.CreateTriggerSkill{
       elseif event == fk.CardUsing then
         type = "drawcard"
       end
-      room:notifySkillInvoked(player, "jilve", type)
+      room:notifySkillInvoked(player, "jilue", type)
       if event == fk.AskForRetrial then
         player:broadcastSkillInvoke("ex__guicai")
         room:retrial(self.cost_data, player, data, "ex__guicai")
@@ -1349,11 +1349,11 @@ local jilve_trigger = fk.CreateTriggerSkill{
     end
   end,
 }
-jilve:addRelatedSkill(jilve_trigger)
+jilue:addRelatedSkill(jilue_trigger)
 godsimayi:addSkill(renjie)
 godsimayi:addSkill(baiyin)
 godsimayi:addSkill(lianpo)
-godsimayi:addRelatedSkill(jilve)
+godsimayi:addRelatedSkill(jilue)
 godsimayi:addRelatedSkill("ex__guicai")
 godsimayi:addRelatedSkill("fangzhu")
 godsimayi:addRelatedSkill("ex__jizhi")
@@ -1369,12 +1369,12 @@ Fk:loadTranslationTable{
   [":baiyin"] = "觉醒技，准备阶段开始时，若你的“忍”数大于3，你减1点体力上限，获得〖极略〗。",
   ["lianpo"] = "连破",
   [":lianpo"] = "当你杀死一名角色后，你可于此回合结束后获得一个额外回合。",
-  ["jilve"] = "极略",
-  [":jilve"] = "你可以弃置1枚“忍”，发动下列一项技能：〖鬼才〗、〖放逐〗、〖集智〗、〖制衡〗、〖完杀〗。",
+  ["jilue"] = "极略",
+  [":jilue"] = "你可以弃置1枚“忍”，发动下列一项技能：〖鬼才〗、〖放逐〗、〖集智〗、〖制衡〗、〖完杀〗。",
   ["@godsimayi_bear"] = "忍",
-  ["#jilve-zhiheng"] = "极略：你可以弃置1枚“忍”标记，发动〖制衡〗",
-  ["#jilve-wansha"] = "极略：你可以弃置1枚“忍”标记，获得〖完杀〗直到回合结束",
-  ["#jilve_trigger"] = "极略",
+  ["#jilue-zhiheng"] = "极略：你可以弃置1枚“忍”标记，发动〖制衡〗",
+  ["#jilue-wansha"] = "极略：你可以弃置1枚“忍”标记，获得〖完杀〗直到回合结束",
+  ["#jilue_trigger"] = "极略",
   ["#lianpo-invoke"] = "连破：你可以额外执行一个回合！",
 
   ["$renjie1"] = "忍一时，风平浪静。",

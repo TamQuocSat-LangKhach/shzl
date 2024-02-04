@@ -854,7 +854,7 @@ local congjian = fk.CreateTriggerSkill{
   on_use = function(self, event, target, player, data)
     local room = player.room
     local x = Fk:getCardById(self.cost_data[2]).type == Card.TypeEquip and 2 or 1
-    room:obtainCard(self.cost_data[1], self.cost_data[2], false, fk.ReasonGive)
+    room:obtainCard(self.cost_data[1], self.cost_data[2], true, fk.ReasonGive)
     if not player.dead then
       player:drawCards(x, self.name)
     end

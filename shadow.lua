@@ -330,8 +330,8 @@ local feijun = fk.CreateActiveSkill{
     end
   end,
 }
-local binglve = fk.CreateTriggerSkill{
-  name = "binglve",
+local binglue = fk.CreateTriggerSkill{
+  name = "binglue",
   anim_type = "drawcard",
   frequency = Skill.Compulsory,
   events = {fk.AfterCardsMove},
@@ -339,7 +339,7 @@ local binglve = fk.CreateTriggerSkill{
     if player:hasSkill(self) then
       local e = player.room.logic:getCurrentEvent():findParent(GameEvent.SkillEffect)
       if e and e.data[2] == player and e.data[3] == feijun then
-        local mark = U.getMark(player, "binglve")
+        local mark = U.getMark(player, "binglue")
         for _, move in ipairs(data) do
           if move.from ~= player.id and not table.contains(mark, move.from) then
             self.cost_data = move.from
@@ -351,14 +351,14 @@ local binglve = fk.CreateTriggerSkill{
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room
-    local mark = U.getMark(player, "binglve")
+    local mark = U.getMark(player, "binglue")
     table.insert(mark, self.cost_data)
-    room:setPlayerMark(player, "binglve", mark)
+    room:setPlayerMark(player, "binglue", mark)
     player:drawCards(2, self.name)
   end,
 }
 wangping:addSkill(feijun)
-wangping:addSkill(binglve)
+wangping:addSkill(binglue)
 Fk:loadTranslationTable{
   ["wangping"] = "王平",
   ["#wangping"] = "兵谋以致用",
@@ -366,8 +366,8 @@ Fk:loadTranslationTable{
   ["feijun"] = "飞军",
   [":feijun"] = "出牌阶段限一次，你可以弃置一张牌，然后选择一项：1.令一名手牌数大于你的角色交给你一张牌；2.令一名装备区里牌数大于你的角色"..
   "弃置一张装备区里的牌。",
-  ["binglve"] = "兵略",
-  [":binglve"] = "锁定技，当你首次对一名角色发动〖飞军〗结算后，你摸两张牌。",
+  ["binglue"] = "兵略",
+  [":binglue"] = "锁定技，当你首次对一名角色发动〖飞军〗结算后，你摸两张牌。",
   ["#feijun"] = "飞军：弃置一张牌，令一名手牌数/装备数大于你的角色交给你一张牌/弃置一张装备",
   ["#feijun-choose"] = "飞军：选择一名手牌数或装备数大于你的角色执行效果",
   ["feijun1"] = "交给你一张牌",
@@ -378,8 +378,8 @@ Fk:loadTranslationTable{
 
   ["$feijun1"] = "无当飞军，伐叛乱，镇蛮夷！",
   ["$feijun2"] = "山地崎岖，也挡不住飞军破势！",
-  ["$binglve1"] = "奇略兵速，敌未能料之。",
-  ["$binglve2"] = "兵略者，明战胜攻取之数，形机之势，诈谲之变。",
+  ["$binglue1"] = "奇略兵速，敌未能料之。",
+  ["$binglue2"] = "兵略者，明战胜攻取之数，形机之势，诈谲之变。",
   ["~wangping"] = "无当飞军，也有困于深林之时……",
 }
 
@@ -677,10 +677,10 @@ Fk:loadTranslationTable{
 }
 
 local xuyou = General(extension, "xuyou", "qun", 3)
-local chenglve = fk.CreateActiveSkill{
-  name = "chenglve",
+local chenglue = fk.CreateActiveSkill{
+  name = "chenglue",
   anim_type = "switch",
-  switch_skill_name = "chenglve",
+  switch_skill_name = "chenglue",
   can_use = function(self, player)
     return player:usedSkillTimes(self.name, Player.HistoryPhase) < 1
   end,
@@ -703,21 +703,21 @@ local chenglve = fk.CreateActiveSkill{
         return Fk:getCardById(id):getSuitString(true)
       end)
 
-      local suitsRecorded = type(from:getMark("@chenglve-phase")) == "table" and from:getMark("@chenglve-phase") or {}
+      local suitsRecorded = type(from:getMark("@chenglue-phase")) == "table" and from:getMark("@chenglue-phase") or {}
       for _, suit in ipairs(suitsToRecord) do
         table.insertIfNeed(suitsRecorded, suit)
       end
-      room:setPlayerMark(from, "@chenglve-phase", suitsRecorded)
+      room:setPlayerMark(from, "@chenglue-phase", suitsRecorded)
     end
   end,
 }
-local chenglve_targetmod = fk.CreateTargetModSkill{
-  name = "#chenglve_targetmod",
+local chenglue_targetmod = fk.CreateTargetModSkill{
+  name = "#chenglue_targetmod",
   bypass_times = function(self, player, skill, scope, card, to)
-    return card and player:getMark("@chenglve-phase") ~= 0 and table.contains(player:getMark("@chenglve-phase"), "log_"..card:getSuitString())
+    return card and player:getMark("@chenglue-phase") ~= 0 and table.contains(player:getMark("@chenglue-phase"), "log_"..card:getSuitString())
   end,
   bypass_distances = function(self, player, skill, card, to)
-    return card and player:getMark("@chenglve-phase") ~= 0 and table.contains(player:getMark("@chenglve-phase"), "log_"..card:getSuitString())
+    return card and player:getMark("@chenglue-phase") ~= 0 and table.contains(player:getMark("@chenglue-phase"), "log_"..card:getSuitString())
   end,
 }
 local shicai = fk.CreateTriggerSkill{
@@ -803,8 +803,8 @@ local cunmu = fk.CreateTriggerSkill{
     data.fromPlace = "bottom"
   end,
 }
-chenglve:addRelatedSkill(chenglve_targetmod)
-xuyou:addSkill(chenglve)
+chenglue:addRelatedSkill(chenglue_targetmod)
+xuyou:addSkill(chenglue)
 xuyou:addSkill(shicai)
 xuyou:addSkill(cunmu)
 Fk:loadTranslationTable{
@@ -812,22 +812,22 @@ Fk:loadTranslationTable{
   ["#xuyou"] = "朝秦暮楚",
   ["cv:xuyou"] = "曹毅",
   ["illustrator:xuyou"] = "兴游",
-  ["chenglve"] = "成略",
-  [":chenglve"] = "转换技，出牌阶段限一次，阳：你可以摸一张牌，然后弃置两张手牌；阴：你可以摸两张牌，然后弃置一张手牌。"..
+  ["chenglue"] = "成略",
+  [":chenglue"] = "转换技，出牌阶段限一次，阳：你可以摸一张牌，然后弃置两张手牌；阴：你可以摸两张牌，然后弃置一张手牌。"..
   "若如此做，你于此阶段内使用与你以此法弃置的牌花色相同的牌无距离和次数限制。",
   ["shicai"] = "恃才",
   [":shicai"] = "当你每回合首次使用一种类别的牌结算结束后，你可以将之置于牌堆顶，然后摸一张牌。",
   ["cunmu"] = "寸目",
   [":cunmu"] = "锁定技，当你摸牌时，改为从牌堆底摸牌。",
-  ["@chenglve-phase"] = "成略",
+  ["@chenglue-phase"] = "成略",
   ["@shicai"] = "恃才",
 
-  ["$chenglve1"] = "成略在胸，良计速出。",
-  ["$chenglve2"] = "吾有良略在怀，必为阿瞒所需。",
+  ["$chenglue1"] = "成略在胸，良计速出。",
+  ["$chenglue2"] = "吾有良略在怀，必为阿瞒所需。",
   ["$shicai1"] = "吾才满腹，袁本初竟不从之。",
   ["$shicai2"] = "阿瞒有我良计，取冀州便是易如反掌。",
-  ["$cunmu1"] = "哼！目光所及，短寸之间。",
-  ["$cunmu2"] = "狭目之见，只能窥底。",
+  ["$cunmu_xuyou1"] = "哼！目光所及，短寸之间。",
+  ["$cunmu_xuyou2"] = "狭目之见，只能窥底。",
   ["~xuyou"] = "阿瞒，没有我你得不到冀州啊！",
 }
 

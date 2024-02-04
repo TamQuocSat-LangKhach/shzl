@@ -651,7 +651,7 @@ Fk:loadTranslationTable{
 local zuoci = General(extension, "zuoci", "qun", 3)
 local function DoHuashen(player)
   local room = player.room
-  local huashens = player:getMark("@[private]&huanshen")
+  local huashens = U.getPrivateMark(player, "&huanshen")
   if huashens == 0 or #huashens == 0 then return end
   local name = room:askForGeneral(player, huashens, 1)
   local general = Fk.generals[name]
@@ -702,7 +702,7 @@ local huashen = fk.CreateTriggerSkill{
       if event == fk.GamePrepared then
         return true
       else
-        return target == player and player:getMark("@[private]&huanshen") ~= 0
+        return target == player and #U.getPrivateMark(player, "&huanshen") > 0
       end
     end
   end,
@@ -717,7 +717,7 @@ local huashen = fk.CreateTriggerSkill{
     local room = player.room
     if event == fk.GamePrepared then
       local generals = room:getNGenerals(2)
-      room:setPlayerMark(player, "@[private]&huanshen", generals)
+      U.setPrivateMark(player, "&huanshen", generals)
     end
     DoHuashen(player)
   end,
@@ -744,10 +744,9 @@ local xinsheng = fk.CreateTriggerSkill{
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room
-    local generals = player:getMark("@[private]&huanshen")
-    if generals == 0 then generals = {} end
+    local generals = U.getPrivateMark(player, "&huanshen")
     table.insert(generals, room:getNGenerals(1)[1])
-    room:setPlayerMark(player, "@[private]&huanshen", generals)
+    U.setPrivateMark(player, "&huanshen", generals)
   end,
 }
 zuoci:addSkill(huashen)

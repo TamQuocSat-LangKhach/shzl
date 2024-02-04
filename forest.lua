@@ -552,15 +552,15 @@ local benghuai = fk.CreateTriggerSkill{
     end
   end,
 }
-local baonve = fk.CreateTriggerSkill{
-  name = "baonve$",
+local baonue = fk.CreateTriggerSkill{
+  name = "baonue$",
   anim_type = "support",
   events = {fk.Damage},
   can_trigger = function(self, event, target, player, data)
     return player:hasSkill(self) and target ~= player and target.kingdom == "qun" and not target.dead
   end,
   on_cost = function(self, event, target, player, data)
-    return player.room:askForSkillInvoke(target, self.name, nil, "#baonve-invoke:"..player.id)
+    return player.room:askForSkillInvoke(target, self.name, nil, "#baonue-invoke:"..player.id)
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room
@@ -583,7 +583,7 @@ local baonve = fk.CreateTriggerSkill{
 dongzhuo:addSkill(jiuchi)
 dongzhuo:addSkill(roulin)
 dongzhuo:addSkill(benghuai)
-dongzhuo:addSkill(baonve)
+dongzhuo:addSkill(baonue)
 Fk:loadTranslationTable{
   ["dongzhuo"] = "董卓",
   ["#dongzhuo"] = "魔王",
@@ -594,11 +594,11 @@ Fk:loadTranslationTable{
   [":roulin"] = "锁定技，你对女性角色使用【杀】，或女性角色对你使用【杀】均需两张【闪】才能抵消。",
   ["benghuai"] = "崩坏",
   [":benghuai"] = "锁定技，结束阶段，若你不是体力值最小的角色，你选择减1点体力上限或失去1点体力。",
-  ["baonve"] = "暴虐",
-  [":baonve"] = "主公技，其他群雄武将造成伤害后，其可以进行一次判定，若判定结果为♠，你回复1点体力。",
+  ["baonue"] = "暴虐",
+  [":baonue"] = "主公技，其他群雄武将造成伤害后，其可以进行一次判定，若判定结果为♠，你回复1点体力。",
   ["loseMaxHp"] = "减1点体力上限",
   ["loseHp"] = "失去1点体力",
-  ["#baonve-invoke"] = "暴虐：你可以判定，若为♠，%src 回复1点体力",
+  ["#baonue-invoke"] = "暴虐：你可以判定，若为♠，%src 回复1点体力",
 
   ["$jiuchi1"] = "呃……再来……一壶……",
   ["$jiuchi2"] = "好酒！好酒！",
@@ -606,8 +606,8 @@ Fk:loadTranslationTable{
   ["$roulin2"] = "食色，性也~~",
   ["$benghuai1"] = "我是不是该减肥了？",
   ["$benghuai2"] = "呃……",
-  ["$baonve1"] = "顺我者昌，逆我者亡！",
-  ["$baonve2"] = "哈哈哈哈！",
+  ["$baonue1"] = "顺我者昌，逆我者亡！",
+  ["$baonue2"] = "哈哈哈哈！",
   ["~dongzhuo"] = "汉室衰弱，非我一人之罪。",
 }
 
