@@ -410,7 +410,7 @@ return {
   [":qinyin"] = "In your Discard Phase, if you discard 2 or more cards: you can force all players to heal 1 HP or lose 1 HP.",
   ["yeyan"] = "Searing Heat",
   [":yeyan"] = "(limited) In your Action Phase: you can select up to 3 players and distribute up to 3 Fire DMG among them. If you allocate more than 1 DMG to any of them, you need to discard 1 card of each suit and lose 3 HP first.",
-  ["#yeyan-choose"] = "Searing Heat: choose the target to deal #%arg DMG to",
+  ["#yeyan-choose"] = "Searing Heat: choose the target to deal 2 Fire DMG to",
 
   ["godzhugeliang"] = "Zhuge Liang",
   ["qixing"] = "The Seven Stars",

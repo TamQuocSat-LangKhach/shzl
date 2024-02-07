@@ -275,12 +275,8 @@ local yeyan = fk.CreateActiveSkill{
     return player:usedSkillTimes(self.name, Player.HistoryGame) == 0
   end,
   card_filter = function(self, to_select, selected)
-    if Fk:currentRoom():getCardArea(to_select) == Player.Equip or Self:prohibitDiscard(Fk:getCardById(to_select)) then return end
-    if #selected == 0 then
-      return true
-    else
-      return table.every(selected, function (id) return Fk:getCardById(to_select).suit ~= Fk:getCardById(id).suit end)
-    end
+    return table.contains(Self.player_cards[Player.Hand], to_select) and not Self:prohibitDiscard(Fk:getCardById(to_select))
+    and table.every(selected, function (id) return Fk:getCardById(to_select).suit ~= Fk:getCardById(id).suit end)
   end,
   target_filter = function(self, to_select, selected, selected_cards)
     if #selected_cards == 4 then
@@ -293,55 +289,36 @@ local yeyan = fk.CreateActiveSkill{
   end,
   on_use = function(self, room, effect)
     local player = room:getPlayerById(effect.from)
+    local damageMap = {}
     if #effect.cards == 0 then
-      for _, id in ipairs(effect.tos) do
-        room:damage{
-          from = player,
-          to = room:getPlayerById(id),
-          damage = 1,
-          damageType = fk.FireDamage,
-          skillName = self.name,
-        }
+      for _, pid in ipairs(effect.tos) do
+        damageMap[pid] = 1
       end
     else
-      room:throwCard(effect.cards, self.name, player, player)
       if #effect.tos == 1 then
         local choice = room:askForChoice(player, {"3", "2"}, self.name)
+        damageMap[effect.tos[1]] = tonumber(choice)
+      else
+        local tos = room:askForChoosePlayers(player, effect.tos, 1, 1, "#yeyan-choose", self.name, false)
+        damageMap[tos[1]] = 2
+        damageMap[tos[1] == effect.tos[1] and effect.tos[2] or effect.tos[1]] = 1
+      end
+      room:throwCard(effect.cards, self.name, player, player)
+      if not player.dead then
         room:loseHp(player, 3, self.name)
+      end
+    end
+    room:sortPlayersByAction(effect.tos)
+    for _, pid in ipairs(effect.tos) do
+      local to = room:getPlayerById(pid)
+      if not to.dead then
         room:damage{
           from = player,
-          to = room:getPlayerById(effect.tos[1]),
-          damage = tonumber(choice),
+          to = to,
+          damage = damageMap[pid],
           damageType = fk.FireDamage,
           skillName = self.name,
         }
-      else
-        local target1 = room:getPlayerById(effect.tos[1])
-        local target2 = room:getPlayerById(effect.tos[2])
-        local to = room:askForChoosePlayers(player, effect.tos, 1, 1, "#yeyan-choose:::".."1", self.name, false)
-        room:addPlayerMark(room:getPlayerById(to[1]), self.name, 1)
-        to = room:askForChoosePlayers(player, effect.tos, 1, 1, "#yeyan-choose:::".."2", self.name, false)
-        room:addPlayerMark(room:getPlayerById(to[1]), self.name, 1)
-        if target1:getMark(self.name) > 0 and target2:getMark(self.name) > 0 then
-          to = room:askForChoosePlayers(player, effect.tos, 1, 1, "#yeyan-choose:::".."3", self.name, false)
-          room:addPlayerMark(room:getPlayerById(to[1]), self.name, 1)
-        end
-        for _, p in ipairs({target1, target2}) do
-          if p:getMark(self.name) == 0 then
-            room:addPlayerMark(p, self.name, 1)
-          end
-        end
-        room:loseHp(player, 3, self.name)
-        for _, p in ipairs({target1, target2}) do
-          room:damage{
-            from = player,
-            to = p,
-            damage = p:getMark(self.name),
-            damageType = fk.FireDamage,
-            skillName = self.name,
-          }
-          room:setPlayerMark(p, self.name, 0)
-        end
       end
     end
   end,
@@ -352,11 +329,12 @@ Fk:loadTranslationTable{
   ["godzhouyu"] = "神周瑜",
   ["#godzhouyu"] = "赤壁的火神",
   ["illustrator:godzhouyu"] = "KayaK",
+
   ["qinyin"] = "琴音",
   [":qinyin"] = "弃牌阶段结束时，若你此阶段弃置过至少两张手牌，你可以选择：1. 令所有角色各回复1点体力；2. 令所有角色各失去1点体力。",
   ["yeyan"] = "业炎",
   [":yeyan"] = "限定技，出牌阶段，你可以指定一至三名角色，你分别对这些角色造成至多共计3点火焰伤害；若你对一名角色分配2点或更多的火焰伤害，你须先弃置四张不同花色的手牌并失去3点体力。",
-  ["#yeyan-choose"] = "业炎：选择第%arg点伤害的目标",
+  ["#yeyan-choose"] = "业炎：选择造成2点火焰伤害的目标，未选择的目标造成1点伤害",
 
   ["$qinyin1"] = "（急促的琴声、燃烧声）",
   ["$qinyin2"] = "（舒缓的琴声）",
@@ -2003,7 +1981,9 @@ godganning:addSkill(gn_jieying)
 Fk:loadTranslationTable{
   ["godganning"] = "神甘宁",
   ["#godganning"] = "江表之力牧",
+  ["designer:godganning"] = "韩旭",
   ["illustrator:godganning"] = "depp",
+
   ["poxi"] = "魄袭",
   [":poxi"] = "出牌阶段限一次，你可以观看一名其他角色的手牌，然后你可以弃置你与其手里共计四张不同花色的牌。若如此做，根据此次弃置你的牌数量执行以下效果：没有，体力上限减1；一张，结束出牌阶段且本回合手牌上限-1；三张，回复1点体力；四张，摸四张牌。",
   ["gn_jieying"] = "劫营",
