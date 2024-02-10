@@ -57,6 +57,7 @@ Fk:loadTranslationTable{
   ["#wangji"] = "经行合一",
   ["illustrator:wangji"] = "雪君S",
   ["designer:wangji"] = "韩旭",
+
   ["qizhi"] = "奇制",
   [":qizhi"] = "当你于回合内使用非装备牌指定目标后，你可以弃置一名不为目标的角色的一张牌，然后令其摸一张牌。",
   ["jinqu"] = "进趋",
@@ -653,6 +654,8 @@ Fk:loadTranslationTable{
   ["#sunliang"] = "寒江枯水",
   ["cv:sunliang"] = "徐刚",
   ["illustrator:sunliang"] = "眉毛子",
+  ["designer:sunliang"] = "荼蘼",
+
   ["kuizhu"] = "溃诛",
   [":kuizhu"] = "弃牌阶段结束时，你可以选择一项：1. 令至多X名角色各摸一张牌；2. 对任意名体力值之和为X的角色造成1点伤害，若不少于2名角色，你失去1点体力（X为你此阶段弃置的牌数）。",
   ["kuizhu_active"] = "溃诛",

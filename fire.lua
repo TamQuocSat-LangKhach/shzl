@@ -135,6 +135,8 @@ Fk:loadTranslationTable{
   ["xunyu"] = "荀彧",
   ["#xunyu"] = "王佐之才",
   ["illustrator:xunyu"] = "LiuHeng",
+  ["designer:xunyu"] = "韩旭",
+
   ["quhu"] = "驱虎",
   [":quhu"] = "出牌阶段限一次，你可以与一名体力值大于你的角色拼点。若你赢，该角色对其攻击范围内你指定的另一名角色造成1点伤害；若你没赢，其对你造成1点伤害。",
   ["jieming"] = "节命",

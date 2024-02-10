@@ -61,6 +61,8 @@ Fk:loadTranslationTable{
   ["xiahouyuan"] = "夏侯渊",
   ["#xiahouyuan"] = "疾行的猎豹",
   ["illustrator:xiahouyuan"] = "KayaK",
+  ["designer:xiahouyuan"] = "韩旭",
+
   ["shensu"] = "神速",
   [":shensu"] = "你可以做出如下选择：1.跳过判定阶段和摸牌阶段；2.跳过出牌阶段并弃置一张装备牌。你每选择一项，便视为你使用一张无距离限制的【杀】。",
   ["#shensu1-choose"] = "神速：你可以跳过判定阶段和摸牌阶段，视为使用一张无距离限制的【杀】",
@@ -460,6 +462,8 @@ Fk:loadTranslationTable{
   ["zhoutai"] = "周泰",
   ["#zhoutai"] = "历战之躯",
   ["illustrator:zhoutai"] = "Thinking",
+  ["cv:zhoutai"] = "李扬",
+
   ["buqu"] = "不屈",
   [":buqu"] = "当你扣减1点体力时，若你的体力值为0，你可以将牌堆顶的一张牌置于你的武将牌上：若此牌的点数与你武将牌上的其他牌均不同，你不会死亡；"..
   "若你的武将牌上有点数相同的牌，你进入濒死状态。",
@@ -734,6 +738,8 @@ Fk:loadTranslationTable{
   ["yuji"] = "于吉",
   ["#yuji"] = "太平道人",
   ["illustrator:yuji"] = "KayaK",
+  ["cv:yuji"] = "金锡云",
+
   ["guhuo"] = "蛊惑",
   ["$guhuo1"] = "你信吗？",
   ["$guhuo2"] = "猜猜看呐~",

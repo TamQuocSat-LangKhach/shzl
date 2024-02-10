@@ -254,6 +254,7 @@ Fk:loadTranslationTable{
   ["#jiangwei"] = "龙的衣钵",
   ["cv:jiangwei"] = "彭尧", -- 冷泉? 汤旸?
   ["illustrator:jiangwei"] = "KayaK",
+
   ["tiaoxin"] = "挑衅",
   [":tiaoxin"] = "出牌阶段限一次，你可以指定一名你在其攻击范围内的角色，其需包括你在内的角色使用一张【杀】，否则你弃置其一张牌。",
   ["zhiji"] = "志继",
@@ -349,8 +350,9 @@ liushan:addRelatedSkill("jijiang")
 Fk:loadTranslationTable{
   ["liushan"] = "刘禅",
   ["#liushan"] = "无为的真命主",
-  ["cv:liushan"] = "彭尧", -- 汤旸?
+  ["cv:liushan"] = "绯川陵彦",
   ["illustrator:liushan"] = "LiuHeng",
+
   ["xiangle"] = "享乐",
   [":xiangle"] = "锁定技，每当你成为【杀】的目标时，【杀】的使用者须弃置一张基本牌，否则此【杀】对你无效。",
   ["#xiangle-discard"] = "享乐：你须弃置一张基本牌，否则此【杀】对 %src 无效",
@@ -496,6 +498,8 @@ Fk:loadTranslationTable{
   ["#sunce"] = "江东的小霸王",
   ["cv:sunce"] = "彭尧",
   ["illustrator:sunce"] = "KayaK",
+  ["designer:sunce"] = "KayaK",
+
   ["jiang"] = "激昂",
   [":jiang"] = "当你使用【决斗】或红色【杀】指定目标后，或成为【决斗】或红色【杀】的目标后，你可以摸一张牌。",
   ["hunzi"] = "魂姿",
@@ -855,6 +859,8 @@ Fk:loadTranslationTable{
   ["caiwenji"] = "蔡文姬",
   ["#caiwenji"] = "异乡的孤女",
   ["illustrator:caiwenji"] = "SoniaTang",
+  ["cv:caiwenji"] = "shourei小N",
+
   ["beige"] = "悲歌",
   [":beige"] = "当一名角色受到【杀】造成的伤害后，你可以弃置一张牌，然后令其进行判定，若结果为：<font color='red'>♥</font>，其回复1点体力；"..
   "<font color='red'>♦</font>，其摸两张牌；♣，伤害来源弃置两张牌；♠，伤害来源翻面。",

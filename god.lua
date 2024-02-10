@@ -198,6 +198,7 @@ Fk:loadTranslationTable{
   ["godlvmeng"] = "神吕蒙",
   ["#godlvmeng"] = "圣光之国士",
   ["illustrator:godlvmeng"] = "KayaK",
+  ["cv:godlvmeng"] = "KayaK",
   ["shelie"] = "涉猎",
   [":shelie"] = "摸牌阶段，你可以改为亮出牌堆顶五张牌，获得不同花色的牌各一张。",
   ["gongxin"] = "攻心",

@@ -588,6 +588,8 @@ Fk:loadTranslationTable{
   ["dongzhuo"] = "董卓",
   ["#dongzhuo"] = "魔王",
   ["illustrator:dongzhuo"] = "小冷",
+  ["cv:dongzhuo"] = "九命黑猫",
+
   ["jiuchi"] = "酒池",
   [":jiuchi"] = "你可以将一张♠手牌当【酒】使用。",
   ["roulin"] = "肉林",
@@ -687,6 +689,8 @@ Fk:loadTranslationTable{
   ["jiaxu"] = "贾诩",
   ["#jiaxu"] = "冷酷的毒士",
   ["illustrator:jiaxu"] = "KayaK",
+  ["designer:jiaxu"] = "KayaK",
+
   ["wansha"] = "完杀",
   [":wansha"] = "锁定技，除进行濒死流程的角色以外的其他角色于你的回合内不能使用【桃】。",
   ["luanwu"] = "乱武",
