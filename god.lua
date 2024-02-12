@@ -2156,7 +2156,7 @@ Fk:loadTranslationTable{
   ["goddiaochan"] = "神貂蝉",
   ["#goddiaochan"] = "欲界非天",
   ["illustrator:goddiaochan"] = "KayaK",
-  ["cv:goddiaochan"] = "桃妮儿（新月杀原创）",
+  ["cv:goddiaochan"] = "桃妮儿",
   ["designer:goddiaochan"] = "KayaK",
   ["meihun"] = "魅魂",
   [":meihun"] = "结束阶段或当你成为【杀】目标后，你可以令一名其他角色" ..
