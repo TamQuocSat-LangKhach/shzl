@@ -1530,27 +1530,27 @@ local cuike = fk.CreateTriggerSkill{
           from = player, to = room:getPlayerById(tos[1]),
           damage = 1, skillName = self.name
         }
-        if player.dead then return false end
       end
     else
       local targets = {}
       for _, p in ipairs(room.alive_players) do
-        if not (p:isNude() and p.chained) then
+        if not (p:isAllNude() and p.chained) then
           table.insert(targets, p.id)
         end
       end
       local tos = room:askForChoosePlayers(player, targets, 1, 1, "#cuike-discard", self.name, true)
       if #tos > 0 then
         local to = room:getPlayerById(tos[1])
-        local cid = room:askForCardChosen(player, to, "hej", self.name)
-        room:throwCard(cid, self.name, to, player)
+        if not to:isAllNude() then
+          local cid = room:askForCardChosen(player, to, "hej", self.name)
+          room:throwCard(cid, self.name, to, player)
+        end
         if not (to.dead or to.chained) then
           to:setChainState(true)
         end
-        if player.dead then return false end
       end
     end
-
+    if player.dead then return false end
     if player:getMark("@junlue") > 7 then
       if room:askForSkillInvoke(player, self.name, nil, "#cuike-shenfen") then
         room:setPlayerMark(player, "@junlue", 0)
