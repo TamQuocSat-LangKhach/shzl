@@ -557,7 +557,7 @@ local baonue = fk.CreateTriggerSkill{
   anim_type = "support",
   events = {fk.Damage},
   can_trigger = function(self, event, target, player, data)
-    return player:hasSkill(self) and target ~= player and target.kingdom == "qun" and not target.dead
+    return target and player:hasSkill(self) and target ~= player and target.kingdom == "qun" and not target.dead
   end,
   on_cost = function(self, event, target, player, data)
     return player.room:askForSkillInvoke(target, self.name, nil, "#baonue-invoke:"..player.id)
