@@ -289,6 +289,7 @@ local xiangle = fk.CreateTriggerSkill{
     end
   end,
 }
+
 local fangquan = fk.CreateTriggerSkill{
   name = "fangquan",
   anim_type = "support",
@@ -296,27 +297,29 @@ local fangquan = fk.CreateTriggerSkill{
   can_trigger = function(self, event, target, player, data)
     return target == player and player:hasSkill(self) and data.to == Player.Play
   end,
-  on_use = function(self, event, target, player, data)
-    player:skip(Player.Play)
-    player.room:setPlayerMark(player, "fangquan_extra", 1)
-    return true
-  end,
+  on_use = Util.TrueFunc,
+}
 
-  refresh_events = {fk.TurnEnd},
-  can_refresh = function(self, event, target, player, data)
-    return target == player and player:getMark("fangquan_extra") > 0
+local fangquan_delay = fk.CreateTriggerSkill{
+  name = "#fangquan_delay",
+  events = {fk.TurnEnd},
+  mute = true,
+  can_trigger = function(self, event, target, player, data)
+    return target == player and player:usedSkillTimes(fangquan.name, Player.HistoryTurn) > 0
   end,
-  on_refresh = function(self, event, target, player, data)
+  on_cost = Util.TrueFunc,
+  on_use = function(self, event, target, player, data)
     local room = player.room
-    room:setPlayerMark(player, "fangquan_extra", 0)
-    local tos, id = room:askForChooseCardAndPlayers(player, table.map(room:getOtherPlayers(player), function(p)
-      return p.id end), 1, 1, ".|.|.|hand", "#fangquan-give", self.name, true)
-    if #tos > 0 then
-      room:throwCard({id}, self.name, player, player)
-      room:getPlayerById(tos[1]):gainAnExtraTurn()
+    room:notifySkillInvoked(player, fangquan.name, "support")
+    local tar, card =  room:askForChooseCardAndPlayers(player, table.map(room:getOtherPlayers(player), Util.IdMapper), 1, 1, ".|.|.|hand", "#fangquan-choose", fangquan.name, true)
+    if #tar > 0 and card then
+      room:throwCard(card, fangquan.name, player, player)
+      room:getPlayerById(tar[1]):gainAnExtraTurn()
     end
   end,
 }
+fangquan:addRelatedSkill(fangquan_delay)
+
 local ruoyu = fk.CreateTriggerSkill{
   name = "ruoyu$",
   frequency = Skill.Wake,
@@ -332,7 +335,7 @@ local ruoyu = fk.CreateTriggerSkill{
   on_use = function(self, event, target, player, data)
     local room = player.room
     room:changeMaxHp(player, 1)
-    if player:isWounded() then  --小心王衍
+    if player:isWounded() and not player.dead then  --小心王衍
       room:recover({
         who = player,
         num = 1,
@@ -354,13 +357,15 @@ Fk:loadTranslationTable{
   ["illustrator:liushan"] = "LiuHeng",
 
   ["xiangle"] = "享乐",
-  [":xiangle"] = "锁定技，每当你成为【杀】的目标时，【杀】的使用者须弃置一张基本牌，否则此【杀】对你无效。",
+  [":xiangle"] = "锁定技，当你成为【杀】的目标后，你令使用者选择：1. 弃置一张基本牌；2. 此【杀】对你无效。",
   ["#xiangle-discard"] = "享乐：你须弃置一张基本牌，否则此【杀】对 %src 无效",
   ["fangquan"] = "放权",
-  [":fangquan"] = "你可以跳过你的出牌阶段，然后此回合结束时，你可以弃置一张手牌并选择一名其他角色：若如此做，该角色进行一个额外的回合。",
-  ["#fangquan-give"] = "你可以弃置一张手牌令一名其他角色进行一个额外的回合",
+  [":fangquan"] = "你可以跳过你的出牌阶段，然后此回合结束时，你可以弃置一张手牌并选择一名其他角色，然后其获得一个额外回合。",
   ["ruoyu"] = "若愚",
-  [":ruoyu"] = "主公技，觉醒技，准备阶段开始时，若你的体力值为场上最少（或之一），你增加1点体力上限，回复1点体力，然后获得“激将”。",
+  [":ruoyu"] = "主公技，觉醒技，准备阶段开始时，若你是体力值最小的角色，你加1点体力上限，然后回复1点体力，获得〖激将〗。",
+
+  ["#fangquan_delay"] = "放权",
+  ["#fangquan-choose"] = "放权：弃置一张手牌，令一名角色获得一个额外回合",
 
   ["$xiangle1"] = "打打杀杀，真没意思。",
   ["$xiangle2"] = "我爸爸是刘备！",
@@ -379,8 +384,9 @@ local jiang = fk.CreateTriggerSkill{
   anim_type = "drawcard",
   events ={fk.TargetSpecified, fk.TargetConfirmed},
   can_trigger = function(self, event, target, player, data)
-    return target == player and player:hasSkill(self) and data.firstTarget and
-      ((data.card.trueName == "slash" and data.card.color == Card.Red) or data.card.name == "duel")
+    return target == player and player:hasSkill(self) and 
+      ((data.card.trueName == "slash" and data.card.color == Card.Red) or data.card.name == "duel") and
+      (event == fk.TargetConfirmed or data.firstTarget)
   end,
   on_use = function(self, event, target, player, data)
     player:drawCards(1, self.name)
@@ -531,27 +537,24 @@ local zhangzhaozhanghong = General(extension, "zhangzhaozhanghong", "wu", 3)
 local zhijian = fk.CreateActiveSkill{
   name = "zhijian",
   anim_type = "support",
+  prompt = "#zhijian-active",
   card_num = 1,
   target_num = 1,
-  can_use = Util.TrueFunc,
   card_filter = function(self, to_select, selected)
     return #selected == 0 and Fk:getCardById(to_select).type == Card.TypeEquip and
-      Fk:currentRoom():getCardArea(to_select) ~= Card.PlayerEquip
+      Fk:currentRoom():getCardArea(to_select) == Card.PlayerHand
   end,
   target_filter = function(self, to_select, selected, selected_cards)
-    return #selected == 0 and #selected_cards == 1 and
-    Fk:currentRoom():getPlayerById(to_select):hasEmptyEquipSlot(Fk:getCardById(selected_cards[1]).sub_type)
+    return #selected == 0 and #selected_cards == 1 and to_select ~= Self.id and
+    U.canMoveCardIntoEquip(Fk:currentRoom():getPlayerById(to_select), selected_cards[1], false)
   end,
   on_use = function(self, room, effect)
     local player = room:getPlayerById(effect.from)
-    room:moveCards({
-      ids = effect.cards,
-      from = effect.from,
-      to = effect.tos[1],
-      toArea = Card.PlayerEquip,
-      moveReason = fk.ReasonPut,
-    })
-    player:drawCards(1, self.name)
+    local target = room:getPlayerById(effect.tos[1])
+    U.moveCardIntoEquip(room, target, effect.cards[1], self.name, true, player)
+    if not player.dead then
+      room:drawCards(player, 1, self.name)
+    end
   end,
 }
 
@@ -641,6 +644,7 @@ Fk:loadTranslationTable{
   ["guzheng"] = "固政",
   [":guzheng"] = "其他角色的弃牌阶段结束时，你可以将此阶段中其弃置的一张手牌交给该角色，然后你可以获得其余此阶段内弃置的牌。",
 
+  ["#zhijian-active"] = "发动直谏，选择一张装备牌置入其他角色的装备区",
   ["#guzheng-invoke"] = "你可以发动固政，令%dest获得其此次弃置的牌中的一张，然后你可获得剩余牌",
   ["#guzheng-title"] = "固政：选择一张牌还给 %dest",
   ["guzheng_yes"] = "确定，获得剩余牌",
