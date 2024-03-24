@@ -238,15 +238,24 @@ local qinyin = fk.CreateTriggerSkill{
       return x > 1
     end
   end,
-  
-  on_use = function(self, event, target, player, data)
+  on_cost = function(self, event, target, player, data)
     local room = player.room
-    local choices = {"loseHp"}
+    local choices = {"loseHp", "Cancel"}
     if not table.every(room.alive_players, function (p) return not p:isWounded() end) then
       table.insert(choices, 1, "recover")
     end
-    local choice = room:askForChoice(player, choices, self.name)
-    if choice == "recover" then
+    local choice = room:askForChoice(player, choices, self.name, "#qinyin-choice", false, {"loseHp", "recover", "Cancel"})
+    if choice ~= "Cancel" then
+      room:doIndicate(player.id, table.map(room.alive_players, Util.IdMapper))
+      self.cost_data = choice
+      return true
+    end
+  end,
+  on_use = function(self, event, target, player, data)
+    local room = player.room
+    if self.cost_data == "recover" then
+      room:notifySkillInvoked(player, self.name, "support")
+      player:broadcastSkillInvoke(self.name, 2)
       for _, p in ipairs(room:getAlivePlayers()) do
         if p:isWounded() then
           room:recover{
@@ -258,6 +267,8 @@ local qinyin = fk.CreateTriggerSkill{
         end
       end
     else
+      room:notifySkillInvoked(player, self.name, "offensive")
+      player:broadcastSkillInvoke(self.name, 1)
       for _, p in ipairs(room:getAlivePlayers()) do
         if not p.dead then room:loseHp(p, 1, self.name) end
       end
@@ -272,17 +283,39 @@ local yeyan = fk.CreateActiveSkill{
   min_card_num = 0,
   max_card_num = 4,
   frequency = Skill.Limited,
+  prompt = function(self, card, selected_targets)
+    local yeyan_type = self.interaction.data
+    if yeyan_type == "great_yeyan" then
+      return "#yeyan-great-active"
+    elseif yeyan_type == "middle_yeyan" then
+      if #card ~= 4 then
+        return "#yeyan-middle-active"
+      else
+        return "#yeyan-middle-choose"
+      end
+    else
+      return "#yeyan-small-active"
+    end
+  end,
+  interaction = function()
+    return UI.ComboBox {
+      choices = {"small_yeyan", "middle_yeyan", "great_yeyan"}
+    }
+  end,
   can_use = function(self, player)
     return player:usedSkillTimes(self.name, Player.HistoryGame) == 0
   end,
   card_filter = function(self, to_select, selected)
-    return table.contains(Self.player_cards[Player.Hand], to_select) and not Self:prohibitDiscard(Fk:getCardById(to_select))
-    and table.every(selected, function (id) return Fk:getCardById(to_select).suit ~= Fk:getCardById(id).suit end)
+    if self.interaction.data == "small_yeyan" or #selected > 3 or
+    Fk:currentRoom():getCardArea(to_select) ~= Card.PlayerHand then return false end
+    local card = Fk:getCardById(to_select)
+    return not Self:prohibitDiscard(card) and card.suit ~= Card.NoSuit and
+    table.every(selected, function (id) return card.suit ~= Fk:getCardById(id).suit end)
   end,
   target_filter = function(self, to_select, selected, selected_cards)
     if #selected_cards == 4 then
       return #selected < 2
-    elseif #selected_cards == 0 then
+    elseif #selected_cards == 0 and self.interaction.data == "small_yeyan" then
       return #selected < 3
     else
       return false
@@ -290,33 +323,27 @@ local yeyan = fk.CreateActiveSkill{
   end,
   on_use = function(self, room, effect)
     local player = room:getPlayerById(effect.from)
-    local damageMap = {}
-    if #effect.cards == 0 then
-      for _, pid in ipairs(effect.tos) do
-        damageMap[pid] = 1
-      end
-    else
-      if #effect.tos == 1 then
-        local choice = room:askForChoice(player, {"3", "2"}, self.name)
-        damageMap[effect.tos[1]] = tonumber(choice)
-      else
-        local tos = room:askForChoosePlayers(player, effect.tos, 1, 1, "#yeyan-choose", self.name, false)
-        damageMap[tos[1]] = 2
-        damageMap[tos[1] == effect.tos[1] and effect.tos[2] or effect.tos[1]] = 1
-      end
-      room:throwCard(effect.cards, self.name, player, player)
-      if not player.dead then
-        room:loseHp(player, 3, self.name)
-      end
+    local first = effect.tos[1]
+    local max_damage = 1
+    if self.interaction.data == "middle_yeyan" then
+      max_damage = 2
+    elseif self.interaction.data == "great_yeyan" then
+      max_damage = 3
     end
     room:sortPlayersByAction(effect.tos)
+    if #effect.cards > 0 then
+      room:throwCard(effect.cards, self.name, player, player)
+    end
+    if max_damage > 1 and not player.dead then
+      room:loseHp(player, 3, self.name)
+    end
     for _, pid in ipairs(effect.tos) do
       local to = room:getPlayerById(pid)
       if not to.dead then
         room:damage{
           from = player,
           to = to,
-          damage = damageMap[pid],
+          damage = (pid == first) and max_damage or 1,
           damageType = fk.FireDamage,
           skillName = self.name,
         }
@@ -336,6 +363,16 @@ Fk:loadTranslationTable{
   ["yeyan"] = "业炎",
   [":yeyan"] = "限定技，出牌阶段，你可以指定一至三名角色，你分别对这些角色造成至多共计3点火焰伤害；若你对一名角色分配2点或更多的火焰伤害，你须先弃置四张不同花色的手牌并失去3点体力。",
   ["#yeyan-choose"] = "业炎：选择造成2点火焰伤害的目标，未选择的目标造成1点伤害",
+
+  ["#qinyin-choice"] = "是否发动 琴音，令所有角色各回复或失去1点体力",
+  ["small_yeyan"] = "1点伤害",
+  ["middle_yeyan"] = "2点伤害",
+  ["great_yeyan"] = "3点伤害",
+
+  ["#yeyan-great-active"] = "发动 业炎，弃置四张不同花色的手牌并选择一名角色，对其造成3点火焰伤害",
+  ["#yeyan-middle-active"] = "发动 业炎，选择四张不同花色的手牌弃置",
+  ["#yeyan-middle-choose"] = "发动 业炎，选择1-2名角色，对第一名角色造成2点火焰伤害，第二名角色造成1点火焰伤害",
+  ["#yeyan-small-active"] = "发动 业炎，选择1-3名角色，对这些角色各造成1点火焰伤害",
 
   ["$qinyin1"] = "（急促的琴声、燃烧声）",
   ["$qinyin2"] = "（舒缓的琴声）",
