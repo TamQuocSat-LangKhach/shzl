@@ -401,7 +401,8 @@ local qixing = fk.CreateTriggerSkill{
       dummy:addSubcards(room:getNCards(7))
       player:addToPile("star", dummy, false, self.name)
     end
-    local cids = room:askForExchange(player, {player:getPile("star"), player:getCardIds(Player.Hand)}, {"star", "$Hand"}, self.name)
+    local cids = U.askForArrangeCards(player, self.name,
+    {"star", player:getPile("star"), "$Hand", player:getCardIds(Player.Hand)})
     local cards1, cards2 = {}, {}
     for _, id in ipairs(cids[1]) do
       if room:getCardArea(id) == Player.Hand then
