@@ -585,11 +585,23 @@ local jueyan = fk.CreateActiveSkill{
   card_num = 0,
   target_num = 0,
   interaction = function()
-    return UI.ComboBox {choices = Self:getAvailableEquipSlots()}
+    local choices = {}
+    for _, slot in ipairs(Self:getAvailableEquipSlots()) do
+      if slot == Player.OffensiveRideSlot or slot == Player.DefensiveRideSlot then
+        table.insertIfNeed(choices, "RideSlot")
+      else
+        table.insert(choices, slot)
+      end
+    end
+    if #choices == 0 then return end
+    return UI.ComboBox {choices = choices}
   end,
   on_use = function(self, room, effect)
     local player = room:getPlayerById(effect.from)
     local choice = self.interaction.data
+    if choice == "RideSlot" then
+      choice = {Player.OffensiveRideSlot, Player.DefensiveRideSlot}
+    end
     room:abortPlayerArea(player, choice)
     if player.dead then return end
     if choice == 'WeaponSlot' then
@@ -670,6 +682,7 @@ Fk:loadTranslationTable{
   [":poshi"] = "觉醒技，准备阶段，若你所有装备栏均被废除或体力值为1，则你减1点体力上限，然后将手牌摸至体力上限，失去〖决堰〗，获得〖怀柔〗。",
   ["huairou"] = "怀柔",
   [":huairou"] = "出牌阶段，你可以重铸一张装备牌。",
+  ["RideSlot"] = "坐骑栏",
   ["$qianjie1"] = "继父之节，谦逊恭毕。",
   ["$qianjie2"] = "谦谦清廉德，节节卓尔茂。",
   ["$jueyan1"] = "毁堰坝之计，实为阻晋粮道。",
