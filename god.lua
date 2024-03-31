@@ -386,12 +386,13 @@ local qixing = fk.CreateTriggerSkill{
   name = "qixing",
   events = {fk.GameStart, fk.EventPhaseEnd},
   anim_type = "drawcard",
+  derived_piles = "star",
   can_trigger = function(self, event, target, player, data)
     if not player:hasSkill(self) then return false end
     return event == fk.GameStart or (target == player and player.phase == Player.Draw and #player:getPile("star") > 0)
   end,
   on_cost = function(self, event, target, player, data)
-    if event == fk.GameStart then return true 
+    if event == fk.GameStart then return true
     else return player.room:askForSkillInvoke(player, self.name, data) end
   end,
   on_use = function(self, event, target, player, data)
@@ -546,6 +547,14 @@ local kuangbao = fk.CreateTriggerSkill{
   on_use = function(self, event, target, player, data)
     player.room:addPlayerMark(player, "@baonu", event == fk.GameStart and 2 or data.damage)
   end,
+
+  refresh_events = {fk.EventLoseSkill},
+  can_refresh = function(self, event, target, player, data)
+    return player == target and data == self and player:getMark("@baonu") ~= 0
+  end,
+  on_refresh = function(self, event, target, player, data)
+    player.room:setPlayerMark(player, "@baonu", 0)
+  end,
 }
 local wumou = fk.CreateTriggerSkill{
   name = "wumou",
@@ -679,20 +688,20 @@ local guixin = fk.CreateTriggerSkill{
     self.cancel_cost = false
     for _ = 1, data.damage do
       if self.cancel_cost or not player:hasSkill(self) or
-      table.every(player.room:getOtherPlayers(player), function (p) return p:isAllNude() end) then break end
+      table.every(player.room:getOtherPlayers(player, false), function (p) return p:isAllNude() end) then break end
       self:doCost(event, target, player, data)
     end
   end,
   on_cost = function(self, event, target, player, data)
     local room = player.room
     if room:askForSkillInvoke(player, self.name, data) then
+      room:doIndicate(player.id, table.map(room.alive_players, Util.IdMapper))
       return true
     end
     self.cancel_cost = true
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room
-    room:doIndicate(player.id, table.map(room.alive_players, Util.IdMapper))
     for _, p in ipairs(room:getOtherPlayers(player, true)) do
       if not p:isAllNude() then
         local id = room:askForCardChosen(player, p, "hej", self.name)
@@ -1150,6 +1159,14 @@ local renjie = fk.CreateTriggerSkill{
       room:addPlayerMark(player, "@godsimayi_bear", n)
     end
   end,
+
+  refresh_events = {fk.EventLoseSkill},
+  can_refresh = function(self, event, target, player, data)
+    return player == target and data == self and player:getMark("@godsimayi_bear") ~= 0
+  end,
+  on_refresh = function(self, event, target, player, data)
+    player.room:setPlayerMark(player, "@godsimayi_bear", 0)
+  end,
 }
 local baiyin = fk.CreateTriggerSkill{
   name = "baiyin",
@@ -1515,6 +1532,14 @@ local junlue = fk.CreateTriggerSkill{
   on_use = function(self, event, target, player, data)
     player.room:addPlayerMark(player, "@junlue", data.damage)
   end,
+
+  refresh_events = {fk.EventLoseSkill},
+  can_refresh = function(self, event, target, player, data)
+    return player == target and data == self and player:getMark("@junlue") ~= 0
+  end,
+  on_refresh = function(self, event, target, player, data)
+    player.room:setPlayerMark(player, "@junlue", 0)
+  end,
 }
 godluxun:addSkill(junlue)
 local cuike = fk.CreateTriggerSkill{
@@ -1577,7 +1602,7 @@ local zhanhuo = fk.CreateActiveSkill{
   anim_type = "offensive",
   min_target_num = 1,
   max_target_num = function()
-    return math.max(Self:getMark("@junlue"), 1)
+    return Self:getMark("@junlue")
   end,
   card_num = 0,
   frequency = Skill.Limited,
