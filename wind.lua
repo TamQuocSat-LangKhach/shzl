@@ -197,7 +197,7 @@ local kuanggu = fk.CreateTriggerSkill{
   frequency = Skill.Compulsory,
   events = {fk.Damage},
   can_trigger = function(self, event, target, player, data)
-    return player:hasSkill(self) and target == player and (data.extra_data or {}).kuanggucheak and player:isWounded()
+    return player:hasSkill(self) and target == player and (data.extra_data or {}).kuanggucheck and player:isWounded()
   end,
   on_trigger = function(self, event, target, player, data)
     for i = 1, data.damage do
@@ -216,13 +216,11 @@ local kuanggu = fk.CreateTriggerSkill{
 
   refresh_events = {fk.BeforeHpChanged},
   can_refresh = function(self, event, target, player, data)
-    if data.damageEvent and player == data.damageEvent.from and player:distanceTo(target) < 2 then
-      return true
-    end
+    return data.damageEvent and player == data.damageEvent.from and U.compareDistance(player, target, 2, "<")
   end,
   on_refresh = function(self, event, target, player, data)
     data.damageEvent.extra_data = data.damageEvent.extra_data or {}
-    data.damageEvent.extra_data.kuanggucheak = true
+    data.damageEvent.extra_data.kuanggucheck = true
   end,
 }
 weiyan:addSkill(kuanggu)

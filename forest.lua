@@ -242,12 +242,11 @@ local juxiang = fk.CreateTriggerSkill{
   frequency = Skill.Compulsory,
   events = {fk.PreCardEffect, fk.CardUseFinished},
   can_trigger = function(self, event, target, player, data)
-    if player:hasSkill(self) and data.card and data.card.trueName == "savage_assault" then
-      if event == fk.PreCardEffect then
-        return data.to == player.id
-      else
-        return target ~= player and player.room:getCardArea(data.card) == Card.Processing
-      end
+    if not (player:hasSkill(self) and data.card and data.card.trueName == "savage_assault") then return end
+    if event == fk.PreCardEffect then
+      return data.to == player.id
+    else
+      return target ~= player and player.room:getCardArea(data.card) == Card.Processing
     end
   end,
   on_use = function(self, event, target, player, data)
@@ -515,13 +514,8 @@ local roulin = fk.CreateTriggerSkill{
   frequency = Skill.Compulsory,
   events = {fk.TargetSpecified, fk.TargetConfirmed},
   can_trigger = function(self, event, target, player, data)
-    if target == player and player:hasSkill(self) and data.card.trueName == "slash" then
-      if event == fk.TargetSpecified then
-        return player.room:getPlayerById(data.to).gender == General.Female
-      else
-        return player.room:getPlayerById(data.from).gender == General.Female
-      end
-    end
+    if not (target == player and player:hasSkill(self) and data.card.trueName == "slash") then return end
+    return U.isFemale(player.room:getPlayerById(event == fk.TargetSpecified and data.to or data.from))
   end,
   on_use = function(self, event, target, player, data)
     data.fixedResponseTimes = data.fixedResponseTimes or {}
@@ -534,13 +528,8 @@ local benghuai = fk.CreateTriggerSkill{
   frequency = Skill.Compulsory,
   events = {fk.EventPhaseStart},
   can_trigger = function(self, event, target, player, data)
-    if target == player and player:hasSkill(self) and player.phase == Player.Finish then
-      for _, p in ipairs(player.room:getOtherPlayers(player)) do
-        if p.hp < player.hp then
-          return true
-        end
-      end
-    end
+    return target == player and player:hasSkill(self) and player.phase == Player.Finish and
+      table.find(player.room.alive_players, function(p) return p.hp < player.hp end)
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room
@@ -570,7 +559,7 @@ local baonue = fk.CreateTriggerSkill{
       pattern = ".|.|spade",
     }
     room:judge(judge)
-    if judge.card.suit == Card.Spade and player:isWounded() then
+    if judge.card.suit == Card.Spade and player:isWounded() and not player.dead then
       room:recover({
         who = player,
         num = 1,
@@ -647,22 +636,20 @@ local luanwu = fk.CreateActiveSkill{
   can_use = function(self, player)
     return player:usedSkillTimes(self.name, Player.HistoryGame) == 0
   end,
-  card_filter = function() return false end,
+  card_filter = Util.FalseFunc,
   on_use = function(self, room, effect)
     local player = room:getPlayerById(effect.from)
     local targets = room:getOtherPlayers(player)
-    room:doIndicate(player.id, table.map(targets, function (p) return p.id end))
+    room:doIndicate(player.id, table.map(targets, Util.IdMapper))
     for _, target in ipairs(targets) do
       if not target.dead then
-        local other_players = room:getOtherPlayers(target)
+        local other_players = table.filter(room:getOtherPlayers(target), function(p) return not p:isRemoved() end)
         local luanwu_targets = table.map(table.filter(other_players, function(p2)
           return table.every(other_players, function(p1)
             return target:distanceTo(p1) >= target:distanceTo(p2)
           end)
-        end), function (p)
-          return p.id
-        end)
-        local use = room:askForUseCard(target, "slash", "slash", "#luanwu-use", true, {exclusive_targets = luanwu_targets})
+        end), Util.IdMapper)
+        local use = room:askForUseCard(target, "slash", "slash", "#luanwu-use", true, {include_targets = luanwu_targets, bypass_times = true})
         if use then
           use.extraUse = true
           room:useCard(use)
