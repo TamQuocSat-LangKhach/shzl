@@ -104,31 +104,15 @@ Fk:loadTranslationTable {
 local godlvmeng = General(extension, "godlvmeng", "god", 3)
 Fk:addPoxiMethod{
   name = "shelie",
-  card_filter = function(to_select, selected)
-    return #selected == 0 or table.every(selected, function(id) return Fk:getCardById(id).suit ~= Fk:getCardById(to_select).suit end)
+  card_filter = function(to_select, selected, data)
+    if table.contains(data[2], to_select) then return true end
+    local suit = Fk:getCardById(to_select).suit
+    return table.every(data[2], function (id)
+      return Fk:getCardById(id).suit ~= suit
+    end)
   end,
-  feasible = function(selected, data)
-    if not data then return false end
-    local suits = {}
-    for _, id in ipairs(data[1][2]) do
-      table.insertIfNeed(suits, Fk:getCardById(id).suit)
-    end
-    return #selected == #suits
-  end,
-  default_choice = function(data)
-    if not data then return {} end
-    local ids,suits = {},{}
-    for _, id in ipairs(data[1][2]) do
-      local suit = Fk:getCardById(id).suit
-      if not table.contains(suits, suit) then
-        table.insert(suits, suit)
-        table.insert(ids, id)
-      end
-    end
-    return ids
-  end,
-  prompt = function ()
-    return Fk:translate("#shelie-choose")
+  feasible = function(selected)
+    return true
   end,
 }
 local shelie = fk.CreateTriggerSkill{
@@ -146,9 +130,16 @@ local shelie = fk.CreateTriggerSkill{
       toArea = Card.Processing,
       moveReason = fk.ReasonPut,
     })
-    local get = room:askForPoxi(player, "shelie", {
-      { self.name, cards },
-    }, nil, false)
+    local get = {}
+    for _, id in ipairs(cards) do
+      local suit = Fk:getCardById(id).suit
+      if table.every(get, function (id2)
+        return Fk:getCardById(id2).suit ~= suit
+      end) then
+        table.insert(get, id)
+      end
+    end
+    get = U.askForArrangeCards(player, self.name, cards, "#shelie-choose", false, 0, {5, 4}, {0, #get}, ".", "shelie", {{}, get})[2]
     if #get > 0 then
       local dummy = Fk:cloneCard("dilu")
       dummy:addSubcards(get)
@@ -204,7 +195,7 @@ Fk:loadTranslationTable{
   ["gongxin"] = "攻心",
   [":gongxin"] = "出牌阶段限一次，你可以观看一名其他角色的手牌并可以展示其中的一张<font color='red'>♥</font>牌，"..
   "选择：1. 弃置此牌；2. 将此牌置于牌堆顶。",
-  ["#shelie-choose"] = "获得不同花色的牌各一张",
+  ["#shelie-choose"] = "涉猎：获得不同花色的牌各一张",
   ["#gongxin-active"] = "发动 攻心，观看一名其他角色的手牌",
   ["#gongxin-view"] = "攻心：观看%dest的手牌",
   ["gongxin_discard"] = "弃置此牌",
@@ -403,7 +394,7 @@ local qixing = fk.CreateTriggerSkill{
       player:addToPile("star", dummy, false, self.name)
     end
     local cids = U.askForArrangeCards(player, self.name,
-    {"star", player:getPile("star"), "$Hand", player:getCardIds(Player.Hand)})
+    {player:getPile("star"), player:getCardIds(Player.Hand), "star", "$Hand"})
     U.swapCardsWithPile(player, cids[1], cids[2], self.name, "star")
   end,
 }
