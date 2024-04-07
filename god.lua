@@ -9,8 +9,6 @@ Fk:loadTranslationTable{
   --["gundam"] = "高达",
 }
 
-Fk:appendKingdomMap("god", {"wei", "shu", "wu", "qun"})
-
 local godguanyu = General(extension, "godguanyu", "god", 5)
 local wushen = fk.CreateFilterSkill{
   name = "wushen",
