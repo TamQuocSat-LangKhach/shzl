@@ -294,10 +294,10 @@ local zuilun = fk.CreateTriggerSkill{
   can_trigger = function(self, event, target, player, data)
     return target == player and target:hasSkill(self) and player.phase == Player.Finish
   end,
-  on_use = function(self, event, target, player, data)
+  on_cost = function(self, event, target, player, data)
     local room = player.room
     local n = 0
-    local events = player.room.logic:getEventsOfScope(GameEvent.ChangeHp, 1, function(e)
+    local events = room.logic:getEventsOfScope(GameEvent.ChangeHp, 1, function(e)
       local damage = e.data[5]
       return damage and player == damage.from
     end, Player.HistoryTurn)
@@ -319,34 +319,31 @@ local zuilun = fk.CreateTriggerSkill{
     if table.every(room.alive_players, function(p) return p:getHandcardNum() >= player:getHandcardNum() end) then
       n = n + 1
     end
+    if room:askForSkillInvoke(player, self.name, nil, "#zuilun-invoke:::"..tostring(n)) then
+      self.cost_data = n
+      return true
+    end
+  end,
+  on_use = function(self, event, target, player, data)
+    local room = player.room
+    local n = self.cost_data
     local cards = room:getNCards(3)
-    local result = room:askForGuanxing(player, cards, {3 - n, 3 - n}, {n, n}, self.name, true, {"zuilun_top", "zuilun_get"})
+    local result = U.askForGuanxing(player, cards, {3 - n, 3}, {n, n}, self.name, nil, true, {"Top", "toObtain"})
     if #result.top > 0 then
       for i = #result.top, 1, -1 do
         table.insert(room.draw_pile, 1, result.top[i])
       end
-      room:sendLog{
-        type = "#GuanxingResult",
-        from = player.id,
-        arg = #result.top,
-        arg2 = #result.bottom,
-      }
     end
     if #result.bottom > 0 then
-      local dummy = Fk:cloneCard("dilu")
-      dummy:addSubcards(result.bottom)
-      room:obtainCard(player.id, dummy, false, fk.ReasonJustMove)
-    end
-    if n == 0 and not player.dead then
-      local targets = table.map(room:getOtherPlayers(player), Util.IdMapper)
-      local to = room:askForChoosePlayers(player, targets, 1, 1, "#zuilun-choose", self.name, false)
-      if #to > 0 then
-        to = room:getPlayerById(to[1])
-      else
-        to = room:getPlayerById(table.random(targets))
-      end
+      room:moveCardTo(result.bottom, Player.Hand, player, fk.ReasonJustMove, self.name, "", false, player.id)
+    else
+      local targets = table.map(room:getOtherPlayers(player, false), Util.IdMapper)
+      if #targets == 0 then return false end
+      local to = room:getPlayerById(room:askForChoosePlayers(player, targets, 1, 1, "#zuilun-choose", self.name, false)[1])
       room:loseHp(player, 1, self.name)
-      room:loseHp(to, 1, self.name)
+      if not to.dead then
+        room:loseHp(to, 1, self.name)
+      end
     end
   end,
 }
@@ -356,17 +353,25 @@ local fuyin = fk.CreateTriggerSkill{
   frequency = Skill.Compulsory,
   events = {fk.TargetConfirmed},
   can_trigger = function(self, event, target, player, data)
-    return target == player and player:hasSkill(self) and table.contains({"slash", "duel"}, data.card.trueName)
-      and player:getMark("fuyin-turn") == 0
-  end,
-  on_trigger = function(self, event, target, player, data)
-    local room = player.room
-    if player:getMark("fuyin-turn") == 0 then
-      room:setPlayerMark(player, "fuyin-turn", 1)
-      local src = room:getPlayerById(data.from)
-      if src and not src.dead and src:getHandcardNum() >= player:getHandcardNum() then
-        self:doCost(event, target, player, data)
+    if target == player and table.contains({"slash", "duel"}, data.card.trueName) and player:hasSkill(self) then
+      local room = player.room
+      local from = room:getPlayerById(data.from)
+      if not from or from.dead or from:getHandcardNum() < player:getHandcardNum() then return false end
+      local mark = player:getMark("fuyin_record-turn")
+      local use_event = room.logic:getCurrentEvent():findParent(GameEvent.UseCard, true)
+      if use_event == nil then return false end
+      if mark == 0 then
+        room.logic:getEventsOfScope(GameEvent.UseCard, 1, function (e)
+          local use = e.data[1]
+          if table.contains({"slash", "duel"}, use.card.trueName) and
+          table.contains(TargetGroup:getRealTargets(use.tos), player.id) then
+            mark = e.id
+            room:setPlayerMark(player, "fuyin_record-turn", mark)
+            return true
+          end
+        end, Player.HistoryTurn)
       end
+      return mark == use_event.id
     end
   end,
   on_use = function(self, event, target, player, data)
@@ -385,8 +390,7 @@ Fk:loadTranslationTable{
   "2.你于此回合内未弃置过牌；3.手牌数为全场最少。若均不满足，你与一名其他角色失去1点体力。",
   ["fuyin"] = "父荫",
   [":fuyin"] = "锁定技，你每回合第一次成为【杀】或【决斗】的目标后，若你的手牌数不大于使用者，此牌对你无效。",
-  ["zuilun_top"] = "置于牌堆顶",
-  ["zuilun_get"] = "获得",
+  ["#zuilun-invoke"] = "是否发动 罪论，观看牌堆顶3张牌，保留%arg张，放回其余的牌",
   ["#zuilun-choose"] = "罪论：选择一名其他角色，你与其各失去1点体力",
 
   ["$zuilun1"] = "吾有三罪，未能除黄皓、制伯约、守国土。",
