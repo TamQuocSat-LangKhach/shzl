@@ -246,7 +246,7 @@ local juxiang = fk.CreateTriggerSkill{
     if event == fk.PreCardEffect then
       return data.to == player.id
     else
-      return target ~= player and player.room:getCardArea(data.card) == Card.Processing
+      return target ~= player and U.hasFullRealCard(player.room, data.card)
     end
   end,
   on_use = function(self, event, target, player, data)
