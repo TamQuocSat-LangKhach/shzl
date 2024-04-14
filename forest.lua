@@ -353,75 +353,39 @@ local haoshi = fk.CreateTriggerSkill{
     data.n = data.n + 2
   end,
 }
-local haoshi_active = fk.CreateActiveSkill{
-  name = "#haoshi_active",
-  visible = false,
-  max_target_num = 1,
-  can_use = Util.FalseFunc,
-  card_num = function ()
-    return Self:getHandcardNum() // 2
-  end,
-  card_filter = function(self, to_select, selected)
-    return #selected < Self:getHandcardNum() // 2 and Fk:currentRoom():getCardArea(to_select) == Player.Hand
-  end,
-  target_filter = function(self, to_select, selected, selected_cards)
-    if #selected_cards ~= Self:getHandcardNum() // 2 then return false end
-    local num = 999
-    local targets = {}
-    for _, p in ipairs(Fk:currentRoom().alive_players) do
-      if p ~= Self then
-        local n = p:getHandcardNum()
-        if n <= num then
-          if n < num then
-            num = n
-            targets = {}
-          end
-          table.insert(targets, p.id)
-        end
-      end
-    end
-    if #targets <= 1 then return false end
-    return table.contains(targets, to_select) and #selected < 1
-  end,
-}
-local haoshi_give = fk.CreateTriggerSkill{
-  name = "#haoshi_give",
-  events = {fk.AfterDrawNCards},
+local haoshi_delay = fk.CreateTriggerSkill{
+  name = "#haoshi_delay",
+  events = {fk.EventPhaseEnd},
   mute = true,
-  anim_type = "support",
-  frequency = Skill.Compulsory,
-  visible = false,
   can_trigger = function(self, event, target, player, data)
-    return target == player and player:usedSkillTimes("haoshi", Player.HistoryPhase) > 0 and player:getHandcardNum() > 5
+    return not player.dead and player:usedSkillTimes(haoshi.name, Player.HistoryPhase) > 0 and
+    #player.player_cards[Player.Hand] > 5 and #player.room.alive_players > 1
   end,
+  on_cost = Util.TrueFunc,
   on_use = function(self, event, target, player, data)
     local room = player.room
-    local cards, target = {}, nil
+    local x = player:getHandcardNum() // 2
     local targets = {}
-    local num = 999
+    local n = 0
     for _, p in ipairs(room.alive_players) do
       if p ~= player then
-        local n = p:getHandcardNum()
-        if n <= num then
-          if n < num then
-            num = n
-            targets = {}
-          end
+        if #targets == 0 then
           table.insert(targets, p.id)
+          n = p:getHandcardNum()
+        else
+          if p:getHandcardNum() < n then
+            targets = {p.id}
+            n = p:getHandcardNum()
+          elseif p:getHandcardNum() == n then
+            table.insert(targets, p.id)
+          end
         end
       end
     end
-    if #targets == 0 then return false end
-    local _, ret = room:askForUseActiveSkill(player, "#haoshi_active", "#haoshi-give:::"..player:getHandcardNum() // 2, false)
-    if ret then
-      cards = ret.cards
-      target = ret.targets and ret.targets[1] or targets[1]
-    else
-      cards = table.random(player:getCardIds(Player.Hand), player:getHandcardNum() // 2)
-      target = table.random(targets)
-    end
-    room:moveCardTo(cards, Card.PlayerHand, room:getPlayerById(target), fk.ReasonGive, self.name, nil, false, player.id)
-  end
+    local tos, cards = U.askForChooseCardsAndPlayers(room, player, x, x, targets, 1, 1,
+    ".", "#haoshi-give:::" .. x, "haoshi", false)
+    room:moveCardTo(cards, Card.PlayerHand, room:getPlayerById(tos[1]), fk.ReasonGive, "haoshi", nil, false, player.id)
+  end,
 }
 local dimeng = fk.CreateActiveSkill{
   name = "dimeng",
@@ -467,8 +431,7 @@ local dimeng = fk.CreateActiveSkill{
     U.swapHandCards(room, player, target1, target2, self.name)
   end,
 }
-haoshi:addRelatedSkill(haoshi_active)
-haoshi:addRelatedSkill(haoshi_give)
+haoshi:addRelatedSkill(haoshi_delay)
 lusu:addSkill(haoshi)
 lusu:addSkill(dimeng)
 Fk:loadTranslationTable{
@@ -480,8 +443,7 @@ Fk:loadTranslationTable{
   ["dimeng"] = "缔盟",
   [":dimeng"] = "出牌阶段限一次，你可以选择两名其他角色并弃置X张牌（X为这些角色手牌数差），令这两名角色交换手牌。",
   ["#haoshi-give"] = "好施：将%arg张手牌交给手牌最少的一名其他角色",
-  ["#haoshi_active"] = "好施[给牌]",
-  ["#haoshi_give"] = "好施[给牌]",
+  ["#haoshi_delay"] = "好施",
   ["#dimeng"] = "缔盟：选择两名其他角色，点击“确定”后，选择与其手牌数之差等量的牌，这两名角色交换手牌",
   ["#dimeng-discard"] = "缔盟：弃置 %arg 张牌，交换%src和%dest的手牌",
 
@@ -584,9 +546,9 @@ Fk:loadTranslationTable{
   ["roulin"] = "肉林",
   [":roulin"] = "锁定技，你对女性角色使用【杀】，或女性角色对你使用【杀】均需两张【闪】才能抵消。",
   ["benghuai"] = "崩坏",
-  [":benghuai"] = "锁定技，结束阶段，若你不是体力值最小的角色，你选择减1点体力上限或失去1点体力。",
+  [":benghuai"] = "锁定技，结束阶段，若你不是体力值最小的角色，你选择：1.减1点体力上限；2.失去1点体力。",
   ["baonue"] = "暴虐",
-  [":baonue"] = "主公技，其他群雄武将造成伤害后，其可以进行一次判定，若判定结果为♠，你回复1点体力。",
+  [":baonue"] = "主公技，其他群雄角色造成伤害后，其可以判定，若结果为♠，你回复1点体力。",
   ["loseMaxHp"] = "减1点体力上限",
   ["loseHp"] = "失去1点体力",
   ["#baonue-invoke"] = "暴虐：你可以判定，若为♠，%src 回复1点体力",
@@ -607,6 +569,7 @@ local wansha = fk.CreateTriggerSkill{
   name = "wansha",
   anim_type = "offensive",
   frequency = Skill.Compulsory,
+
   refresh_events = {fk.EnterDying},
   can_refresh = function(self, event, target, player, data)
     return player:hasSkill(self) and player.phase ~= Player.NotActive and table.contains(player.player_skills, self)

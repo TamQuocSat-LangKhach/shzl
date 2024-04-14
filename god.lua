@@ -394,7 +394,7 @@ local qixing = fk.CreateTriggerSkill{
       player:addToPile("star", dummy, false, self.name)
     end
     local cids = U.askForArrangeCards(player, self.name,
-    {player:getPile("star"), player:getCardIds(Player.Hand), "star", "$Hand"})
+    {player:getPile("star"), player:getCardIds(Player.Hand), "star", "$Hand"}, "#qixing-exchange", true)
     U.swapCardsWithPile(player, cids[1], cids[2], self.name, "star")
   end,
 }
@@ -511,6 +511,7 @@ Fk:loadTranslationTable{
   [":dawu"] = "结束阶段开始时，你可以将至少一张“星”置入弃牌堆并选择等量的角色，当其于你的下回合开始之前受到不为雷电伤害的伤害时，防止此伤害。",
 
   ["star"] = "星",
+  ["#qixing-exchange"] = "七星：你可以用任意张手牌替换等量的“星”",
   ["@@kuangfeng"] = "狂风",
   ["#kuangfeng-card"] = "狂风：你可以将一张“星”置入弃牌堆，点击“确认”后选择一名角色",
   ["#kuangfeng-target"] = "狂风：请选择一名角色，当其于你的下回合开始之前受到火焰伤害时，你令伤害值+1",

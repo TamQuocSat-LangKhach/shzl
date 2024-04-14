@@ -70,7 +70,7 @@ Fk:loadTranslationTable{
 
   ["$shensu1"] = "吾善于千里袭人！",
   ["$shensu2"] = "取汝首级，有如探囊取物！",
-  ["~xiahouyuan"] = "竟然…比我还…快…",
+  ["~xiahouyuan"] = "竟然……比我还……快……",
 }
 
 local caoren = General(extension, "caoren", "wei", 4)
@@ -294,7 +294,7 @@ Fk:loadTranslationTable{
   ["$tianxiang2"] = "接着哦~",
   ["$tianxiang1"] = "替我挡着~",
   ["$hongyan"] = "（红颜）",
-  ["~xiaoqiao"] = "公瑾，我先走一步…",
+  ["~xiaoqiao"] = "公瑾，我先走一步……",
 }
 
 local zhoutai = General(extension, "zhoutai", "wu", 4)
@@ -459,7 +459,7 @@ zhoutai:addSkill(buqu)
 Fk:loadTranslationTable{
   ["zhoutai"] = "周泰",
   ["#zhoutai"] = "历战之躯",
-  ["illustrator:zhoutai"] = "Thinking",
+  ["illustrator:zhoutai"] = "KayaK",
   ["cv:zhoutai"] = "李扬",
 
   ["buqu"] = "不屈",
@@ -474,7 +474,7 @@ Fk:loadTranslationTable{
 
   ["$buqu2"] = "我绝不会倒下！",
   ["$buqu1"] = "还不够！",
-  ["~zhoutai"] = "已经，尽力了…",
+  ["~zhoutai"] = "已经……尽力了……",
 }
 
 local zhangjiao = General(extension, "zhangjiao", "qun", 3)

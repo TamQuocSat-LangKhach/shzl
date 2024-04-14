@@ -214,11 +214,11 @@ Fk:loadTranslationTable{
   ["#shenshi-give"] = "审时：交给 %dest 一张牌，若本回合结束阶段仍属于其，你将手牌摸至四张",
   ["#shenshiYin"] = "审时",
 
-  ["$jianxiang1"] = "得遇曹公，吾之幸也。",
-  ["$jianxiang2"] = "曹公得荆不喜，喜得吾二人足矣。",
+  ["$jianxiang1"] = "曹公得荆不喜，喜得吾二人足矣。",
+  ["$jianxiang2"] = "得遇曹公，吾之幸也。",
   ["$shenshi1"] = "深中足智，鉴时审情。",
   ["$shenshi2"] = "数语之言，审时度势。",
-  ["~kuailiangkuaiyue"] = "表不能善用，所憾也。",
+  ["~kuailiangkuaiyue"] = "表不能善用，所憾也……",
 }
 
 local yanyan = General(extension, "yanyan", "shu", 4)
