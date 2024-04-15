@@ -304,12 +304,12 @@ local yeyan = fk.CreateActiveSkill{
     table.every(selected, function (id) return card.suit ~= Fk:getCardById(id).suit end)
   end,
   target_filter = function(self, to_select, selected, selected_cards)
-    if #selected_cards == 4 then
-      return #selected < 2
-    elseif #selected_cards == 0 and self.interaction.data == "small_yeyan" then
-      return #selected < 3
+    if self.interaction.data == "small_yeyan" then
+      return #selected_cards == 0 and #selected < 3
+    elseif self.interaction.data == "middle_yeyan" then
+      return #selected_cards == 4 and #selected < 2
     else
-      return false
+      return #selected_cards == 4 and #selected == 0
     end
   end,
   on_use = function(self, room, effect)
