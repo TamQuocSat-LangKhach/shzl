@@ -58,9 +58,7 @@ local xingshang = fk.CreateTriggerSkill{
   on_use = function(self, event, target, player, data)
     local room = player.room
     local cards_id = target:getCardIds{Player.Hand, Player.Equip}
-    local dummy = Fk:cloneCard'slash'
-    dummy:addSubcards(cards_id)
-    room:obtainCard(player.id, dummy, false, fk.ReasonPrey)
+    room:obtainCard(player.id, cards_id, false, fk.ReasonPrey)
   end,
 }
 local fangzhu = fk.CreateTriggerSkill{
@@ -81,7 +79,7 @@ local fangzhu = fk.CreateTriggerSkill{
   on_use = function(self, event, target, player, data)
     local to = player.room:getPlayerById(self.cost_data)
     to:turnOver()
-    if not to.dead then
+    if not to.dead and player:getLostHp() > 0 then
       to:drawCards(player:getLostHp(), self.name)
     end
   end,
@@ -185,33 +183,41 @@ local zaiqi = fk.CreateTriggerSkill{
       toArea = Card.Processing,
       moveReason = fk.ReasonJustMove,
       skillName = self.name,
+      proposer = player.id,
     }
     room:delay(2000)
-    local dummy = Fk:cloneCard("dilu")
-    for i = #cards, 1, -1 do
-      if Fk:getCardById(cards[i]).suit ~= Card.Heart then
-        dummy:addSubcard(cards[i])
-        table.removeOne(cards, cards[i])
+    local hearts, to_get = {}, {}
+    for _, id in ipairs(cards) do
+      if Fk:getCardById(id).suit == Card.Heart then
+        table.insert(hearts, id)
+      else
+        table.insert(to_get, id)
       end
     end
-    if #cards > 0 then
-      room:moveCards{
-        ids = cards,
-        toArea = Card.DiscardPile,
-        moveReason = fk.ReasonJustMove,
-        skillName = self.name,
-      }
+    if #hearts > 0 then
       if player:isWounded() then
         room:recover({
           who = player,
-          num = math.min(#cards, player:getLostHp()),
+          num = math.min(#hearts, player:getLostHp()),
           recoverBy = player,
           skillName = self.name,
         })
       end
+      room:moveCards{
+        ids = hearts,
+        toArea = Card.DiscardPile,
+        moveReason = fk.ReasonPutIntoDiscardPile,
+        skillName = self.name,
+      }
     end
-    if #dummy.subcards > 0 and not player.dead then
-      room:obtainCard(player.id, dummy, true, fk.ReasonJustMove)
+    if #to_get > 0 and not player.dead then
+      room:obtainCard(player.id, to_get, true, fk.ReasonJustMove)
+    end
+    cards = table.filter(cards, function (id)
+      return room:getCardArea(id) == Card.Processing
+    end)
+    if #cards > 0 then
+      room:moveCardTo(cards, Card.DiscardPile, nil, fk.ReasonJustMove, self.name)
     end
     return true
   end,

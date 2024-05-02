@@ -477,17 +477,17 @@ local zhiba_other = fk.CreateActiveSkill{
     end
     local pindian = player:pindian({target}, self.name)
     if not pindian.results[target.id].winner or pindian.results[target.id].winner ~= player then
-      local dummy = Fk:cloneCard("dilu")
+      local to_get = {}
       local leftFromCardIds = room:getSubcardsByRule(pindian.fromCard, { Card.DiscardPile })
       if #leftFromCardIds > 0 then
-        dummy:addSubcards(leftFromCardIds)
+        table.insertTableIfNeed(to_get, leftFromCardIds)
       end
       local leftToCardIds = room:getSubcardsByRule(pindian.results[target.id].toCard, { Card.DiscardPile })
       if #leftToCardIds > 0 then
-        dummy:addSubcards(leftToCardIds)
+        table.insertTableIfNeed(to_get, leftToCardIds)
       end
-      if #dummy.subcards > 0 then
-        room:obtainCard(target, dummy, true, fk.ReasonJustMove)
+      if #to_get > 0 then
+        room:obtainCard(target, to_get, true, fk.ReasonJustMove)
       end
     end
   end,

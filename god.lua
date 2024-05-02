@@ -141,17 +141,11 @@ local shelie = fk.CreateTriggerSkill{
     end
     get = U.askForArrangeCards(player, self.name, cards, "#shelie-choose", false, 0, {5, 4}, {0, #get}, ".", "shelie", {{}, get})[2]
     if #get > 0 then
-      local dummy = Fk:cloneCard("dilu")
-      dummy:addSubcards(get)
-      room:obtainCard(player, dummy, true, fk.ReasonPrey)
+      room:obtainCard(player, get, true, fk.ReasonPrey)
     end
     cards = table.filter(cards, function(id) return room:getCardArea(id) == Card.Processing end)
     if #cards > 0 then
-      room:moveCards({
-        ids = cards,
-        toArea = Card.DiscardPile,
-        moveReason = fk.ReasonPutIntoDiscardPile,
-      })
+      room:moveCardTo(cards, Card.DiscardPile, nil, fk.ReasonJustMove, self.name)
     end
     return true
   end,
@@ -380,7 +374,8 @@ local qixing = fk.CreateTriggerSkill{
   derived_piles = "star",
   can_trigger = function(self, event, target, player, data)
     if not player:hasSkill(self) then return false end
-    return event == fk.GameStart or (target == player and player.phase == Player.Draw and #player:getPile("star") > 0)
+    return event == fk.GameStart or
+    (target == player and player.phase == Player.Draw and not player:isKongcheng() and #player:getPile("star") > 0)
   end,
   on_cost = function(self, event, target, player, data)
     if event == fk.GameStart then return true
@@ -389,9 +384,8 @@ local qixing = fk.CreateTriggerSkill{
   on_use = function(self, event, target, player, data)
     local room = player.room
     if event == fk.GameStart then
-      local dummy = Fk:cloneCard("dilu")
-      dummy:addSubcards(room:getNCards(7))
-      player:addToPile("star", dummy, false, self.name)
+      player:addToPile("star", room:getNCards(7), false, self.name)
+      if player.dead or player:isKongcheng() or #player:getPile("star") == 0 then return false end
     end
     local cids = U.askForArrangeCards(player, self.name,
     {player:getPile("star"), player:getCardIds(Player.Hand), "star", "$Hand"}, "#qixing-exchange", true)
@@ -1959,9 +1953,7 @@ local gn_jieying = fk.CreateTriggerSkill{
         room:setPlayerMark(target, "@@jieying_camp", 0)
         room:addPlayerMark(player, "@@jieying_camp")
         if not target:isKongcheng() then
-          local dummy = Fk:cloneCard("dilu")
-          dummy:addSubcards(target.player_cards[Player.Hand])
-          room:obtainCard(player.id, dummy, false, fk.ReasonPrey)
+          room:obtainCard(player.id, target:getCardIds(Player.Hand), false, fk.ReasonPrey)
         end
       end
     end

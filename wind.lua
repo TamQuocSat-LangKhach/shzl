@@ -326,9 +326,7 @@ local buqu = fk.CreateTriggerSkill{
   on_use = function(self, event, target, player, data)
     local room = player.room
     if event == fk.BeforeHpChanged then
-      local dummy = Fk:cloneCard("dilu")
-      dummy:addSubcards(room:getNCards(self.cost_data))
-      player:addToPile("zhoutai_chuang", dummy, true, self.name)
+      player:addToPile("zhoutai_chuang", room:getNCards(self.cost_data), true, self.name)
       room:setPlayerMark(player, self.name, 1)--预备终止濒死结算
       local buqu_chuang = player:getPile("zhoutai_chuang")
       local duplicate_numbers = {}

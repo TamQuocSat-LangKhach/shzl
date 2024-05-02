@@ -640,9 +640,7 @@ local lijun = fk.CreateTriggerSkill{
     local cardList = data.card:isVirtual() and data.card.subcards or {data.card.id}
     local cards = table.filter(cardList, function(id) return not room:getCardOwner(id) end)
     if #cards == 0 then return end
-    local dummy = Fk:cloneCard("slash")
-    dummy:addSubcards(cards)
-    room:obtainCard(player, dummy, true, fk.ReasonJustMove)
+    room:obtainCard(player, cards, true, fk.ReasonJustMove)
     if not player.dead and not target.dead and room:askForSkillInvoke(player, self.name, data, "#lijun-draw:"..target.id) then
       target:drawCards(1, self.name)
     end
@@ -685,114 +683,112 @@ local chenglue = fk.CreateActiveSkill{
   name = "chenglue",
   anim_type = "switch",
   switch_skill_name = "chenglue",
+  prompt = function ()
+    return Self:getSwitchSkillState("quanmou", false) == fk.SwitchYang and "#chenglue-active:::1:2" or "#chenglue-active:::2:1"
+  end,
   can_use = function(self, player)
     return player:usedSkillTimes(self.name, Player.HistoryPhase) < 1
   end,
   card_filter = Util.FalseFunc,
-  target_filter = function(self, to_select, selected, selected_cards)
-    return false
-  end,
+  target_filter = Util.FalseFunc,
   on_use = function(self, room, effect)
     local from = room:getPlayerById(effect.from)
     local isYang = from:getSwitchSkillState(self.name, true) == fk.SwitchYang
 
     from:drawCards(isYang and 1 or 2, self.name)
+    if from.dead then return end
+
     local discardNum = isYang and 2 or 1
-    local cardsDiscarded = table.filter(room:askForDiscard(from, discardNum, discardNum, false, self.name, false), function(id)
-      return Fk:getCardById(id).suit < Card.NoSuit
-    end)
+    local toDiscard = room:askForDiscard(from, discardNum, discardNum, false, self.name, false, ".",
+    "#chenglue-discard:::" .. tostring(discardNum), true)
+    if #toDiscard == 0 then return end
 
-    if #cardsDiscarded > 0 then
-      local suitsToRecord = table.map(cardsDiscarded, function(id)
-        return Fk:getCardById(id):getSuitString(true)
-      end)
-
-      local suitsRecorded = type(from:getMark("@chenglue-phase")) == "table" and from:getMark("@chenglue-phase") or {}
-      for _, suit in ipairs(suitsToRecord) do
-        table.insertIfNeed(suitsRecorded, suit)
+    local suitsToRecord = {}
+    for _, id in ipairs(toDiscard) do
+      local suit = Fk:getCardById(id).suit
+      if suit ~= Card.NoSuit then
+        table.insert(suitsToRecord, suit)
       end
-      room:setPlayerMark(from, "@chenglue-phase", suitsRecorded)
     end
+    room:throwCard(toDiscard, self.name, from, from)
+    if from.dead then return end
+
+    local suitsRecorded = U.getMark(from, "@[suits]chenglue-phase")
+    table.insertTableIfNeed(suitsRecorded, suitsToRecord)
+    room:setPlayerMark(from, "@[suits]chenglue-phase", suitsRecorded)
+  end,
+}
+local chenglue_refresh = fk.CreateTriggerSkill{
+  name = "#chenglue_refresh",
+
+  refresh_events = {fk.PreCardUse},
+  can_refresh = function(self, event, target, player, data)
+    return player == target and table.contains(U.getMark(player, "@[suits]chenglue-phase"), data.card.suit)
+  end,
+  on_refresh = function(self, event, target, player, data)
+    data.extraUse = true
   end,
 }
 local chenglue_targetmod = fk.CreateTargetModSkill{
   name = "#chenglue_targetmod",
   bypass_times = function(self, player, skill, scope, card, to)
-    return card and player:getMark("@chenglue-phase") ~= 0 and table.contains(player:getMark("@chenglue-phase"), "log_"..card:getSuitString())
+    return card and table.contains(U.getMark(player, "@[suits]chenglue-phase"), card.suit)
   end,
   bypass_distances = function(self, player, skill, card, to)
-    return card and player:getMark("@chenglue-phase") ~= 0 and table.contains(player:getMark("@chenglue-phase"), "log_"..card:getSuitString())
+    return card and table.contains(U.getMark(player, "@[suits]chenglue-phase"), card.suit)
   end,
 }
 local shicai = fk.CreateTriggerSkill{
   name = "shicai",
-  events = {fk.CardUseFinished, fk.TargetConfirmed},
+  events = {fk.CardUseFinished},
   anim_type = "drawCard",
   can_trigger = function(self, event, target, player, data)
-    if
-      not (
-        target == player and
-        player:hasSkill(self) and
-        (data.extra_data or {}).firstCardTypeUsed and
-        player.room:getCardArea(data.card) == Card.Processing
-      )
-    then
-      return false
-    end
-
-    if event == fk.CardUseFinished then
-      return data.card:isCommonTrick() or data.card.type == Card.TypeBasic
+    if target ~= player or not player:hasSkill(self) then return false end
+    local card_type = data.card.type
+    local room = player.room
+    if card_type == Card.TypeEquip then
+      if not table.contains(player:getCardIds(Player.Equip), data.card:getEffectiveId()) then return false end
     else
-      return data.from == player.id and data.card.type == Card.TypeEquip
+      if room:getCardArea(data.card) ~= Card.Processing then return false end
     end
+    local logic = room.logic
+    local use_event = logic:getCurrentEvent()
+    local mark_name = "shicai_" .. data.card:getTypeString() .. "-turn"
+    local mark = player:getMark(mark_name)
+    if mark == 0 then
+      logic:getEventsOfScope(GameEvent.UseCard, 1, function (e)
+        local last_use = e.data[1]
+        if last_use.from == player.id and last_use.card.type == card_type then
+          mark = e.id
+          room:setPlayerMark(player, mark_name, mark)
+          return true
+        end
+        return false
+      end, Player.HistoryTurn)
+    end
+    return mark == use_event.id
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room
-    local toPut = room:getSubcardsByRule(data.card, { Card.Processing })
+    local toPut = data.card:isVirtual() and data.card.subcards or { data.card.id }
 
     if #toPut > 1 then
-      toPut = room:askForGuanxing(player, toPut, { #toPut, #toPut }, { 0, 0 }, "ShiCaiPut", true).top
+      toPut = U.askForGuanxing(player, toPut, { #toPut, #toPut }, { 0, 0 }, self.name, nil, true).top
+      toPut = table.reverse(toPut)
     end
 
-    room:moveCardTo(table.reverse(toPut), Card.DrawPile, nil, fk.ReasonPut, self.name, nil, true)
+    room:moveCardTo(toPut, Card.DrawPile, nil, fk.ReasonPut, self.name, nil, true)
     player:drawCards(1, self.name)
   end,
 
-  refresh_events = {fk.EventPhaseStart, fk.AfterCardUseDeclared},
+  refresh_events = {fk.AfterCardUseDeclared},
   can_refresh = function(self, event, target, player, data)
-    if target ~= player then
-      return false
-    end
-
-    if event == fk.EventPhaseStart then
-      return
-        player.phase == Player.NotActive and
-        table.find(player.room.alive_players, function(p)
-          return type(p:getMark("@shicai")) == "table"
-        end)
-    else
-      return
-        player:hasSkill(self.name, true) and
-        (type(player:getMark("@shicai")) ~= "table" or
-        not table.contains(player:getMark("@shicai"), data.card:getTypeString() .. "_char"))
-    end
+    return player == target and player:hasSkill(self, true)
   end,
   on_refresh = function(self, event, target, player, data)
-    local room = player.room
-    if event == fk.EventPhaseStart then
-      for _, p in ipairs(room.alive_players) do
-        if type(p:getMark("@shicai")) == "table" then
-          room:setPlayerMark(p, "@shicai", 0)
-        end
-      end
-    else
-      local typesRecorded = type(player:getMark("@shicai")) == "table" and player:getMark("@shicai") or {}
-      table.insert(typesRecorded, data.card:getTypeString() .. "_char")
-      room:setPlayerMark(player, "@shicai", typesRecorded)
-
-      data.extra_data = data.extra_data or {}
-      data.extra_data.firstCardTypeUsed = true
-    end
+    local typesRecorded = U.getMark(player, "@[cardtypes]shicai-turn")
+    table.insertIfNeed(typesRecorded, data.card.type)
+    player.room:setPlayerMark(player, "@[cardtypes]shicai-turn", typesRecorded)
   end,
 }
 local cunmu = fk.CreateTriggerSkill{
@@ -807,6 +803,7 @@ local cunmu = fk.CreateTriggerSkill{
     data.fromPlace = "bottom"
   end,
 }
+chenglue:addRelatedSkill(chenglue_refresh)
 chenglue:addRelatedSkill(chenglue_targetmod)
 xuyou:addSkill(chenglue)
 xuyou:addSkill(shicai)
@@ -823,8 +820,11 @@ Fk:loadTranslationTable{
   [":shicai"] = "当你每回合首次使用一种类别的牌结算结束后，你可以将之置于牌堆顶，然后摸一张牌。",
   ["cunmu"] = "寸目",
   [":cunmu"] = "锁定技，当你摸牌时，改为从牌堆底摸牌。",
-  ["@chenglue-phase"] = "成略",
-  ["@shicai"] = "恃才",
+
+  ["#chenglue-active"] = "发动 成略，摸%arg张牌，弃置%arg2张手牌，本阶段使用这些花色的牌无距离和次数限制",
+  ["#chenglue-discard"] = "成略：弃置%arg张手牌，本阶段使用这些花色的牌无距离和次数限制",
+  ["@[suits]chenglue-phase"] = "成略",
+  ["@[cardtypes]shicai-turn"] = "恃才",
 
   ["$chenglue1"] = "成略在胸，良计速出。",
   ["$chenglue2"] = "吾有良略在怀，必为阿瞒所需。",

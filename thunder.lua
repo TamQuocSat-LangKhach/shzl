@@ -142,38 +142,10 @@ local hongju = fk.CreateTriggerSkill{
   on_use = function(self, event, target, player, data)
     local room = player.room
     if not player:isKongcheng() then
-      local results = U.askForExchange(player, "guanqiujian__glory", "$Hand",
-        player:getPile("guanqiujian__glory"), player:getCardIds("h"), "#hongju-exchange", 999)
-      local cards1, cards2 = {}, {}
-      for _, id in ipairs(results) do
-        if room:getCardArea(id) == Player.Hand then
-          table.insert(cards1, id)
-        else
-          table.insert(cards2, id)
-        end
-      end
-      local move1 = {
-        ids = cards2,
-        from = player.id,
-        to = player.id,
-        fromArea = Card.PlayerSpecial,
-        toArea = Card.PlayerHand,
-        moveReason = fk.ReasonExchange,
-        proposer = player.id,
-        skillName = self.name,
-      }
-      local move2 = {
-        ids = cards1,
-        from = player.id,
-        to = player.id,
-        fromArea = Card.PlayerHand,
-        toArea = Card.PlayerSpecial,
-        moveReason = fk.ReasonExchange,
-        proposer = player.id,
-        specialName = "guanqiujian__glory",
-        skillName = self.name,
-      }
-      room:moveCards(move1, move2)
+      local piles = U.askForArrangeCards(player, self.name,
+      {player:getPile("guanqiujian__glory"), player:getCardIds(Player.Hand), "guanqiujian__glory", "$Hand"},
+      "#hongju-exchange", true)
+      U.swapCardsWithPile(player, piles[1], piles[2], self.name, "guanqiujian__glory", true)
     end
     room:changeMaxHp(player, -1)
     room:handleAddLoseSkills(player, "qingce", nil, true, false)
@@ -502,8 +474,6 @@ local kongsheng = fk.CreateTriggerSkill{
   end,
   on_use = function(self, event, target, player, data)
     if player.phase == Player.Start then
-      local dummy = Fk:cloneCard("dilu")
-      dummy:addSubcards(self.cost_data)
       player:addToPile("zhoufei_harp", self.cost_data, true, self.name)
     elseif player.phase == Player.Finish then
       local room = player.room
@@ -527,9 +497,7 @@ local kongsheng = fk.CreateTriggerSkill{
           card = Fk:getCardById(id),
         })
       end
-      local dummy = Fk:cloneCard("dilu")
-      dummy:addSubcards(player:getPile("zhoufei_harp"))
-      room:obtainCard(player.id, dummy, true, fk.ReasonJustMove)
+      room:obtainCard(player.id, player:getPile("zhoufei_harp"), true, fk.ReasonJustMove)
     end
   end,
 }
