@@ -129,6 +129,8 @@ local shelie = fk.CreateTriggerSkill{
       ids = cards,
       toArea = Card.Processing,
       moveReason = fk.ReasonPut,
+      skillName = self.name,
+      proposer = player.id
     })
     local get = {}
     for _, id in ipairs(cards) do
