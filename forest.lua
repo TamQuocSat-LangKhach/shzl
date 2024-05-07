@@ -402,9 +402,7 @@ local dimeng = fk.CreateActiveSkill{
   can_use = function(self, player)
     return player:usedSkillTimes(self.name) == 0 and #Fk:currentRoom().alive_players > 2
   end,
-  card_filter = function(self, to_select, selected, selected_targets)
-    return false
-  end,
+  card_filter = Util.FalseFunc,
   target_filter = function(self, to_select, selected, selected_cards)
     if to_select == Self.id or #selected > 1 then return false end
     if #selected == 0 then
@@ -483,7 +481,7 @@ local roulin = fk.CreateTriggerSkill{
   events = {fk.TargetSpecified, fk.TargetConfirmed},
   can_trigger = function(self, event, target, player, data)
     if not (target == player and player:hasSkill(self) and data.card.trueName == "slash") then return end
-    return U.isFemale(player.room:getPlayerById(event == fk.TargetSpecified and data.to or data.from))
+    return player.room:getPlayerById(event == fk.TargetSpecified and data.to or data.from):isFemale()
   end,
   on_use = function(self, event, target, player, data)
     data.fixedResponseTimes = data.fixedResponseTimes or {}
@@ -612,7 +610,7 @@ local luanwu = fk.CreateActiveSkill{
     room:doIndicate(player.id, table.map(targets, Util.IdMapper))
     for _, target in ipairs(targets) do
       if not target.dead then
-        local other_players = table.filter(room:getOtherPlayers(target), function(p) return not p:isRemoved() end)
+        local other_players = table.filter(room:getOtherPlayers(target, false), function(p) return not p:isRemoved() end)
         local luanwu_targets = table.map(table.filter(other_players, function(p2)
           return table.every(other_players, function(p1)
             return target:distanceTo(p1) >= target:distanceTo(p2)
