@@ -371,13 +371,13 @@ Fk:loadTranslationTable{
 local godzhugeliang = General(extension, "godzhugeliang", "god", 3)
 local qixing = fk.CreateTriggerSkill{
   name = "qixing",
-  events = {fk.GameStart, fk.EventPhaseEnd},
+  events = {fk.GameStart, fk.AfterDrawNCards},
   anim_type = "drawcard",
   derived_piles = "star",
   can_trigger = function(self, event, target, player, data)
     if not player:hasSkill(self) then return false end
     return event == fk.GameStart or
-    (target == player and player.phase == Player.Draw and not player:isKongcheng() and #player:getPile("star") > 0)
+    (target == player and not player:isKongcheng() and #player:getPile("star") > 0)
   end,
   on_cost = function(self, event, target, player, data)
     if event == fk.GameStart then return true

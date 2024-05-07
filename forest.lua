@@ -361,7 +361,7 @@ local haoshi = fk.CreateTriggerSkill{
 }
 local haoshi_delay = fk.CreateTriggerSkill{
   name = "#haoshi_delay",
-  events = {fk.EventPhaseEnd},
+  events = {fk.AfterDrawNCards},
   mute = true,
   can_trigger = function(self, event, target, player, data)
     return not player.dead and player:usedSkillTimes(haoshi.name, Player.HistoryPhase) > 0 and
