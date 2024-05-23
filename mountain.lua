@@ -844,7 +844,7 @@ local duanchang = fk.CreateTriggerSkill{
     local to = data.damage.from
     local skills = {}
     for _, s in ipairs(to.player_skills) do
-      if not (s.attached_equip or s.name[#s.name] == "&") then
+      if s:isPlayerSkill(to) then
         table.insertIfNeed(skills, s.name)
       end
     end
