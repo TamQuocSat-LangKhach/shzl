@@ -515,7 +515,7 @@ Fk:loadTranslationTable{
   ["#dawu-card"] = "大雾：你可以将至少一张“星”置入弃牌堆，点击“确认”后选择等量的角色",
   ["#dawu-target"] = "大雾：请选择%arg名角色，当其于你的下回合开始之前受到不为雷电伤害的伤害时，防止此伤害",
 
-  ["$qixing1"] = "祈星辰之力，佑我蜀汉！	",
+  ["$qixing1"] = "祈星辰之力，佑我蜀汉！",
   ["$qixing2"] = "伏望天恩，誓讨汉贼！",
   ["$kuangfeng1"] = "风~~起~~",
   ["$kuangfeng2"] = "万事俱备，只欠业火。",
@@ -1911,7 +1911,7 @@ Fk:addPoxiMethod{
     return #selected == 4
   end,
   prompt = function ()
-    return "魄袭：弃置双方手里四张不同花色的牌"
+    return "#poxi-ask"
   end
 }
 local gn_jieying = fk.CreateTriggerSkill{
@@ -2010,6 +2010,7 @@ Fk:loadTranslationTable{
   ["#poxi-prompt"] = "魄袭：选择一名有手牌的其他角色，并可弃置你与其手牌中共计四张花色各不相同的牌",
   ["@@jieying_camp"] = "营",
   ["#poxi-choose"] = "魄袭：从双方的手牌中选出四张不同花色的牌弃置，或者点取消",
+  ["#poxi-ask"] = "魄袭：弃置双方手里四张不同花色的牌",
   ["#gn_jieying-choose"] = "劫营：你可将营标记交给其他角色",
 
   ["$poxi1"] = "夜袭敌军，挫其锐气。",

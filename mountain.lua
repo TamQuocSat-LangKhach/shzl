@@ -276,7 +276,7 @@ Fk:loadTranslationTable{
 local liushan = General(extension, "liushan", "shu", 3)
 local xiangle = fk.CreateTriggerSkill{
   name = "xiangle",
-  events = {fk.TargetConfirming},
+  events = {fk.TargetConfirmed},
   anim_type = "defensive",
   frequency = Skill.Compulsory,
   can_trigger = function(self, event, target, player, data)

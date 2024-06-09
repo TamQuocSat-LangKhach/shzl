@@ -427,7 +427,7 @@ return {
   ["#dawu-card"] = "Heavy Gale: You can discard at least 1 \"Stars\" then choose same # of players",
   ["#dawu-target"] = "Heavy Gale: Choose %arg player(s), until your next turn, protect him from all DMG (except Thunder)",
 
-  ["godlvbu"] = "Lv Bu",
+  ["godlvbu"] = "Lü Bu",
   ["kuangbao"] = "Violent Rage",
   [":kuangbao"] = '(forced) At the beginning of the game: you get 2 "Rage". After you cause/suffer 1 DMG: you get 1 "Rage".',
   ["wumou"] = "Simpleton",
@@ -452,20 +452,20 @@ return {
   ["feiying"] = "Flying Shadow",
   [":feiying"] = "(forced) You always have a bonus +1 horse.",
 
-  ["nos__godzhaoyun"] = "神赵云",
+  ["nos__godzhaoyun"] = "Zhao Yun",
   ["nos__juejing"] = "绝境",
   [":nos__juejing"] = "锁定技，摸牌阶段，你令额定摸牌数+X（X为你已损失的体力值）；你的手牌上限+2。",
   ["nos__longhun"] = "龙魂",
   [":nos__longhun"] = "你可以将X张你的同花色的牌按以下规则使用或打出：红桃当【桃】，方块当火【杀】，梅花当【闪】，黑桃当【无懈可击】（X为你的体力值且至少为1）。",
 
-  ["godzhaoyun"] = "神赵云",
+  ["godzhaoyun"] = "Zhao Yun",
   ["juejing"] = "绝境",
   [":juejing"] = "锁定技，你的手牌上限+2；当你进入濒死状态时或你的濒死结算结束后，你摸一张牌。",
   ["longhun"] = "龙魂",
   [":longhun"] = "你可以将至多两张你的同花色的牌按以下规则使用或打出：红桃当【桃】，方块当火【杀】，梅花当【闪】，黑桃当【无懈可击】。若你以此法使用或打出了两张：红桃牌，此牌回复基数+1；方块牌，此牌伤害基数+1；黑色牌，你弃置当前回合角色一张牌。",
   ["#longhun_discard"] = "龙魂",
 
-  ["gundam"] = "高达一号",
+  ["gundam"] = "Gundam Zhao Y.",
   ["gundam__juejing"] = "绝境",
   [":gundam__juejing"] = "锁定技，你跳过摸牌阶段；当你的手牌数大于4/小于4时，你将手牌弃置至4/摸至4张。",
   ["gundam__longhun"] = "龙魂",
@@ -475,7 +475,7 @@ return {
   ["#gundam__longhun_qinggang-target"] = "龙魂：你可夺走 %src 的【青釭剑】！",
   ["#gundam__longhun_qinggang-targets"] = "龙魂：你可夺走 %src 等的【青釭剑】！",
 
-  ["godsimayi"] = "神司马懿",
+  ["godsimayi"] = "Sima Yi",
   ["renjie"] = "忍戒",
   [":renjie"] = "锁定技，当你受到伤害后/于弃牌阶段弃置手牌后，你获得X枚“忍”（X为伤害值/你弃置的手牌数）。",
   ["baiyin"] = "拜印",
@@ -490,7 +490,7 @@ return {
   ["#jilue_trigger"] = "极略",
   ["#lianpo-invoke"] = "连破：你可以额外执行一个回合！",
 
-  ["godliubei"] = "神刘备",
+  ["godliubei"] = "Liu Bei",
   ["longnu"] = "龙怒",
   [":longnu"] = "转换技，锁定技，出牌阶段开始时，阳：你失去1点体力，摸一张牌，你的红色手牌于此阶段内均视为火【杀】，你于此阶段内使用火【杀】无距离限制；"..
   "阴：你减1点体力上限，摸一张牌，你的锦囊牌于此阶段内均视为雷【杀】，你于此阶段内使用雷【杀】无次数限制。",
@@ -500,7 +500,7 @@ return {
   ["#longnu_filter"] = "龙怒",
   ["#jieying-target"] = "结营：选择一名其他角色，令其横置",
 
-  ["godluxun"] = "神陆逊",
+  ["godluxun"] = "Lu Xun",
   ["junlue"] = "军略",
   [":junlue"] = "锁定技，当你造成或受到1点伤害后，你获得一枚“军略”。",
   ["@junlue"] = "军略",
@@ -514,7 +514,7 @@ return {
   ["#zhanhuo-damage"] = "绽火：对其中一名角色造成一点火焰伤害",
   ["#zhanhuo-prompt"] = "绽火：弃置全部“军略”并选择至多等量处于连环状态中的角色",
 
-  ["godzhangliao"] = "神张辽",
+  ["godzhangliao"] = "Zhang Liao",
   ["duorui"] = "夺锐",
   [":duorui"] = "当你于出牌阶段内对一名其他角色造成伤害后，你可以废除你的一个装备栏，然后选择该角色的武将牌上的一个技能"..
   "（限定技、觉醒技、使命技、主公技除外），令其于其下回合结束之前此技能无效，然后你于其下回合结束或其死亡之前拥有此技能且不能发动〖夺锐〗。",
@@ -528,7 +528,7 @@ return {
   ["@duorui_target"] = "被夺锐",
   ["#zhiti-choice"] = "止啼：选择要恢复的装备栏",
 
-  ["godganning"] = "神甘宁",
+  ["godganning"] = "Gan Ning",
   ["poxi"] = "魄袭",
   [":poxi"] = "出牌阶段限一次，你可以观看一名其他角色的手牌，然后你可以弃置你与其手里共计四张不同花色的牌。若如此做，根据此次弃置你的牌数量执行以下效果：没有，体力上限减1；一张，结束出牌阶段且本回合手牌上限-1；三张，回复1点体力；四张，摸四张牌。",
   ["gn_jieying"] = "劫营",
@@ -537,9 +537,10 @@ return {
   ["#poxi-prompt"] = "魄袭：选择一名有手牌的其他角色，并可弃置你与其手牌中共计四张花色各不相同的牌",
   ["@@jieying_camp"] = "营",
   ["#poxi-choose"] = "魄袭：从双方的手牌中选出四张不同花色的牌弃置，或者点取消",
+  ["#poxi-ask"] = "魄袭：弃置双方手里四张不同花色的牌",
   ["#gn_jieying-choose"] = "劫营：你可将营标记交给其他角色",
 
-  ["goddiaochan"] = "神貂蝉",
+  ["goddiaochan"] = "Diao Chan",
   ["meihun"] = "魅魂",
   [":meihun"] = "结束阶段或当你成为【杀】目标后，你可以令一名其他角色" ..
     "交给你一张你声明的花色的牌，若其没有则你观看其手牌然后弃置其中一张。",
