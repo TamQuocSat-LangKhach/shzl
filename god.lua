@@ -141,7 +141,7 @@ local shelie = fk.CreateTriggerSkill{
         table.insert(get, id)
       end
     end
-    get = U.askForArrangeCards(player, self.name, cards, "#shelie-choose", false, 0, {5, 4}, {0, #get}, ".", "shelie", {{}, get})[2]
+    get = room:askForArrangeCards(player, self.name, cards, "#shelie-choose", false, 0, {5, 4}, {0, #get}, ".", "shelie", {{}, get})[2]
     if #get > 0 then
       room:obtainCard(player, get, true, fk.ReasonPrey)
     end
@@ -389,7 +389,7 @@ local qixing = fk.CreateTriggerSkill{
       player:addToPile("star", room:getNCards(7), false, self.name)
       if player.dead or player:isKongcheng() or #player:getPile("star") == 0 then return false end
     end
-    local cids = U.askForArrangeCards(player, self.name,
+    local cids = room:askForArrangeCards(player, self.name,
     {player:getPile("star"), player:getCardIds(Player.Hand), "star", "$Hand"}, "#qixing-exchange", true)
     U.swapCardsWithPile(player, cids[1], cids[2], self.name, "star")
   end,
