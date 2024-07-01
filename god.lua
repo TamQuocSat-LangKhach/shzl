@@ -141,7 +141,7 @@ local shelie = fk.CreateTriggerSkill{
         table.insert(get, id)
       end
     end
-    get = U.askForArrangeCards(player, self.name, cards, "#shelie-choose", false, 0, {5, 4}, {0, #get}, ".", "shelie", {{}, get})[2]
+    get = room:askForArrangeCards(player, self.name, cards, "#shelie-choose", false, 0, {5, 4}, {0, #get}, ".", "shelie", {{}, get})[2]
     if #get > 0 then
       room:obtainCard(player, get, true, fk.ReasonPrey)
     end
@@ -389,7 +389,7 @@ local qixing = fk.CreateTriggerSkill{
       player:addToPile("star", room:getNCards(7), false, self.name)
       if player.dead or player:isKongcheng() or #player:getPile("star") == 0 then return false end
     end
-    local cids = U.askForArrangeCards(player, self.name,
+    local cids = room:askForArrangeCards(player, self.name,
     {player:getPile("star"), player:getCardIds(Player.Hand), "star", "$Hand"}, "#qixing-exchange", true)
     U.swapCardsWithPile(player, cids[1], cids[2], self.name, "star")
   end,
@@ -2027,7 +2027,9 @@ local meihun = fk.CreateTriggerSkill{
   mute = true,
   events = {fk.EventPhaseStart, fk.TargetConfirmed},
   can_trigger = function(self, event, target, player, data)
-    if not (target == player and player:hasSkill(self)) then return end
+    if not (target == player and player:hasSkill(self) and table.find(player.room:getOtherPlayers(player), function(p)
+      return not p:isNude()
+    end)) then return end
     if event == fk.EventPhaseStart then
       return player.phase == Player.Finish
     elseif event == fk.TargetConfirmed then
@@ -2036,15 +2038,11 @@ local meihun = fk.CreateTriggerSkill{
   end,
   on_cost = function(self, event, target, player, data)
     local room = player.room
-    local targets = {}
-    for _, p in ipairs(room:getOtherPlayers(player)) do
-      if not p:isNude() then
-        table.insert(targets, p.id)
-      end
-    end
+    local targets = table.filter(room:getOtherPlayers(player), function(p)
+      return not p:isNude()
+    end)
     if #targets == 0 then return end
-
-    local p = room:askForChoosePlayers(player, targets, 1, 1,
+    local p = room:askForChoosePlayers(player, table.map(targets, Util.IdMapper), 1, 1,
       "#meihun-choose", self.name, true)
 
     if p[1] then
@@ -2070,7 +2068,7 @@ local meihun = fk.CreateTriggerSkill{
     if c then
       local card = room:askForCard(to, 1, 1, true, self.name, false,
         ".|.|" .. choice, "#meihun-give:" .. player.id .. "::" .. choice)
-      room:obtainCard(player, card[1], false, fk.ReasonGive)
+      room:obtainCard(player, card[1], false, fk.ReasonGive, to.id)
     elseif not to:isKongcheng() then
       local id = room:askForCardChosen(player, to, {card_data = { { "$Hand", to:getCardIds(Player.Hand) } } }, self.name)
       room:throwCard(id, self.name, to, player)
@@ -2115,11 +2113,12 @@ local huoxin = fk.CreateActiveSkill{
   end,
   card_num = 2,
   target_num = 2,
-  target_filter = function(self, to_select, selected)
-    if #selected >= 2 or to_select == Self.id then return false end
+  prompt = "#huoxin-prompt",
+  target_filter = function(self, to_select, selected, cards)
+    if #selected >= 2 or to_select == Self.id or #cards ~= 2 then return false end
     if #selected < 1 then return true end
     local room = Fk:currentRoom()
-    return room:getPlayerById(selected[1]):canPindian(room:getPlayerById(to_select))
+    return room:getPlayerById(selected[1]):canPindian(room:getPlayerById(to_select), true, true)
   end,
   card_filter = function(self, to_select, selected)
     if #selected == 1 then 
@@ -2148,13 +2147,13 @@ local huoxin = fk.CreateActiveSkill{
     table.removeOne(cards, cid)
 
     if p[1] == target1.id then
-      room:obtainCard(target1, cid, true, fk.ReasonGive)
-      room:obtainCard(target2, cards[1], true, fk.ReasonGive)
+      room:obtainCard(target1, cid, true, fk.ReasonGive, from.id, self.name)
+      room:obtainCard(target2, cards[1], true, fk.ReasonGive, from.id, self.name)
     else
-      room:obtainCard(target2, cid, true, fk.ReasonGive)
-      room:obtainCard(target1, cards[1], true, fk.ReasonGive)
+      room:obtainCard(target2, cid, true, fk.ReasonGive, from.id, self.name)
+      room:obtainCard(target1, cards[1], true, fk.ReasonGive, from.id, self.name)
     end
-
+    if not target1:canPindian(target2) then return end
     local pindianData = target1:pindian({ target2 }, self.name)
     local winner = pindianData.results[target2.id].winner
     local fix = math.abs(pindianData.results[target2.id].toCard.number - pindianData.fromCard.number) >= 5 and 1 or 0
@@ -2191,6 +2190,7 @@ Fk:loadTranslationTable{
   ["#huoxin-choose"] = "惑心：请将一张牌交给其中一名角色，另一张牌自动交给另一名",
   ["#huoxin-pindian"] = "惑心：请选择拼点牌，拼点没赢会获得1枚魅惑标记",
   ["#huoxin_trig"] = "惑心",
+  ["#huoxin-prompt"] = "惑心：选择两张花色相同的手牌，交给两名其他角色，令他们拼点",
 
   -- CV: 桃妮儿
   ["~goddiaochan"] = "也许，你们日后的所闻所望，都是我某天的所叹所想…",

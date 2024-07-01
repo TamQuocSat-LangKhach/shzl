@@ -142,7 +142,7 @@ local hongju = fk.CreateTriggerSkill{
   on_use = function(self, event, target, player, data)
     local room = player.room
     if not player:isKongcheng() then
-      local piles = U.askForArrangeCards(player, self.name,
+      local piles = room:askForArrangeCards(player, self.name,
       {player:getPile("guanqiujian__glory"), player:getCardIds(Player.Hand), "guanqiujian__glory", "$Hand"},
       "#hongju-exchange", true)
       U.swapCardsWithPile(player, piles[1], piles[2], self.name, "guanqiujian__glory", true)
@@ -300,7 +300,7 @@ local zuilun = fk.CreateTriggerSkill{
     local room = player.room
     local n = self.cost_data
     local cards = room:getNCards(3)
-    local result = U.askForGuanxing(player, cards, {3 - n, 3}, {n, n}, self.name, nil, true, {"Top", "toObtain"})
+    local result = room:askForGuanxing(player, cards, {3 - n, 3}, {n, n}, self.name, true, {"Top", "toObtain"})
     if #result.top > 0 then
       for i = #result.top, 1, -1 do
         table.insert(room.draw_pile, 1, result.top[i])

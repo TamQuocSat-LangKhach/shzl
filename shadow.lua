@@ -773,7 +773,7 @@ local shicai = fk.CreateTriggerSkill{
     local toPut = data.card:isVirtual() and data.card.subcards or { data.card.id }
 
     if #toPut > 1 then
-      toPut = U.askForGuanxing(player, toPut, { #toPut, #toPut }, { 0, 0 }, self.name, nil, true).top
+      toPut = room:askForGuanxing(player, toPut, { #toPut, #toPut }, { 0, 0 }, self.name, true).top
       toPut = table.reverse(toPut)
     end
 
