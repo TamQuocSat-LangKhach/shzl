@@ -408,6 +408,24 @@ local huaiju = fk.CreateTriggerSkill{
       player.room:addPlayerMark(player, "@orange", 3)
     end
   end,
+
+  refresh_events = {fk.EventLoseSkill, fk.BuryVictim},
+  can_refresh = function(self, event, target, player, data)
+    if table.find(player.room.alive_players, function (p) return p:hasSkill(self, true, true) end) then return false end
+    if event == fk.EventLoseSkill then
+      return data == self
+    else
+      return target:hasSkill(self, true, true)
+    end
+  end,
+  on_refresh = function(self, event, target, player, data)
+    local room = player.room
+    for _, p in ipairs(room.alive_players) do
+      if p:getMark("@orange") > 0 then
+        room:setPlayerMark(p, "@orange", 0)
+      end
+    end
+  end,
 }
 local yili = fk.CreateTriggerSkill{
   name = "yili",
@@ -439,7 +457,10 @@ local yili = fk.CreateTriggerSkill{
     elseif c == 'yili_lose_orange' then
       room:removePlayerMark(player, "@orange")
     end
-    room:addPlayerMark(room:getPlayerById(t), "@orange")
+    local to = room:getPlayerById(t)
+    if not player.dead and not to.dead then
+      room:addPlayerMark(to, "@orange")
+    end
   end,
 }
 local zhenglun = fk.CreateTriggerSkill{
