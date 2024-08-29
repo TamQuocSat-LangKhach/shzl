@@ -69,15 +69,15 @@ local fangzhu = fk.CreateTriggerSkill{
     return target == player and player:hasSkill(self)
   end,
   on_cost = function(self, event, target, player, data)
-    local to = player.room:askForChoosePlayers(player, table.map(player.room:getOtherPlayers(player), function(p)
-      return p.id end), 1, 1, "#fangzhu-choose:::"..player:getLostHp(), self.name, true)
+    local to = player.room:askForChoosePlayers(player, table.map(player.room:getOtherPlayers(player), Util.IdMapper)
+    , 1, 1, "#fangzhu-choose:::"..player:getLostHp(), self.name, true)
     if #to > 0 then
-      self.cost_data = to[1]
+      self.cost_data = {tos = to}
       return true
     end
   end,
   on_use = function(self, event, target, player, data)
-    local to = player.room:getPlayerById(self.cost_data)
+    local to = player.room:getPlayerById(self.cost_data.tos[1])
     to:turnOver()
     if not to.dead and player:getLostHp() > 0 then
       to:drawCards(player:getLostHp(), self.name)
@@ -308,26 +308,27 @@ local yinghun = fk.CreateTriggerSkill{
     return target == player and player:hasSkill(self) and player.phase == Player.Start and player:isWounded()
   end,
   on_cost = function(self, event, target, player, data)
-    local to = player.room:askForChoosePlayers(player, table.map(player.room:getOtherPlayers(player), function (p)
-      return p.id end), 1, 1, "#yinghun-choose:::"..player:getLostHp()..":"..player:getLostHp(), self.name, true)
+    local to = player.room:askForChoosePlayers(player, table.map(player.room:getOtherPlayers(player), Util.IdMapper),
+    1, 1, "#yinghun-choose:::"..player:getLostHp(), self.name, true)
     if #to > 0 then
-      self.cost_data = to[1]
+      self.cost_data = {tos = to}
       return true
     end
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room
-    local to = room:getPlayerById(self.cost_data)
+    local to = room:getPlayerById(self.cost_data.tos[1])
     local n = player:getLostHp()
-    local choice = room:askForChoice(player, {"#yinghun-draw:::" .. n,  "#yinghun-discard:::" .. n}, self.name)
+    local choices = {"#yinghun-draw:::" .. n,  "#yinghun-discard:::" .. n}
+    local choice = (n == 1) and choices[1] or room:askForChoice(player, choices, self.name)
     if choice:startsWith("#yinghun-draw") then
       player:broadcastSkillInvoke(self.name, 1)
-      room:notifySkillInvoked(player, self.name, "support")
+      room:notifySkillInvoked(player, self.name, "support", {to.id})
       to:drawCards(n, self.name)
       room:askForDiscard(to, 1, 1, true, self.name, false)
     else
       player:broadcastSkillInvoke(self.name, 2)
-      room:notifySkillInvoked(player, self.name, "control")
+      room:notifySkillInvoked(player, self.name, "control", {to.id})
       to:drawCards(1, self.name)
       room:askForDiscard(to, n, n, true, self.name, false)
     end
@@ -341,7 +342,7 @@ Fk:loadTranslationTable{
   ["illustrator:sunjian"] = "LiuHeng",
   ["yinghun"] = "英魂",
   [":yinghun"] = "准备阶段，若你已受伤，你可以选择一名其他角色并选择一项：1.令其摸X张牌，然后弃置一张牌；2.令其摸一张牌，然后弃置X张牌（X为你已损失的体力值）。",
-  ["#yinghun-choose"] = "英魂：你可以令一名其他角色：摸%arg张牌然后弃置一张牌，或摸一张牌然后弃置%arg2张牌",
+  ["#yinghun-choose"] = "英魂：你可以令一名其他角色：摸%arg张牌然后弃置一张牌，或摸一张牌然后弃置%arg张牌",
   ["#yinghun-draw"] = "摸%arg张牌，弃置1张牌",
   ["#yinghun-discard"] = "摸1张牌，弃置%arg张牌",
 

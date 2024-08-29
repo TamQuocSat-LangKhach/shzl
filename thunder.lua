@@ -20,15 +20,14 @@ local zhengu = fk.CreateTriggerSkill{
     local to = room:askForChoosePlayers(player, table.map(room:getOtherPlayers(player), Util.IdMapper),
       1, 1, "#zhengu-choose", self.name, true)
     if #to > 0 then
-      self.cost_data = to[1]
+      self.cost_data = {tos = to}
       return true
     end
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room
-    local to = room:getPlayerById(self.cost_data)
-    local mark = to:getMark("@@zhengu")
-    if mark == 0 then mark = {} end
+    local to = room:getPlayerById(self.cost_data.tos[1])
+    local mark = to:getTableMark("@@zhengu")
     table.insertIfNeed(mark, player.id)
     room:setPlayerMark(to, "@@zhengu", mark)
     local x, y, z = player:getHandcardNum(), to:getHandcardNum(), 0
@@ -118,11 +117,11 @@ local zhengrong = fk.CreateTriggerSkill{
     return target == player and player:hasSkill(self) and not data.to.dead and data.to:getHandcardNum() > player:getHandcardNum()
   end,
   on_cost = function(self, event, target, player, data)
+    self.cost_data = {tos = {data.to.id}}
     return player.room:askForSkillInvoke(player, self.name, nil, "#zhengrong-invoke::"..data.to.id)
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room
-    room:doIndicate(player.id, {data.to.id})
     local card = room:askForCardChosen(player, data.to, "he", self.name)
     player:addToPile("guanqiujian__glory", card, false, self.name)
   end,
@@ -833,14 +832,14 @@ local congjian = fk.CreateTriggerSkill{
     table.removeOne(targets, player.id)
     local tos, cardId = room:askForChooseCardAndPlayers(player, targets, 1, 1, nil, "#congjian-give", self.name, true)
     if #tos > 0 then
-      self.cost_data = {tos[1], cardId}
+      self.cost_data = {tos = tos, cards = {cardId}}
       return true
     end
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room
-    local x = Fk:getCardById(self.cost_data[2]).type == Card.TypeEquip and 2 or 1
-    room:obtainCard(self.cost_data[1], self.cost_data[2], true, fk.ReasonGive)
+    local x = Fk:getCardById(self.cost_data.cards[1]).type == Card.TypeEquip and 2 or 1
+    room:obtainCard(self.cost_data.tos[1], self.cost_data.cards, true, fk.ReasonGive, player.id, self.name)
     if not player.dead then
       player:drawCards(x, self.name)
     end
@@ -856,9 +855,9 @@ Fk:loadTranslationTable{
   ["xiongluan"] = "雄乱",
   [":xiongluan"] = "限定技，出牌阶段，你可以废除你的判定区和装备区，然后指定一名其他角色。直到回合结束，你对其使用牌无距离和次数限制，其不能使用和打出手牌。",
   ["congjian"] = "从谏",
-  [":congjian"] = "当你成为锦囊牌的目标时，若此牌的目标数大于1，则你可以交给其中一名其他目标角色一张牌，然后摸一张牌，若你给出的是装备牌，改为摸两张牌。",
+  [":congjian"] = "当你成为锦囊牌的目标后，若此牌的目标数大于1，则你可以交给其中一名其他目标角色一张牌，然后摸一张牌，若你给出的是装备牌，改为摸两张牌。",
   ["@@xiongluan-turn"] = "雄乱",
-  ["#congjian-give"] = "从谏：你可以选择一名为目标的其他角色，交给其一张牌，然后你摸一张牌。若你以此法交出的是装备牌，改为摸两张牌。",
+  ["#congjian-give"] = "从谏：你可将一张牌交给一名其他目标角色，然后摸一张牌。若交出装备牌，改为摸两张",
   ["$xiongluan1"] = "北地枭雄，乱世不败！！",
   ["$xiongluan2"] = "雄据宛城，虽乱世可安！",
   ["$congjian1"] = "听君谏言，去危亡，保宗祀!",

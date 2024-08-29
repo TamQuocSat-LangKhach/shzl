@@ -20,14 +20,14 @@ local qizhi = fk.CreateTriggerSkill{
     if #targets == 0 then return end
     local tos = room:askForChoosePlayers(player, targets, 1, 1, "#qizhi-choose", self.name, true)
     if #tos > 0 then
-      self.cost_data = tos[1]
+      self.cost_data = {tos = tos}
       return true
     end
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room
     room:addPlayerMark(player, "@qizhi-turn", 1)
-    local to = room:getPlayerById(self.cost_data)
+    local to = room:getPlayerById(self.cost_data.tos[1])
     local id = room:askForCardChosen(player, to, "he", self.name)
     room:throwCard({id}, self.name, to, player)
     if not to.dead then
@@ -88,12 +88,12 @@ local jianxiang = fk.CreateTriggerSkill{
     targets = table.map(targets, Util.IdMapper)
     local to = room:askForChoosePlayers(player, targets, 1, 1, "#jianxiang-invoke", self.name)
     if #to > 0 then
-      self.cost_data = to[1]
+      self.cost_data = {tos = to}
       return true
     end
   end,
   on_use = function(self, event, target, player, data)
-    player.room:getPlayerById(self.cost_data):drawCards(1, self.name)
+    player.room:getPlayerById(self.cost_data.tos[1]):drawCards(1, self.name)
   end,
 }
 local shenshi = fk.CreateActiveSkill{
@@ -157,11 +157,10 @@ local shenshiYin = fk.CreateTriggerSkill{
   on_use = function(self, event, target, player, data)
     local room = player.room
     player:broadcastSkillInvoke("shenshi")
-    room:notifySkillInvoked(player, "shenshi", "switch")
     local from = data.from
-    room:doIndicate(player.id, {from.id})
+    room:notifySkillInvoked(player, "shenshi", "switch", {from.id})
     if not from:isKongcheng() then
-      U.viewCards (player, from:getCardIds(Player.Hand), "shenshi")
+      U.viewCards(player, from:getCardIds(Player.Hand), "shenshi", "$ViewCardsFrom:"..from.id)
     end
     if player:isNude() then return end
     local card = room:askForCard(player, 1, 1, true, "shenshi", false, ".", "#shenshi-give::"..data.from.id)
@@ -233,10 +232,22 @@ local juzhan = fk.CreateTriggerSkill{
 
     local isYang = player:getSwitchSkillState(self.name) == fk.SwitchYang
     if event == fk.TargetConfirmed and isYang then
-      return player.id ~= data.from
+      return player.id ~= data.from and not player.room:getPlayerById(data.from).dead
     elseif event == fk.TargetSpecified and not isYang then
       return not player.room:getPlayerById(data.to):isNude()
     end
+  end,
+  on_cost = function (self, event, target, player, data)
+    local room = player.room
+    local prompt
+    if event == fk.TargetConfirmed then
+      self.cost_data = {tos = {data.from}}
+      prompt = "#juzhan-yang:"..data.from
+    else
+      self.cost_data = {tos = {data.to}}
+      prompt = "#juzhan-yin:"..data.to
+    end
+    return player.room:askForSkillInvoke(player, self.name, nil, prompt)
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room
@@ -281,6 +292,8 @@ Fk:loadTranslationTable{
   [":juzhan"] = "转换技，阳：当你成为其他角色使用【杀】的目标后，你可以与其各摸一张牌，然后其本回合不能再对你使用牌。"..
   "阴：当你使用【杀】指定一名角色为目标后，你可以获得其一张牌，然后你本回合不能再对其使用牌。",
   ["@@juzhan-turn"] = "拒战",
+  ["#juzhan-yang"] = "拒战：你可以与 %src 各摸一张牌，其本回合不能再对你使用牌",
+  ["#juzhan-yin"] = "拒战：你可以获得 %src 一张牌，你本回合不能再对其使用牌",
 
   ["~yanyan"] = "宁可断头死，安能屈膝降！",
   ["$juzhan1"] = "砍头便砍头，何为怒耶！",
@@ -439,25 +452,19 @@ local yili = fk.CreateTriggerSkill{
     local targets = table.map(room:getOtherPlayers(player, false), Util.IdMapper)
     local result = room:askForChoosePlayers(player, targets, 1, 1, "#yili-choose", self.name)
     if #result > 0 then
-      local tgt = result[1]
-      if player:getMark("@orange") == 0 then
-        self.cost_data = { tgt, "loseHp" }
-        return true
-      end
-      local choice = room:askForChoice(player, { "loseHp", "yili_lose_orange" }, self.name)
-      self.cost_data = { tgt, choice }
+      local choice = (player:getMark("@orange") == 0) and "loseHp" or room:askForChoice(player, { "loseHp", "yili_lose_orange" }, self.name)
+      self.cost_data = { tos = result, choice = choice }
       return true
     end
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room
-    local t, c = table.unpack(self.cost_data)
-    if c == 'loseHp' then
+    local to = room:getPlayerById(self.cost_data.tos[1])
+    if self.cost_data.choice == 'loseHp' then
       room:loseHp(player, 1, self.name)
-    elseif c == 'yili_lose_orange' then
+    else
       room:removePlayerMark(player, "@orange")
     end
-    local to = room:getPlayerById(t)
     if not player.dead and not to.dead then
       room:addPlayerMark(to, "@orange")
     end
@@ -536,14 +543,6 @@ local kuizhu_active = fk.CreateActiveSkill{
       return n == Self:getMark("kuizhu")
     end
   end,
-  on_use = function(self, room, effect)
-    local player = room:getPlayerById(effect.from)
-    if self.interaction.data == "kuizhu_choice1" then
-      room:setPlayerMark(player, "kuizhu_choice", 1)
-    else
-      room:setPlayerMark(player, "kuizhu_choice", 2)
-    end
-  end,
 }
 Fk:addSkill(kuizhu_active)
 local kuizhu = fk.CreateTriggerSkill{
@@ -575,27 +574,29 @@ local kuizhu = fk.CreateTriggerSkill{
     if n == 0 then return false end
     room:setPlayerMark(player, self.name, n)
     local success, dat = room:askForUseActiveSkill(player, "kuizhu_active", "#kuizhu-use:::"..n, true)
-    local choice = player:getMark("kuizhu_choice")
-    if success then
-      self.cost_data = {dat.targets, choice}
+    if dat then
+      local tos = dat.targets
+      room:sortPlayersByAction(tos)
+      self.cost_data = {tos = tos, choice = dat.interaction}
       return true
     end
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room
     player:broadcastSkillInvoke(self.name)
-    local tos = table.map(self.cost_data[1], Util.Id2PlayerMapper)
-    local choice = self.cost_data[2]
-    if choice == 1 then
-      room:notifySkillInvoked(player, self.name, "support")
-      for _, p in ipairs(tos) do
+    local tos = self.cost_data.tos
+    local targets = table.map(tos, Util.Id2PlayerMapper)
+    local choice = self.cost_data.choice
+    if choice:endsWith("1") then
+      room:notifySkillInvoked(player, self.name, "support", tos)
+      for _, p in ipairs(targets) do
         if not p.dead then
           p:drawCards(1, self.name)
         end
       end
     else
-      room:notifySkillInvoked(player, self.name, "offensive")
-      for _, p in ipairs(tos) do
+      room:notifySkillInvoked(player, self.name, "offensive", tos)
+      for _, p in ipairs(targets) do
         if not p.dead then
           room:damage { from = player, to = p, damage = 1, skillName = self.name }
         end
