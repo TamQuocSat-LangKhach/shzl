@@ -100,6 +100,7 @@ return {
   ["pangde"] = "Pang De",
   ["mengjin"] = "Fearsome Advance",
   [":mengjin"] = "After you Slash is offseted by target's Dodge, you can discard him 1 card.",
+  ["#mengjin-invoke"] = "Fearsome Advance: you can discard %src 1 card",
 
   ["yanliangwenchou"] = "Yan L. & Wen C.",
   ["shuangxiong"] = "Dual Heroes",
@@ -141,6 +142,7 @@ return {
   [":juxiang"] = "(forced) Savage Assault has no effect on you; after Savage Assault used by another player have finished all effects, you get that card.",
   ["lieren"] = "Fearsome Blade",
   [":lieren"] = "After you deal DMG with Slash, you can point fight to the target, if you win, you take 1 card from the target.",
+  ["#lieren-invoke"] = "you can point fight to %src, take 1 card from he if you win",
 
   ["sunjian"] = "Sun Jian",
   ["yinghun"] = "Soul of Hero",

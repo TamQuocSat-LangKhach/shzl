@@ -164,10 +164,8 @@ local shenshiYin = fk.CreateTriggerSkill{
     end
     if player:isNude() then return end
     local card = room:askForCard(player, 1, 1, true, "shenshi", false, ".", "#shenshi-give::"..data.from.id)
-    room:obtainCard(from.id, card[1], false, fk.ReasonGive)
-    local mark = U.getMark(player, "shenshi-turn")
-    table.insert(mark, {from.id, card[1]})
-    room:setPlayerMark(player, "shenshi-turn", mark)
+    room:addTableMark(player, "shenshi-turn", {from.id, card[1]})
+    room:obtainCard(from.id, card[1], false, fk.ReasonGive, player.id, "shenshi")
   end,
 }
 local shenshi_trigger = fk.CreateTriggerSkill{
@@ -339,7 +337,7 @@ local feijun = fk.CreateActiveSkill{
     local choice = room:askForChoice(player, choices, self.name, "#feijun-choice::"..to.id)
     if choice == "feijun1" then
       local card = room:askForCard(to, 1, 1, true, self.name, false, ".", "#feijun-give:"..player.id)
-      room:obtainCard(player, card[1], false, fk.ReasonGive)
+      room:obtainCard(player, card[1], false, fk.ReasonGive, to.id, self.name)
     else
       room:askForDiscard(to, 1, 1, true, self.name, false, ".|.|.|equip", "#feijun-discard")
     end
@@ -354,7 +352,7 @@ local binglue = fk.CreateTriggerSkill{
     if player:hasSkill(self) then
       local e = player.room.logic:getCurrentEvent():findParent(GameEvent.SkillEffect)
       if e and e.data[2] == player and e.data[3] == feijun then
-        local mark = U.getMark(player, "binglue")
+        local mark = player:getTableMark("binglue")
         for _, move in ipairs(data) do
           if move.from ~= player.id and not table.contains(mark, move.from) then
             self.cost_data = move.from
@@ -366,9 +364,7 @@ local binglue = fk.CreateTriggerSkill{
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room
-    local mark = U.getMark(player, "binglue")
-    table.insert(mark, self.cost_data)
-    room:setPlayerMark(player, "binglue", mark)
+    room:addTableMark(player, "binglue", self.cost_data)
     player:drawCards(2, self.name)
   end,
 }

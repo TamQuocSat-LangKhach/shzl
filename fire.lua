@@ -202,7 +202,7 @@ local huoji = fk.CreateViewAsSkill{
   pattern = "fire_attack",
   prompt = "#huoji",
   card_filter = function(self, to_select, selected)
-    return #selected == 0 and Fk:getCardById(to_select).color == Card.Red and Fk:currentRoom():getCardArea(to_select) ~= Player.Equip
+    return #selected == 0 and Fk:getCardById(to_select).color == Card.Red and table.contains(Self:getHandlyIds(true), to_select)
   end,
   view_as = function(self, cards)
     if #cards ~= 1 then return end
@@ -218,7 +218,7 @@ local kanpo = fk.CreateViewAsSkill{
   pattern = "nullification",
   prompt = "#kanpo",
   card_filter = function(self, to_select, selected)
-    return #selected == 0 and Fk:getCardById(to_select).color == Card.Black and Fk:currentRoom():getCardArea(to_select) ~= Player.Equip
+    return #selected == 0 and Fk:getCardById(to_select).color == Card.Black and table.contains(Self:getHandlyIds(true), to_select)
   end,
   view_as = function(self, cards)
     if #cards ~= 1 then return end
@@ -268,7 +268,7 @@ local lianhuan = fk.CreateActiveSkill{
     return not player:isKongcheng()
   end,
   card_filter = function(self, to_select, selected, selected_targets)
-    return #selected == 0 and Fk:getCardById(to_select).suit == Card.Club and Fk:currentRoom():getCardArea(to_select) ~= Player.Equip
+    return #selected == 0 and Fk:getCardById(to_select).suit == Card.Club and table.contains(Self:getHandlyIds(true), to_select)
   end,
   target_filter = function(self, to_select, selected, selected_cards)
     if #selected_cards == 1 then
@@ -406,6 +406,10 @@ local mengjin = fk.CreateTriggerSkill{
     return target == player and player:hasSkill(self) and data.card.trueName == "slash" and
       not player.room:getPlayerById(data.to):isNude()
   end,
+  on_cost = function (self, event, target, player, data)
+    self.cost_data = {tos = {data.to}}
+    return player.room:askForSkillInvoke(player, self.name, nil, "#mengjin-invoke:"..data.to)
+  end,
   on_use = function(self, event, target, player, data)
     local room = player.room
     local to = room:getPlayerById(data.to)
@@ -421,6 +425,7 @@ Fk:loadTranslationTable{
   ["illustrator:pangde"] = "LiuHeng",
   ["mengjin"] = "猛进",
   [":mengjin"] = "每当你使用的【杀】被目标角色使用的【闪】抵消时，你可以弃置其一张牌。",
+  ["#mengjin-invoke"] = "猛进：你可以弃置 %src 一张牌 ",
 
   ["$mengjin1"] = "我要杀你们个片甲不留！",
   ["$mengjin2"] = "你，可敢挡我？",
@@ -431,6 +436,18 @@ local shuangxiong = fk.CreateViewAsSkill{
   name = "shuangxiong",
   anim_type = "offensive",
   pattern = "duel",
+  prompt = function()
+    local mark = Self:getMark("@shuangxiong-turn")
+    local color = ""
+    if #mark == 1 then
+      if mark[1] == "red" then
+        color = "black"
+      else
+        color = "red"
+      end
+    end
+    return "#shuangxiong:::"..color
+  end,
   card_filter = function(self, to_select, selected)
     if #selected == 1 then return false end
     local color = Fk:getCardById(to_select):getColorString()
@@ -441,7 +458,7 @@ local shuangxiong = fk.CreateViewAsSkill{
     else
       return false
     end
-    return Fk:currentRoom():getCardArea(to_select) == Player.Hand and table.contains(Self:getMark("@shuangxiong-turn"), color)
+    return table.contains(Self:getHandlyIds(true), to_select) and table.contains(Self:getMark("@shuangxiong-turn"), color)
   end,
   view_as = function(self, cards)
     if #cards ~= 1 then
@@ -455,8 +472,8 @@ local shuangxiong = fk.CreateViewAsSkill{
   enabled_at_play = function(self, player)
     return type(player:getMark("@shuangxiong-turn")) == "table"
   end,
-  enabled_at_response = function(self, player)
-    return type(player:getMark("@shuangxiong-turn")) == "table"
+  enabled_at_response = function(self, player, resp)
+    return type(player:getMark("@shuangxiong-turn")) == "table" and not resp
   end,
 }
 local shuangxiongJudge = fk.CreateTriggerSkill{
@@ -479,7 +496,8 @@ local shuangxiongJudge = fk.CreateTriggerSkill{
     player:revealBySkillName("shuangxiong") -- 先这样
     room:judge(judge)
     local color = judge.card:getColorString()
-    local colorsRecorded = U.getMark(player, "@shuangxiong-turn")
+    if color == "nocolor" then return end
+    local colorsRecorded = player:getTableMark("@shuangxiong-turn")
     table.insertIfNeed(colorsRecorded, color)
     room:setPlayerMark(player, "@shuangxiong-turn", colorsRecorded)
     return true
@@ -495,7 +513,7 @@ local shuangxiongGet = fk.CreateTriggerSkill{
   end,
   on_cost = Util.TrueFunc,
   on_use = function(self, event, target, player, data)
-    player.room:obtainCard(player.id, data.card)
+    player.room:obtainCard(player.id, data.card, true, fk.ReasonJustMove, player.id, "shuangxiong")
   end,
 }
 shuangxiong:addRelatedSkill(shuangxiongJudge)
@@ -512,6 +530,7 @@ Fk:loadTranslationTable{
   ["@shuangxiong-turn"] = "双雄",
   ["#shuangxiongJudge"] = "双雄",
   ["#shuangxiong_get"] = "双雄",
+  ["#shuangxiong"] = "双雄：你可以将一张%arg手牌当【决斗】使用",
 
   ["$shuangxiong1"] = "吾乃河北上将颜良文丑是也！",
   ["$shuangxiong2"] = "快来与我等决一死战！",

@@ -270,6 +270,11 @@ local lieren = fk.CreateTriggerSkill{
   can_trigger = function(self, event, target, player, data)
     return target == player and player:hasSkill(self) and data.card and data.card.trueName == "slash" and
       not data.to.dead and player:canPindian(data.to) and not data.chain
+      and player.room.logic:damageByCardEffect()
+  end,
+  on_cost = function (self, event, target, player, data)
+    self.cost_data = {tos = {data.to.id}}
+    return player.room:askForSkillInvoke(player, self.name, nil, "#lieren-invoke:"..data.to.id)
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room
@@ -291,6 +296,7 @@ Fk:loadTranslationTable{
   [":juxiang"] = "锁定技，【南蛮入侵】对你无效；其他角色使用的【南蛮入侵】结算结束后，你获得之。",
   ["lieren"] = "烈刃",
   [":lieren"] = "当你使用【杀】对一个目标造成伤害后，你可以与其拼点，若你赢，你获得其一张牌。",
+  ["#lieren-invoke"] = "烈刃：你可以与 %src 拼点，若你赢，你获得其一张牌。",
 
   ["$juxiang1"] = "大王，看我的。",
   ["$juxiang2"] = "小小把戏~",

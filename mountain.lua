@@ -546,12 +546,12 @@ local zhijian = fk.CreateActiveSkill{
   end,
   target_filter = function(self, to_select, selected, selected_cards)
     return #selected == 0 and #selected_cards == 1 and to_select ~= Self.id and
-    U.canMoveCardIntoEquip(Fk:currentRoom():getPlayerById(to_select), selected_cards[1], false)
+    Fk:currentRoom():getPlayerById(to_select):canMoveCardIntoEquip(selected_cards[1], false)
   end,
   on_use = function(self, room, effect)
     local player = room:getPlayerById(effect.from)
     local target = room:getPlayerById(effect.tos[1])
-    U.moveCardIntoEquip(room, target, effect.cards[1], self.name, true, player)
+    room:moveCardIntoEquip(target, effect.cards[1], self.name, true, player)
     if not player.dead then
       room:drawCards(player, 1, self.name)
     end

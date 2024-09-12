@@ -480,7 +480,7 @@ local kongsheng = fk.CreateTriggerSkill{
         if player.dead then break end
         local ids = table.filter(player:getPile("zhoufei_harp"), function(id)
           local card = Fk:getCardById(id)
-          return card.type == Card.TypeEquip and U.canUseCardTo(room, player, player, card, false, false)
+          return card.type == Card.TypeEquip and player:canUseTo(card, player)
         end)
         if #ids == 0 then break end
         local id = room:askForCard(player, 1, 1, false, self.name, true, -- FIXME：默认返回值bug
@@ -679,10 +679,11 @@ local thunder__yongsi = fk.CreateTriggerSkill{
       else
         if player.phase == Player.Play then
           local n = 0
-          for _, e in ipairs(U.getActualDamageEvents(player.room, 999, function(e) return e.data[1].from == player end)) do
+          for _, e in ipairs(player.room.logic:getActualDamageEvents(999, function(e) return e.data[1].from == player end)) do
             local damage = e.data[1]
             n = n + damage.damage
           end
+          self.cost_data = n
           return (n == 0 and player:getHandcardNum() < player.hp) or n > 1
         end
       end
@@ -697,11 +698,7 @@ local thunder__yongsi = fk.CreateTriggerSkill{
       end
       data.n = #kingdoms
     else
-      local n = 0
-      for _, e in ipairs(U.getActualDamageEvents(room, 999, function(e) return e.data[1].from == player end)) do
-        local damage = e.data[1]
-        n = n + damage.damage
-      end
+      local n = self.cost_data
       if n == 0 and player:getHandcardNum() < player.hp then
         player:drawCards(player.hp - player:getHandcardNum(), self.name)
       elseif n > 1 then
@@ -727,13 +724,14 @@ local thunder__weidi = fk.CreateTriggerSkill{
   can_trigger = function(self, event, target, player, data)
     return target == player and player:hasSkill(self) and player.phase == Player.Discard
     and player:getHandcardNum() > player:getMaxCards()
+    and table.find(player.room:getOtherPlayers(player), function(p) return p.kingdom == "qun" end)
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room
     local targets = table.filter(player.room:getOtherPlayers(player), function(p) return p.kingdom == "qun" end)
     if #targets > 0 then
       local n = player:getHandcardNum() - player:getMaxCards()
-      U.askForDistribution(player, player:getCardIds("h"), targets, self.name, 0, n, "#thunder__weidi-give:::"..n, nil, false, 1)
+      room:askForYiji(player, player:getCardIds("h"), targets, self.name, 0, n, "#thunder__weidi-give:::"..n, nil, false, 1)
     end
   end,
 }

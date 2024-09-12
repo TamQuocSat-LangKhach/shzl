@@ -404,7 +404,8 @@ local kuangfeng = fk.CreateTriggerSkill{
     if event == fk.EventPhaseStart then
       return target == player and player.phase == Player.Finish and #player:getPile("star") > 0
     else
-      return target:getMark("@@kuangfeng") > 0 and data.damageType == fk.FireDamage and player:getMark("_kuangfeng") ~= 0
+      return target:getMark("@@kuangfeng") > 0 and data.damageType == fk.FireDamage
+      and player:getMark("_kuangfeng") == target.id
     end
   end,
   on_cost = function(self, event, target, player, data)
@@ -412,20 +413,21 @@ local kuangfeng = fk.CreateTriggerSkill{
       local room = player.room
       local cids = room:askForCard(player, 1, 1, false, self.name, true, ".|.|.|star", "#kuangfeng-card", "star")
       if #cids > 0 then
-        local targets = room:askForChoosePlayers(player, table.map(room.alive_players, Util.IdMapper), 1, 1, "#kuangfeng-target", self.name, false)
-        self.cost_data = {targets[1], cids}
+        local targets = room:askForChoosePlayers(player, table.map(room.alive_players, Util.IdMapper), 1, 1, "#kuangfeng-target", self.name, false, true)
+        self.cost_data = {tos = targets, cards = cids}
         return true
       end
     else
+      self.cost_data = nil
       return true
     end
   end,
   on_use = function(self, event, target, player, data)
     if event == fk.EventPhaseStart then
       local room = player.room
-      room:moveCardTo(self.cost_data[2], Card.DiscardPile, nil, fk.ReasonPutIntoDiscardPile, self.name, "star")
-      room:addPlayerMark(room:getPlayerById(self.cost_data[1]), "@@kuangfeng")
-      room:setPlayerMark(player, "_kuangfeng", self.cost_data[1])
+      room:moveCardTo(self.cost_data.cards, Card.DiscardPile, nil, fk.ReasonPutIntoDiscardPile, self.name, "star")
+      room:addPlayerMark(room:getPlayerById(self.cost_data.tos[1]), "@@kuangfeng")
+      room:setPlayerMark(player, "_kuangfeng", self.cost_data.tos[1])
     else
       data.damage = data.damage + 1
     end
@@ -451,7 +453,8 @@ local dawu = fk.CreateTriggerSkill{
     if event == fk.EventPhaseStart then
       return target == player and player.phase == Player.Finish and #player:getPile("star") > 0
     else
-      return target:getMark("@@dawu") > 0 and data.damageType ~= fk.ThunderDamage and player:getMark("_dawu") ~= 0
+      return target:getMark("@@dawu") > 0 and data.damageType ~= fk.ThunderDamage
+      and table.contains(player:getTableMark("_dawu"), target.id)
     end
   end,
   on_cost = function(self, event, target, player, data)
@@ -459,22 +462,23 @@ local dawu = fk.CreateTriggerSkill{
       local room = player.room
       local cids = room:askForCard(player, 1, #room.alive_players, false, self.name, true, ".|.|.|star", "#dawu-card", "star")
       if #cids > 0 then
-        local targets = room:askForChoosePlayers(player, table.map(room.alive_players, Util.IdMapper), #cids, #cids, "#dawu-target:::" .. #cids, self.name, false)
-        self.cost_data = {targets, cids}
+        local targets = room:askForChoosePlayers(player, table.map(room.alive_players, Util.IdMapper), #cids, #cids, "#dawu-target:::" .. #cids, self.name, false, true)
+        self.cost_data = {tos = targets, cards = cids}
         return true
       end
     else
+      self.cost_data = nil
       return true
     end
   end,
   on_use = function(self, event, target, player, data)
     if event == fk.EventPhaseStart then
       local room = player.room
-      room:moveCardTo(self.cost_data[2], Card.DiscardPile, nil, fk.ReasonPutIntoDiscardPile, self.name, "star")
-      table.forEach(self.cost_data[1], function(pid) 
+      room:moveCardTo(self.cost_data.cards, Card.DiscardPile, nil, fk.ReasonPutIntoDiscardPile, self.name, "star")
+      table.forEach(self.cost_data.tos, function(pid)
         room:addPlayerMark(room:getPlayerById(pid), "@@dawu")
       end)
-      room:setPlayerMark(player, "_dawu", self.cost_data[1])
+      room:setPlayerMark(player, "_dawu", self.cost_data.tos)
     else
       return true
     end
