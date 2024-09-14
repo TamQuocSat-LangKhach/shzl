@@ -360,13 +360,11 @@ local buqu = fk.CreateTriggerSkill{
             moveReason = fk.ReasonPutIntoDiscardPile,
             skillName = self.name,
           })
-          player:removeCards(Player.Special, buqu_card, self.name)
         end
       else
         while #player:getPile("zhoutai_chuang") > 0 and #player:getPile("zhoutai_chuang") + player.hp > 1 do
           local buqu_chuang = player:getPile("zhoutai_chuang")
-          room:fillAG(player, buqu_chuang)
-          local id = room:askForAG(player, buqu_chuang, false, self.name)
+          local id = room:askForCardChosen(player, player, { card_data = { { "zhoutai_chuang", buqu_chuang } } }, self.name, "$ChooseCard")
           local buqu_card = Fk:getCardById(id)
           room:sendLog{
             type = "#buqu_remove",
@@ -380,8 +378,6 @@ local buqu = fk.CreateTriggerSkill{
             moveReason = fk.ReasonPutIntoDiscardPile,
             skillName = self.name,
           })
-          player:removeCards(Player.Special, buqu_card, self.name)
-          room:closeAG(player)
         end
       end
     end
