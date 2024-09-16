@@ -1,10 +1,11 @@
-local extension = Package:new("god")
+local extension = Package:new("shzl_god")
 extension.extensionName = "shzl"
 
 local U = require "packages/utility/utility"
 
 Fk:loadTranslationTable{
-  ["god"] = "神话再临·神",
+  ["god"] = "神",
+  ["shzl_god"] = "神话再临·神",
   ["nos"] = "旧",
   --["gundam"] = "高达",
 }
