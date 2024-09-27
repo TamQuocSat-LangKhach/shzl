@@ -1243,6 +1243,14 @@ local jilue = fk.CreateActiveSkill{
     return player:getMark("@godsimayi_bear") > 0 and
       (player:usedSkillTimes("ex__zhiheng", Player.HistoryPhase) == 0 or not player:hasSkill("ol_ex__wansha", true))
   end,
+  card_filter = function(self, to_select)
+    if self.interaction.data == "ex__zhiheng" then
+      return not Self:prohibitDiscard(to_select)
+    end
+    if self.interaction.data == "ol_ex__wansha" then
+      return false
+    end
+  end,
   on_use = function(self, room, effect)
     local player = room:getPlayerById(effect.from)
     room:removePlayerMark(player, "@godsimayi_bear", 1)
