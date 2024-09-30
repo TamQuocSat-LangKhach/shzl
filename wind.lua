@@ -242,17 +242,18 @@ local tianxiang = fk.CreateTriggerSkill{
   anim_type = "defensive",
   events = {fk.DamageInflicted},
   on_cost = function(self, event, target, player, data)
-    local tar, card = player.room:askForChooseCardAndPlayers(player, table.map(player.room:getOtherPlayers(player), function (p)
-      return p.id end), 1, 1, ".|.|heart|hand", "#tianxiang-choose", self.name, true)
+    local ids = table.filter(player:getCardIds("h"), function(id) return not player:prohibitDiscard(Fk:getCardById(id)) end)
+    local tar, card = player.room:askForChooseCardAndPlayers(player, table.map(player.room:getOtherPlayers(player), Util.IdMapper)
+    , 1, 1, ".|.|heart|hand|.|.|"..table.concat(ids, ","), "#tianxiang-choose", self.name, true)
     if #tar > 0 and card then
-      self.cost_data = {tar[1], card}
+      self.cost_data = {tos = tar, cards = {card}}
       return true
     end
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room
-    local to = room:getPlayerById(self.cost_data[1])
-    room:throwCard(self.cost_data[2], self.name, player, player)
+    local to = room:getPlayerById(self.cost_data.tos[1])
+    room:throwCard(self.cost_data.cards, self.name, player, player)
     room:damage{
       from = data.from,
       to = to,
