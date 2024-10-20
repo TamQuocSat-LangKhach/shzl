@@ -731,7 +731,7 @@ local chenglue = fk.CreateActiveSkill{
     room:throwCard(toDiscard, self.name, from, from)
     if from.dead then return end
 
-    local suitsRecorded = U.getMark(from, "@[suits]chenglue-phase")
+    local suitsRecorded = from:getTableMark("@[suits]chenglue-phase")
     table.insertTableIfNeed(suitsRecorded, suitsToRecord)
     room:setPlayerMark(from, "@[suits]chenglue-phase", suitsRecorded)
   end,
@@ -741,19 +741,20 @@ local chenglue_refresh = fk.CreateTriggerSkill{
 
   refresh_events = {fk.PreCardUse},
   can_refresh = function(self, event, target, player, data)
-    return player == target and table.contains(U.getMark(player, "@[suits]chenglue-phase"), data.card.suit)
+    return player == target and table.contains(player:getTableMark("@[suits]chenglue-phase"), data.card.suit)
   end,
   on_refresh = function(self, event, target, player, data)
     data.extraUse = true
   end,
 }
+---FIXEME: 检测牌花色的bypass_times无法正常生效
 local chenglue_targetmod = fk.CreateTargetModSkill{
   name = "#chenglue_targetmod",
-  bypass_times = function(self, player, skill, scope, card, to)
-    return card and table.contains(U.getMark(player, "@[suits]chenglue-phase"), card.suit)
+  bypass_times = function(self, player, skill, scope, card)
+    return card and table.contains(player:getTableMark("@[suits]chenglue-phase"), card.suit)
   end,
-  bypass_distances = function(self, player, skill, card, to)
-    return card and table.contains(U.getMark(player, "@[suits]chenglue-phase"), card.suit)
+  bypass_distances = function(self, player, skill, card)
+    return card and table.contains(player:getTableMark("@[suits]chenglue-phase"), card.suit)
   end,
 }
 local shicai = fk.CreateTriggerSkill{
@@ -804,7 +805,7 @@ local shicai = fk.CreateTriggerSkill{
     return player == target and player:hasSkill(self, true)
   end,
   on_refresh = function(self, event, target, player, data)
-    local typesRecorded = U.getMark(player, "@[cardtypes]shicai-turn")
+    local typesRecorded = player:getTableMark("@[cardtypes]shicai-turn")
     table.insertIfNeed(typesRecorded, data.card.type)
     player.room:setPlayerMark(player, "@[cardtypes]shicai-turn", typesRecorded)
   end,
