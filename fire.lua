@@ -541,6 +541,7 @@ local luanji = fk.CreateViewAsSkill{
   name = "luanji",
   anim_type = "offensive",
   pattern = "archery_attack",
+  prompt = "#luanji",
   card_filter = function(self, to_select, selected)
     if #selected == 1 then
       return table.contains(Self:getHandlyIds(true), to_select) and Fk:getCardById(to_select).suit == Fk:getCardById(selected[1]).suit
@@ -553,8 +554,8 @@ local luanji = fk.CreateViewAsSkill{
     if #cards ~= 2 then
       return nil
     end
-
     local c = Fk:cloneCard("archery_attack")
+    c.skillName = self.name
     c:addSubcards(cards)
     return c
   end,
@@ -585,6 +586,7 @@ Fk:loadTranslationTable{
   ["illustrator:yuanshao"] = "SoniaTang",
   ["luanji"] = "乱击",
   [":luanji"] = "出牌阶段，你可以将任意两张相同花色的手牌当【万箭齐发】使用。",
+  ["#luanji"] = "乱击:你可以将两张相同花色的手牌当【万箭齐发】使用",
   ["xueyi"] = "血裔",
   [":xueyi"] = "主公技，锁定技，你的手牌上限+2X(X为场上其他群势力角色数)。",
 

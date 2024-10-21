@@ -111,6 +111,7 @@ return {
   ["yuanshao"] = "Yuan Shao",
   ["luanji"] = "Chaos Archery",
   [":luanji"] = "You can use 2 hand cards with the same suit as Archery Attack.",
+  ["#luanji"] = "Chaos Archery: You can use 2 hand cards with the same suit as Archery Attack.",
   ["xueyi"] = "Bloodline",
   [":xueyi"] = "(lord, forced) Your max card is increased by +2*X (X=the amount of other Neutral characters in the game)",
 
