@@ -111,7 +111,7 @@ local guanqiujian = General(extension, "guanqiujian", "wei", 4)
 local zhengrong = fk.CreateTriggerSkill{
   name = "zhengrong",
   anim_type = "control",
-  derived_piles = "guanqiujian__glory",
+  derived_piles = "$guanqiujian__glory",
   events = {fk.Damage},
   can_trigger = function(self, event, target, player, data)
     return target == player and player:hasSkill(self) and not data.to.dead and data.to:getHandcardNum() > player:getHandcardNum()
@@ -123,7 +123,7 @@ local zhengrong = fk.CreateTriggerSkill{
   on_use = function(self, event, target, player, data)
     local room = player.room
     local card = room:askForCardChosen(player, data.to, "he", self.name)
-    player:addToPile("guanqiujian__glory", card, false, self.name)
+    player:addToPile("$guanqiujian__glory", card, false, self.name)
   end,
 }
 local hongju = fk.CreateTriggerSkill{
@@ -136,15 +136,15 @@ local hongju = fk.CreateTriggerSkill{
       player:usedSkillTimes(self.name, Player.HistoryGame) == 0
   end,
   can_wake = function(self, event, target, player, data)
-    return #player:getPile("guanqiujian__glory") > 2 and table.find(player.room.players, function(p) return p.dead end)
+    return #player:getPile("$guanqiujian__glory") > 2 and table.find(player.room.players, function(p) return p.dead end)
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room
     if not player:isKongcheng() then
       local piles = room:askForArrangeCards(player, self.name,
-      {player:getPile("guanqiujian__glory"), player:getCardIds(Player.Hand), "guanqiujian__glory", "$Hand"},
+      {player:getPile("$guanqiujian__glory"), player:getCardIds(Player.Hand), "$guanqiujian__glory", "$Hand"},
       "#hongju-exchange", true)
-      U.swapCardsWithPile(player, piles[1], piles[2], self.name, "guanqiujian__glory", true)
+      U.swapCardsWithPile(player, piles[1], piles[2], self.name, "$guanqiujian__glory", true)
     end
     room:changeMaxHp(player, -1)
     room:handleAddLoseSkills(player, "qingce", nil, true, false)
@@ -156,17 +156,17 @@ local qingce = fk.CreateActiveSkill{
   target_num = 1,
   card_num = 1,
   prompt = "#qingce",
-  expand_pile = "guanqiujian__glory",
+  expand_pile = "$guanqiujian__glory",
   target_filter = function(self, to_select, selected)
     return #Fk:currentRoom():getPlayerById(to_select):getCardIds("ej") > 0
   end,
   card_filter = function(self, to_select, selected)
-    return #selected == 0 and Self:getPileNameOfId(to_select) == "guanqiujian__glory"
+    return #selected == 0 and Self:getPileNameOfId(to_select) == "$guanqiujian__glory"
   end,
   on_use = function(self, room, effect)
     local player = room:getPlayerById(effect.from)
     local target = room:getPlayerById(effect.tos[1])
-    room:moveCardTo(effect.cards, Card.DiscardPile, player, fk.ReasonPutIntoDiscardPile, self.name, "guanqiujian__glory")
+    room:moveCardTo(effect.cards, Card.DiscardPile, player, fk.ReasonPutIntoDiscardPile, self.name, "$guanqiujian__glory")
     if #target:getCardIds("ej") > 0 then
       local card = room:askForCardChosen(player, target, "ej", self.name)
       room:throwCard({card}, self.name, target, player)
@@ -186,7 +186,7 @@ Fk:loadTranslationTable{
   [":hongju"] = "觉醒技，准备阶段，若“荣”的数量不小于3且场上有角色死亡，你可以用任意张手牌替换等量的“荣”，减1点体力上限，获得〖清侧〗。",
   ["qingce"] = "清侧",
   [":qingce"] = "出牌阶段，你可以移去一张“荣”，然后弃置场上的一张牌。",
-  ["guanqiujian__glory"] = "荣",
+  ["$guanqiujian__glory"] = "荣",
   ["#zhengrong-invoke"] = "征荣：是否将 %dest 一张牌置为“荣”？",
   ["#hongju-exchange"] = "鸿举：你可以用手牌交换“荣”",
   ["#qingce"] = "清侧：你可以移去一张“荣”，弃置场上的一张牌",
@@ -268,14 +268,12 @@ local zuilun = fk.CreateTriggerSkill{
   on_cost = function(self, event, target, player, data)
     local room = player.room
     local n = 0
-    local events = room.logic:getEventsOfScope(GameEvent.ChangeHp, 1, function(e)
-      local damage = e.data[5]
-      return damage and player == damage.from
-    end, Player.HistoryTurn)
-    if #events > 0 then
+    if #room.logic:getActualDamageEvents(1, function (e)
+      return e.data[1].from == player
+    end, Player.HistoryTurn) > 0 then
       n = n + 1
     end
-    events = room.logic:getEventsOfScope(GameEvent.MoveCards, 1, function(e)
+    local events = room.logic:getEventsOfScope(GameEvent.MoveCards, 1, function(e)
       for _, move in ipairs(e.data) do
         if move.from == player.id and move.moveReason == fk.ReasonDiscard and table.find(move.moveInfo, function (info)
           return info.fromArea == Card.PlayerHand or info.fromArea == Card.PlayerEquip

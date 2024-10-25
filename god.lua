@@ -374,11 +374,11 @@ local qixing = fk.CreateTriggerSkill{
   name = "qixing",
   events = {fk.GameStart, fk.AfterDrawNCards},
   anim_type = "drawcard",
-  derived_piles = "star",
+  derived_piles = "$star",
   can_trigger = function(self, event, target, player, data)
     if not player:hasSkill(self) then return false end
     return event == fk.GameStart or
-    (target == player and not player:isKongcheng() and #player:getPile("star") > 0)
+    (target == player and not player:isKongcheng() and #player:getPile("$star") > 0)
   end,
   on_cost = function(self, event, target, player, data)
     if event == fk.GameStart then return true
@@ -387,23 +387,23 @@ local qixing = fk.CreateTriggerSkill{
   on_use = function(self, event, target, player, data)
     local room = player.room
     if event == fk.GameStart then
-      player:addToPile("star", room:getNCards(7), false, self.name)
-      if player.dead or player:isKongcheng() or #player:getPile("star") == 0 then return false end
+      player:addToPile("$star", room:getNCards(7), false, self.name)
+      if player.dead or player:isKongcheng() or #player:getPile("$star") == 0 then return false end
     end
     local cids = room:askForArrangeCards(player, self.name,
-    {player:getPile("star"), player:getCardIds(Player.Hand), "star", "$Hand"}, "#qixing-exchange", true)
-    U.swapCardsWithPile(player, cids[1], cids[2], self.name, "star")
+    {player:getPile("$star"), player:getCardIds(Player.Hand), "$star", "$Hand"}, "#qixing-exchange", true)
+    U.swapCardsWithPile(player, cids[1], cids[2], self.name, "$star")
   end,
 }
 local kuangfeng = fk.CreateTriggerSkill{
   name = "kuangfeng",
   events = {fk.EventPhaseStart, fk.DamageInflicted},
   anim_type = "offensive",
-  expand_pile = "star",
+  expand_pile = "$star",
   can_trigger = function(self, event, target, player, data)
     if not player:hasSkill(self) then return false end
     if event == fk.EventPhaseStart then
-      return target == player and player.phase == Player.Finish and #player:getPile("star") > 0
+      return target == player and player.phase == Player.Finish and #player:getPile("$star") > 0
     else
       return target:getMark("@@kuangfeng") > 0 and data.damageType == fk.FireDamage
       and player:getMark("_kuangfeng") == target.id
@@ -412,7 +412,7 @@ local kuangfeng = fk.CreateTriggerSkill{
   on_cost = function(self, event, target, player, data)
     if event == fk.EventPhaseStart then
       local room = player.room
-      local cids = room:askForCard(player, 1, 1, false, self.name, true, ".|.|.|star", "#kuangfeng-card", "star")
+      local cids = room:askForCard(player, 1, 1, false, self.name, true, ".|.|.|star", "#kuangfeng-card", "$star")
       if #cids > 0 then
         local targets = room:askForChoosePlayers(player, table.map(room.alive_players, Util.IdMapper), 1, 1, "#kuangfeng-target", self.name, false, true)
         self.cost_data = {tos = targets, cards = cids}
@@ -426,7 +426,7 @@ local kuangfeng = fk.CreateTriggerSkill{
   on_use = function(self, event, target, player, data)
     if event == fk.EventPhaseStart then
       local room = player.room
-      room:moveCardTo(self.cost_data.cards, Card.DiscardPile, nil, fk.ReasonPutIntoDiscardPile, self.name, "star")
+      room:moveCardTo(self.cost_data.cards, Card.DiscardPile, nil, fk.ReasonPutIntoDiscardPile, self.name, "$star")
       room:addPlayerMark(room:getPlayerById(self.cost_data.tos[1]), "@@kuangfeng")
       room:setPlayerMark(player, "_kuangfeng", self.cost_data.tos[1])
     else
@@ -448,11 +448,11 @@ local dawu = fk.CreateTriggerSkill{
   name = "dawu",
   anim_type = "defensive",
   events = {fk.EventPhaseStart, fk.DamageInflicted},
-  expand_pile = "star",
+  expand_pile = "$star",
   can_trigger = function(self, event, target, player, data)
     if not player:hasSkill(self) then return false end
     if event == fk.EventPhaseStart then
-      return target == player and player.phase == Player.Finish and #player:getPile("star") > 0
+      return target == player and player.phase == Player.Finish and #player:getPile("$star") > 0
     else
       return target:getMark("@@dawu") > 0 and data.damageType ~= fk.ThunderDamage
       and table.contains(player:getTableMark("_dawu"), target.id)
@@ -461,7 +461,7 @@ local dawu = fk.CreateTriggerSkill{
   on_cost = function(self, event, target, player, data)
     if event == fk.EventPhaseStart then
       local room = player.room
-      local cids = room:askForCard(player, 1, #room.alive_players, false, self.name, true, ".|.|.|star", "#dawu-card", "star")
+      local cids = room:askForCard(player, 1, #room.alive_players, false, self.name, true, ".|.|.|star", "#dawu-card", "$star")
       if #cids > 0 then
         local targets = room:askForChoosePlayers(player, table.map(room.alive_players, Util.IdMapper), #cids, #cids, "#dawu-target:::" .. #cids, self.name, false, true)
         self.cost_data = {tos = targets, cards = cids}
@@ -475,7 +475,7 @@ local dawu = fk.CreateTriggerSkill{
   on_use = function(self, event, target, player, data)
     if event == fk.EventPhaseStart then
       local room = player.room
-      room:moveCardTo(self.cost_data.cards, Card.DiscardPile, nil, fk.ReasonPutIntoDiscardPile, self.name, "star")
+      room:moveCardTo(self.cost_data.cards, Card.DiscardPile, nil, fk.ReasonPutIntoDiscardPile, self.name, "$star")
       table.forEach(self.cost_data.tos, function(pid)
         room:addPlayerMark(room:getPlayerById(pid), "@@dawu")
       end)
@@ -511,7 +511,7 @@ Fk:loadTranslationTable{
   ["dawu"] = "大雾",
   [":dawu"] = "结束阶段开始时，你可以将至少一张“星”置入弃牌堆并选择等量的角色，当其于你的下回合开始之前受到不为雷电伤害的伤害时，防止此伤害。",
 
-  ["star"] = "星",
+  ["$star"] = "星",
   ["#qixing-exchange"] = "七星：你可以用任意张手牌替换等量的“星”",
   ["@@kuangfeng"] = "狂风",
   ["#kuangfeng-card"] = "狂风：你可以将一张“星”置入弃牌堆，点击“确认”后选择一名角色",

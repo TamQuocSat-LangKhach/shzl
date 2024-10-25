@@ -569,7 +569,7 @@ local guzheng = fk.CreateTriggerSkill{
       local phase_event = room.logic:getCurrentEvent():findParent(GameEvent.Phase, true)
       if phase_event == nil then return false end
       local end_id = phase_event.id
-      U.getEventsByRule(room, GameEvent.MoveCards, 1, function (e)
+      room.logic:getEventsByRule(GameEvent.MoveCards, 1, function (e)
         for _, move in ipairs(e.data) do
           for _, info in ipairs(move.moveInfo) do
             local id = info.cardId
