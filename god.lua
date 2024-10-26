@@ -412,7 +412,7 @@ local kuangfeng = fk.CreateTriggerSkill{
   on_cost = function(self, event, target, player, data)
     if event == fk.EventPhaseStart then
       local room = player.room
-      local cids = room:askForCard(player, 1, 1, false, self.name, true, ".|.|.|star", "#kuangfeng-card", "$star")
+      local cids = room:askForCard(player, 1, 1, false, self.name, true, ".|.|.|$star", "#kuangfeng-card", "$star")
       if #cids > 0 then
         local targets = room:askForChoosePlayers(player, table.map(room.alive_players, Util.IdMapper), 1, 1, "#kuangfeng-target", self.name, false, true)
         self.cost_data = {tos = targets, cards = cids}
@@ -461,7 +461,7 @@ local dawu = fk.CreateTriggerSkill{
   on_cost = function(self, event, target, player, data)
     if event == fk.EventPhaseStart then
       local room = player.room
-      local cids = room:askForCard(player, 1, #room.alive_players, false, self.name, true, ".|.|.|star", "#dawu-card", "$star")
+      local cids = room:askForCard(player, 1, #room.alive_players, false, self.name, true, ".|.|.|$star", "#dawu-card", "$star")
       if #cids > 0 then
         local targets = room:askForChoosePlayers(player, table.map(room.alive_players, Util.IdMapper), #cids, #cids, "#dawu-target:::" .. #cids, self.name, false, true)
         self.cost_data = {tos = targets, cards = cids}
