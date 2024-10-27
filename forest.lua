@@ -623,7 +623,7 @@ local luanwu = fk.CreateActiveSkill{
             return target:distanceTo(p1) >= target:distanceTo(p2)
           end)
         end), Util.IdMapper)
-        local use = room:askForUseCard(target, "slash", "slash", "#luanwu-use", true, {include_targets = luanwu_targets, bypass_times = true})
+        local use = room:askForUseCard(target, "slash", "slash", "#luanwu-use", true, {exclusive_targets = luanwu_targets, bypass_times = true})
         if use then
           use.extraUse = true
           room:useCard(use)
