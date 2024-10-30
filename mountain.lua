@@ -418,11 +418,11 @@ local zhiba = fk.CreateTriggerSkill{
   refresh_events = {fk.GameStart, fk.EventAcquireSkill, fk.EventLoseSkill, fk.Deathed},
   can_refresh = function(self, event, target, player, data)
     if event == fk.GameStart then
-      return player:hasSkill(self.name, true)
+      return player:hasSkill(self, true)
     elseif event == fk.EventAcquireSkill or event == fk.EventLoseSkill then
       return data == self and target == player
     else
-      return target == player and player:hasSkill(self.name, true, true)
+      return target == player and player:hasSkill(self, true, true)
     end
   end,
   on_refresh = function(self, event, target, player, data)
@@ -434,7 +434,7 @@ local zhiba = fk.CreateTriggerSkill{
     ]]
     local targets = room:getOtherPlayers(player)
     if event == fk.GameStart or event == fk.EventAcquireSkill then
-      if player:hasSkill(self.name, true) then
+      if player:hasSkill(self, true) then
         table.forEach(targets, function(p)
           room:handleAddLoseSkills(p, "zhiba_other&", nil, false, true)
         end)
@@ -837,7 +837,7 @@ local duanchang = fk.CreateTriggerSkill{
   frequency = Skill.Compulsory,
   events = {fk.Death},
   can_trigger = function(self, event, target, player, data)
-    return target == player and player:hasSkill(self.name, false, true) and data.damage and data.damage.from and not data.damage.from.dead
+    return target == player and player:hasSkill(self, false, true) and data.damage and data.damage.from and not data.damage.from.dead
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room

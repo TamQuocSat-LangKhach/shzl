@@ -216,7 +216,7 @@ local qinyin = fk.CreateTriggerSkill{
       local logic = player.room.logic
       logic:getEventsOfScope(GameEvent.MoveCards, 1, function (e)
         for _, move in ipairs(e.data) do
-          if move.from == player.id and move.moveReason == fk.ReasonDiscard and move.skillName == "game_rule" then
+          if move.from == player.id and move.moveReason == fk.ReasonDiscard and move.skillName == "phase_discard" then
             x = x + #move.moveInfo
             if x > 1 then return true end
           end
@@ -743,7 +743,7 @@ local nos__juejing = fk.CreateTriggerSkill{
 local nos__juejing_maxcards = fk.CreateMaxCardsSkill{
   name = "#nos__juejing_maxcards",
   correct_func = function(self, player)
-    if player:hasSkill(nos__juejing.name) then
+    if player:hasSkill(nos__juejing) then
       return 2
     end
   end
@@ -831,7 +831,7 @@ local juejing = fk.CreateTriggerSkill{
 local juejing_maxcards = fk.CreateMaxCardsSkill{
   name = "#juejing_maxcards",
   correct_func = function(self, player)
-    if player:hasSkill(juejing.name) then
+    if player:hasSkill(juejing) then
       return 2
     end
   end
@@ -1028,7 +1028,7 @@ local gundam__longhun_qinggang = fk.CreateTriggerSkill{
   events = {fk.EventPhaseStart},
   mute = true,
   can_trigger = function(self, event, target, player, data)
-    if target ~= player or not player:hasSkill(gundam__longhun.name) or player.phase ~= Player.Start then return false end
+    if target ~= player or not player:hasSkill(gundam__longhun) or player.phase ~= Player.Start then return false end
     for _, id in ipairs(Fk:getAllCardIds()) do
       if Fk:getCardById(id).name == "qinggang_sword" and table.contains({Card.PlayerEquip, Card.PlayerJudge}, player.room:getCardArea(id)) then
         return true
@@ -1811,7 +1811,7 @@ local zhiti_maxcards = fk.CreateMaxCardsSkill{
   correct_func = function(self, player)
     if not player:isWounded() then return 0 end
     return - #table.filter(Fk:currentRoom().alive_players, function(p)
-      return p:hasSkill(zhiti.name) and p:inMyAttackRange(player) end
+      return p:hasSkill(zhiti) and p:inMyAttackRange(player) end
     )
   end,
 }
@@ -1943,14 +1943,15 @@ local gn_jieying = fk.CreateTriggerSkill{
   end,
   on_cost = function(self, event, target, player, data)
     if event == fk.EventPhaseStart and player == target then
-      local to = player.room:askForChoosePlayers(player, table.map(player.room:getOtherPlayers(player), function (p)
-        return p.id end), 1, 1, "#gn_jieying-choose", self.name, true)
+      local to = player.room:askForChoosePlayers(player, table.map(player.room:getOtherPlayers(player, false), Util.IdMapper),
+      1, 1, "#gn_jieying-choose", self.name, true)
       if #to > 0 then
-        self.cost_data = to[1]
+        self.cost_data = {tos = to}
         return true
       end
       return false
     end
+    self.cost_data = {}
     return true
   end,
   on_use = function(self, event, target, player, data)
@@ -1961,7 +1962,7 @@ local gn_jieying = fk.CreateTriggerSkill{
       data.n = data.n + 1
     elseif event == fk.EventPhaseStart then
       if player == target then
-        local tar = room:getPlayerById(self.cost_data)
+        local tar = room:getPlayerById(self.cost_data.tos[1])
         room:setPlayerMark(player, "@@jieying_camp", 0)
         room:addPlayerMark(tar, "@@jieying_camp")
       else
@@ -1981,7 +1982,7 @@ local gn_jieying = fk.CreateTriggerSkill{
   end,
   on_refresh = function(self, event, target, player, data)
     local room = player.room
-    if table.every(room.alive_players, function (p) return not p:hasSkill(self.name, true) end) then
+    if table.every(room.alive_players, function (p) return not p:hasSkill(self, true) end) then
       room:setPlayerMark(player, "@@jieying_camp", 0)
     end
   end,
@@ -1990,7 +1991,7 @@ local gn_jieying_targetmod = fk.CreateTargetModSkill{
   name = "#gn_jieying_targetmod",
   residue_func = function(self, player, skill, scope)
     if skill.trueName == "slash_skill" and player:getMark("@@jieying_camp") > 0 and scope == Player.HistoryPhase then
-      return #table.filter(Fk:currentRoom().alive_players, function (p) return p:hasSkill(gn_jieying.name) end)
+      return #table.filter(Fk:currentRoom().alive_players, function (p) return p:hasSkill(gn_jieying) end)
     end
   end,
 }
@@ -1998,7 +1999,7 @@ local gn_jieying_maxcards = fk.CreateMaxCardsSkill{
   name = "#gn_jieying_maxcards",
   correct_func = function(self, player)
     if player:getMark("@@jieying_camp") > 0 then
-      return #table.filter(Fk:currentRoom().alive_players, function (p) return p:hasSkill(gn_jieying.name) end)
+      return #table.filter(Fk:currentRoom().alive_players, function (p) return p:hasSkill(gn_jieying) end)
     else
       return 0
     end
