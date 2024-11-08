@@ -160,7 +160,8 @@ local bazhen = fk.CreateTriggerSkill{
   can_trigger = function(self, event, target, player, data)
     return target == player and player:hasSkill(self) and not player:isFakeSkill(self) and
       (data.cardName == "jink" or (data.pattern and Exppattern:Parse(data.pattern):matchExp("jink|0|nosuit|none"))) and
-      not player:getEquipment(Card.SubtypeArmor) and player:getMark(fk.MarkArmorNullified) == 0
+      not player:getEquipment(Card.SubtypeArmor)
+      and Fk.skills["#eight_diagram_skill"] ~= nil and Fk.skills["#eight_diagram_skill"]:isEffectable(player)
   end,
   on_cost = function(self, event, target, player, data)
     return player.room:askForSkillInvoke(player, self.name, data)
@@ -175,22 +176,22 @@ local bazhen = fk.CreateTriggerSkill{
     room:judge(judgeData)
 
     if judgeData.card.color == Card.Red then
+      local card = Fk:cloneCard("jink")
+      card.skillName = "eight_diagram"
+      card.skillName = "bazhen"
       if event == fk.AskForCardUse then
+        if player:prohibitUse(card) then return false end
         data.result = {
           from = player.id,
-          card = Fk:cloneCard('jink'),
+          card = card,
         }
-        data.result.card.skillName = "eight_diagram"
-        data.result.card.skillName = "bazhen"
-
         if data.eventData then
           data.result.toCard = data.eventData.toCard
           data.result.responseToEvent = data.eventData.responseToEvent
         end
       else
-        data.result = Fk:cloneCard('jink')
-        data.result.skillName = "eight_diagram"
-        data.result.skillName = "bazhen"
+        if player:prohibitResponse(card) then return false end
+        data.result = card
       end
       return true
     end
