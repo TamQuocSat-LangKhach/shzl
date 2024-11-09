@@ -17,13 +17,7 @@ local qiaobian = fk.CreateTriggerSkill{
     data.to > Player.Start and data.to < Player.Finish
   end,
   on_cost = function(self, event, target, player, data)
-    local phase_name_table = {
-      [3] = "phase_judge",
-      [4] = "phase_draw",
-      [5] = "phase_play",
-      [6] = "phase_discard",
-    }
-    local card = player.room:askForDiscard(player, 1, 1, false, self.name, true, ".", "#qiaobian-invoke:::" .. phase_name_table[data.to], true)
+    local card = player.room:askForDiscard(player, 1, 1, false, self.name, true, ".", "#qiaobian-invoke:::" .. Util.PhaseStrMapper(data.to), true)
     if #card > 0 then
       self.cost_data = card
       return true
