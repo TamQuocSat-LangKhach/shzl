@@ -645,7 +645,7 @@ local lijun = fk.CreateTriggerSkill{
   name = "lijun$",
   events = { fk.CardUseFinished },
   can_trigger = function(self, event, target, player, data)
-    if player:hasSkill(self) and target ~= player and target.kingdom == "wu" and data.card.trueName == "slash" and target.phase == Player.Play then
+    if player:hasSkill(self) and target and target ~= player and target.kingdom == "wu" and data.card.trueName == "slash" and target.phase == Player.Play then
       return table.every(Card:getIdList(data.card), function(id) return player.room:getCardArea(id) == Card.Processing end)
     end
   end,
