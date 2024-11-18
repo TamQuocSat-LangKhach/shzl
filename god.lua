@@ -1311,7 +1311,8 @@ local jilue_trigger = fk.CreateTriggerSkill{
   on_cost = function(self, event, target, player, data)
     local room = player.room
     if event == fk.AskForRetrial then
-      local card = room:askForResponse(player, "ex__guicai", ".|.|.|hand,equip|.|", "#guicai-ask::" .. target.id, true)
+      local card = room:askForCard(player, 1, 1, true, self.name, true, ".|.|.|hand,equip",
+      "#ex__guicai-ask::" .. target.id .. ":" .. data.reason)
       if card ~= nil then
         self.cost_data = card
         return true
