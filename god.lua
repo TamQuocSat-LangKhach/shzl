@@ -1313,8 +1313,8 @@ local jilue_trigger = fk.CreateTriggerSkill{
     if event == fk.AskForRetrial then
       local card = room:askForCard(player, 1, 1, true, "ex__guicai", true, ".|.|.|hand,equip",
       "#ex__guicai-ask::" .. target.id .. ":" .. data.reason)
-      if card ~= nil then
-        self.cost_data = card
+      if #card ~= 0 then
+        self.cost_data = Fk:getCardById(card[1])
         return true
       end
     elseif event == fk.Damaged then
