@@ -555,12 +555,13 @@ local kuangbao = fk.CreateTriggerSkill{
     player.room:addPlayerMark(player, "@baonu", event == fk.GameStart and 2 or data.damage)
   end,
 
-  refresh_events = {fk.EventLoseSkill},
-  can_refresh = function(self, event, target, player, data)
-    return player == target and data == self and player:getMark("@baonu") ~= 0
-  end,
   on_refresh = function(self, event, target, player, data)
     player.room:setPlayerMark(player, "@baonu", 0)
+  end,
+  on_lose = function (self, player, is_death)
+    if player:getMark("@baonu") > 0 then
+      player.room:setPlayerMark(player, "@baonu", 0)
+    end
   end,
 }
 local wumou = fk.CreateTriggerSkill{
@@ -1167,12 +1168,10 @@ local renjie = fk.CreateTriggerSkill{
     end
   end,
 
-  refresh_events = {fk.EventLoseSkill},
-  can_refresh = function(self, event, target, player, data)
-    return player == target and data == self and player:getMark("@godsimayi_bear") ~= 0
-  end,
-  on_refresh = function(self, event, target, player, data)
-    player.room:setPlayerMark(player, "@godsimayi_bear", 0)
+  on_lose = function (self, player, is_death)
+    if player:getMark("@godsimayi_bear") ~= 0 then
+      player.room:setPlayerMark(player, "@godsimayi_bear", 0)
+    end
   end,
 }
 local baiyin = fk.CreateTriggerSkill{
@@ -1549,12 +1548,10 @@ local junlue = fk.CreateTriggerSkill{
     player.room:addPlayerMark(player, "@junlue", data.damage)
   end,
 
-  refresh_events = {fk.EventLoseSkill},
-  can_refresh = function(self, event, target, player, data)
-    return player == target and data == self and player:getMark("@junlue") ~= 0
-  end,
-  on_refresh = function(self, event, target, player, data)
-    player.room:setPlayerMark(player, "@junlue", 0)
+  on_lose = function (self, player, is_death)
+    if player:getMark("@junlue") ~= 0 then
+      player.room:setPlayerMark(player, "@junlue", 0)
+    end
   end,
 }
 godluxun:addSkill(junlue)
@@ -1991,14 +1988,14 @@ local gn_jieying = fk.CreateTriggerSkill{
     return false
   end,
 
-  refresh_events = {fk.BuryVictim, fk.EventLoseSkill},
-  can_refresh = function(self, event, target, player, data)
-    return (event == fk.BuryVictim or data == self) and player:getMark("@@jieying_camp") > 0
-  end,
-  on_refresh = function(self, event, target, player, data)
+  on_lose = function (self, player, is_death)
     local room = player.room
     if table.every(room.alive_players, function (p) return not p:hasSkill(self, true) end) then
-      room:setPlayerMark(player, "@@jieying_camp", 0)
+      for _, p in ipairs(room.alive_players) do
+        if p:getMark("@@jieying_camp") > 0 then
+          room:setPlayerMark(p, "@@jieying_camp", 0)
+        end
+      end
     end
   end,
 }
