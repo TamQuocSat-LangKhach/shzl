@@ -555,11 +555,8 @@ local kuangbao = fk.CreateTriggerSkill{
     player.room:addPlayerMark(player, "@baonu", event == fk.GameStart and 2 or data.damage)
   end,
 
-  on_refresh = function(self, event, target, player, data)
-    player.room:setPlayerMark(player, "@baonu", 0)
-  end,
   on_lose = function (self, player, is_death)
-    if player:getMark("@baonu") > 0 then
+    if player:getMark("@baonu") ~= 0 then
       player.room:setPlayerMark(player, "@baonu", 0)
     end
   end,

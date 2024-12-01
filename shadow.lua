@@ -418,20 +418,13 @@ local huaiju = fk.CreateTriggerSkill{
     end
   end,
 
-  refresh_events = {fk.EventLoseSkill, fk.BuryVictim},
-  can_refresh = function(self, event, target, player, data)
-    if table.find(player.room.alive_players, function (p) return p:hasSkill(self, true, true) end) then return false end
-    if event == fk.EventLoseSkill then
-      return data == self
-    else
-      return target:hasSkill(self, true, true)
-    end
-  end,
-  on_refresh = function(self, event, target, player, data)
+  on_lose = function (self, player, is_death)
     local room = player.room
-    for _, p in ipairs(room.alive_players) do
-      if p:getMark("@orange") > 0 then
-        room:setPlayerMark(p, "@orange", 0)
+    if table.every(room.alive_players, function (p) return not p:hasSkill(self, true, true) end) then
+      for _, p in ipairs(room.alive_players) do
+        if p:getMark("@orange") ~= 0 then
+          room:setPlayerMark(p, "@orange", 0)
+        end
       end
     end
   end,
