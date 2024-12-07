@@ -300,6 +300,7 @@ local zuilun = fk.CreateTriggerSkill{
     local result = room:askForGuanxing(player, cards, {3 - n, 3}, {n, n}, self.name, true, {"Top", "toObtain"})
     if #result.top > 0 then
       for i = #result.top, 1, -1 do
+        table.removeOne(room.draw_pile, result.top[i])
         table.insert(room.draw_pile, 1, result.top[i])
       end
     end
