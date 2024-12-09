@@ -407,38 +407,31 @@ local hunzi = fk.CreateTriggerSkill{
 
 local zhiba = fk.CreateTriggerSkill{
   name = "zhiba$",
-  mute = true,
-  frequency = Skill.Compulsory,
-  refresh_events = {fk.GameStart, fk.EventAcquireSkill, fk.EventLoseSkill, fk.Deathed},
+  attached_skill_name = "zhiba_other&",
+
+  refresh_events = {fk.AfterPropertyChange},
   can_refresh = function(self, event, target, player, data)
-    if event == fk.GameStart then
-      return player:hasSkill(self, true)
-    elseif event == fk.EventAcquireSkill or event == fk.EventLoseSkill then
-      return data == self and target == player
-    else
-      return target == player and player:hasSkill(self, true, true)
-    end
+    return target == player
   end,
   on_refresh = function(self, event, target, player, data)
     local room = player.room
-    --[[
-    local targets = table.filter(room:getOtherPlayers(player), function(p)
-      return p.kingdom == "wu"
-    end)
-    ]]
-    local targets = room:getOtherPlayers(player)
-    if event == fk.GameStart or event == fk.EventAcquireSkill then
-      if player:hasSkill(self, true) then
-        table.forEach(targets, function(p)
-          room:handleAddLoseSkills(p, "zhiba_other&", nil, false, true)
-        end)
-      end
-    elseif event == fk.EventLoseSkill or event == fk.Deathed then
-      table.forEach(targets, function(p)
-        room:handleAddLoseSkills(p, "-zhiba_other&", nil, false, true)
-      end)
+    if player.kingdom == "wu" and table.find(room.alive_players, function (p)
+      return p ~= player and p:hasSkill(self, true)
+    end) then
+      room:handleAddLoseSkills(player, self.attached_skill_name, nil, false, true)
+    else
+      room:handleAddLoseSkills(player, "-" .. self.attached_skill_name, nil, false, true)
     end
   end,
+
+  on_acquire = function(self, player)
+    local room = player.room
+    for _, p in ipairs(room.alive_players) do
+      if p ~= player and p.kingdom == "wu" then
+        room:handleAddLoseSkills(p, self.attached_skill_name, nil, false, true)
+      end
+    end
+  end
 }
 local zhiba_other = fk.CreateActiveSkill{
   name = "zhiba_other&",

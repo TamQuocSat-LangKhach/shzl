@@ -529,28 +529,31 @@ local guidao = fk.CreateTriggerSkill{
 
 local huangtian = fk.CreateTriggerSkill{
   name = "huangtian$",
-  mute = true,
-  refresh_events = {fk.EventAcquireSkill, fk.EventLoseSkill, fk.BuryVictim, fk.AfterPropertyChange},
+  attached_skill_name = "huangtian_other&",
+
+  refresh_events = {fk.AfterPropertyChange},
   can_refresh = function(self, event, target, player, data)
-    if event == fk.EventAcquireSkill or event == fk.EventLoseSkill then
-      return data == self
-    elseif event == fk.BuryVictim then
-      return target:hasSkill(self, true, true)
-    elseif event == fk.AfterPropertyChange then
-      return target == player
-    end
+    return target == player
   end,
   on_refresh = function(self, event, target, player, data)
     local room = player.room
-    local attached_huangtian = player.kingdom == "qun" and table.find(room.alive_players, function (p)
+    if player.kingdom == "qun" and table.find(room.alive_players, function (p)
       return p ~= player and p:hasSkill(self, true)
-    end)
-    if attached_huangtian and not player:hasSkill("huangtian_other&", true, true) then
-      room:handleAddLoseSkills(player, "huangtian_other&", nil, false, true)
-    elseif not attached_huangtian and player:hasSkill("huangtian_other&", true, true) then
-      room:handleAddLoseSkills(player, "-huangtian_other&", nil, false, true)
+    end) then
+      room:handleAddLoseSkills(player, self.attached_skill_name, nil, false, true)
+    else
+      room:handleAddLoseSkills(player, "-" .. self.attached_skill_name, nil, false, true)
     end
   end,
+
+  on_acquire = function(self, player)
+    local room = player.room
+    for _, p in ipairs(room.alive_players) do
+      if p ~= player and p.kingdom == "qun" then
+        room:handleAddLoseSkills(p, self.attached_skill_name, nil, false, true)
+      end
+    end
+  end
 }
 local huangtian_other = fk.CreateActiveSkill{
   name = "huangtian_other&",
