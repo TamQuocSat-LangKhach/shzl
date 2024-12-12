@@ -65,9 +65,6 @@ local fangzhu = fk.CreateTriggerSkill{
   name = "fangzhu",
   anim_type = "masochism",
   events = {fk.Damaged},
-  can_trigger = function(self, event, target, player, data)
-    return target == player and player:hasSkill(self)
-  end,
   on_cost = function(self, event, target, player, data)
     local to = player.room:askForChoosePlayers(player, table.map(player.room:getOtherPlayers(player), Util.IdMapper)
     , 1, 1, "#fangzhu-choose:::"..player:getLostHp(), self.name, true)

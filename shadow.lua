@@ -804,9 +804,6 @@ local cunmu = fk.CreateTriggerSkill{
   events = {fk.BeforeDrawCard},
   anim_type = "negative",
   frequency = Skill.Compulsory,
-  can_trigger = function(self, event, target, player, data)
-    return target == player and player:hasSkill(self)
-  end,
   on_use = function(self, event, target, player, data)
     data.fromPlace = "bottom"
   end,

@@ -1538,9 +1538,6 @@ local junlue = fk.CreateTriggerSkill{
   name = "junlue",
   events = {fk.Damage, fk.Damaged},
   frequency = Skill.Compulsory,
-  can_trigger = function(self, event, target, player, data)
-    return target == player and player:hasSkill(self)
-  end,
   on_use = function(self, event, target, player, data)
     player.room:addPlayerMark(player, "@junlue", data.damage)
   end,
