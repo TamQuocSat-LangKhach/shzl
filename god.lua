@@ -1726,14 +1726,10 @@ local duorui = fk.CreateTriggerSkill{
     end
     if #skills == 0 then return false end
     local choice = room:askForChoice(player, skills, self.name, "#duorui-skill::" .. data.to.id, true)
-    local mark = type(target:getMark("duorui_target")) == "table" and target:getMark("duorui_target") or {}
-    table.insert(mark, choice)
-    room:setPlayerMark(target, "duorui_target", mark)
+    room:addTableMark(target, "duorui_target", choice)
     room:setPlayerMark(target, "@duorui_target", choice)
     if player:hasSkill(choice, true) then return false end
-    local mark2 = type(player:getMark("duorui_source")) == "table" and player:getMark("duorui_source") or {}
-    table.insert(mark2, {target.id, choice})
-    room:setPlayerMark(player, "duorui_source", mark2)
+    room:addTableMark(player, "duorui_source", {target.id, choice})
     room:setPlayerMark(player, "@duorui_source", choice)
     room:handleAddLoseSkills(player, choice, nil, true, true)
   end,

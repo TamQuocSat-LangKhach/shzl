@@ -775,7 +775,7 @@ local xiongluan = fk.CreateActiveSkill{
     end
     room:abortPlayerArea(player, eqipSlots)
     room:addPlayerMark(to, "@@xiongluan-turn")
-    local targetRecorded = type(player:getMark("xiongluan_target-turn")) == "table" and player:getMark("xiongluan_target-turn") or {}
+    local targetRecorded = player:getTableMark("xiongluan_target-turn")
     table.insertIfNeed(targetRecorded, to.id)
     room:setPlayerMark(player, "xiongluan_target-turn", targetRecorded)
   end,
