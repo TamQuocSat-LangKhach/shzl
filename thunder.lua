@@ -27,9 +27,7 @@ local zhengu = fk.CreateTriggerSkill{
   on_use = function(self, event, target, player, data)
     local room = player.room
     local to = room:getPlayerById(self.cost_data.tos[1])
-    local mark = to:getTableMark("@@zhengu")
-    table.insertIfNeed(mark, player.id)
-    room:setPlayerMark(to, "@@zhengu", mark)
+    room:addTableMarkIfNeed(to, "@@zhengu", player.id)
     local x, y, z = player:getHandcardNum(), to:getHandcardNum(), 0
     if x > y then
       z = math.min(5, x) - y
@@ -775,9 +773,7 @@ local xiongluan = fk.CreateActiveSkill{
     end
     room:abortPlayerArea(player, eqipSlots)
     room:addPlayerMark(to, "@@xiongluan-turn")
-    local targetRecorded = player:getTableMark("xiongluan_target-turn")
-    table.insertIfNeed(targetRecorded, to.id)
-    room:setPlayerMark(player, "xiongluan_target-turn", targetRecorded)
+    room:addTableMarkIfNeed(player, "xiongluan_target-turn", to.id)
   end,
 }
 local xiongluan_prohibit = fk.CreateProhibitSkill{

@@ -498,9 +498,7 @@ local shuangxiongJudge = fk.CreateTriggerSkill{
     room:judge(judge)
     local color = judge.card:getColorString()
     if color == "nocolor" then return end
-    local colorsRecorded = player:getTableMark("@shuangxiong-turn")
-    table.insertIfNeed(colorsRecorded, color)
-    room:setPlayerMark(player, "@shuangxiong-turn", colorsRecorded)
+    room:addTableMarkIfNeed(player, "@shuangxiong-turn", color)
     return true
   end,
 }
