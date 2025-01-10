@@ -17,7 +17,7 @@ local zhengu = fk.CreateTriggerSkill{
   end,
   on_cost = function(self, event, target, player, data)
     local room = player.room
-    local to = room:askForChoosePlayers(player, table.map(room:getOtherPlayers(player), Util.IdMapper),
+    local to = room:askForChoosePlayers(player, table.map(room:getOtherPlayers(player, false), Util.IdMapper),
       1, 1, "#zhengu-choose", self.name, true)
     if #to > 0 then
       self.cost_data = {tos = to}
@@ -721,11 +721,11 @@ local thunder__weidi = fk.CreateTriggerSkill{
   can_trigger = function(self, event, target, player, data)
     return target == player and player:hasSkill(self) and player.phase == Player.Discard
     and player:getHandcardNum() > player:getMaxCards()
-    and table.find(player.room:getOtherPlayers(player), function(p) return p.kingdom == "qun" end)
+    and table.find(player.room:getOtherPlayers(player, false), function(p) return p.kingdom == "qun" end)
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room
-    local targets = table.filter(player.room:getOtherPlayers(player), function(p) return p.kingdom == "qun" end)
+    local targets = table.filter(player.room:getOtherPlayers(player, false), function(p) return p.kingdom == "qun" end)
     if #targets > 0 then
       local n = player:getHandcardNum() - player:getMaxCards()
       room:askForYiji(player, player:getCardIds("h"), targets, self.name, 0, n, "#thunder__weidi-give:::"..n, nil, false, 1)

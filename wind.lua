@@ -24,7 +24,7 @@ local shensu = fk.CreateTriggerSkill{
     local slash = Fk:cloneCard("slash")
     local max_num = slash.skill:getMaxTargetNum(player, slash)
     local targets = {}
-    for _, p in ipairs(room:getOtherPlayers(player)) do
+    for _, p in ipairs(room:getOtherPlayers(player, false)) do
       if not player:isProhibited(p, slash) then
         table.insert(targets, p.id)
       end
@@ -243,7 +243,7 @@ local tianxiang = fk.CreateTriggerSkill{
   events = {fk.DamageInflicted},
   on_cost = function(self, event, target, player, data)
     local ids = table.filter(player:getCardIds("h"), function(id) return not player:prohibitDiscard(Fk:getCardById(id)) end)
-    local tar, card = player.room:askForChooseCardAndPlayers(player, table.map(player.room:getOtherPlayers(player), Util.IdMapper)
+    local tar, card = player.room:askForChooseCardAndPlayers(player, table.map(player.room:getOtherPlayers(player, false), Util.IdMapper)
     , 1, 1, ".|.|heart|hand|.|.|"..table.concat(ids, ","), "#tianxiang-choose", self.name, true)
     if #tar > 0 and card then
       self.cost_data = {tos = tar, cards = {card}}
@@ -481,7 +481,7 @@ local leiji = fk.CreateTriggerSkill{
     return player:hasSkill(self) and target == player and data.card.name == "jink"
   end,
   on_cost = function(self, event, target, player, data)
-    local to = player.room:askForChoosePlayers(player, table.map(player.room:getOtherPlayers(player), function (p)
+    local to = player.room:askForChoosePlayers(player, table.map(player.room:getOtherPlayers(player, false), function (p)
       return p.id end), 1, 1, "#leiji-choose", self.name, true)
     if #to > 0 then
       self.cost_data = to[1]

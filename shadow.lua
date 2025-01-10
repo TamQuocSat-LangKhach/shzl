@@ -604,7 +604,7 @@ local chezheng = fk.CreateTriggerSkill{
   events = {fk.EventPhaseEnd},
   can_trigger = function(self, event, target, player, data)
     if target == player and player:hasSkill(self) and player.phase == Player.Play then
-      local targets = table.filter(player.room:getOtherPlayers(player), function(p) return not p:inMyAttackRange(player) end)
+      local targets = table.filter(player.room:getOtherPlayers(player, false), function(p) return not p:inMyAttackRange(player) end)
       local events = player.room.logic:getEventsOfScope(GameEvent.UseCard, 999, function (e)
         local use = e.data[1]
         return use and use.from == target.id
@@ -614,7 +614,7 @@ local chezheng = fk.CreateTriggerSkill{
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room
-    local targets = table.filter(room:getOtherPlayers(player), function(p) return not p:inMyAttackRange(player) and not p:isNude() end)
+    local targets = table.filter(room:getOtherPlayers(player, false), function(p) return not p:inMyAttackRange(player) and not p:isNude() end)
     if #targets > 0 then
       local tos = room:askForChoosePlayers(player, table.map(targets, Util.IdMapper), 1, 1, "#chezheng-throw", self.name, false)
       if #tos > 0 then

@@ -28,7 +28,7 @@ local qiaobian = fk.CreateTriggerSkill{
     room:throwCard(self.cost_data, self.name, player, player)
     player:skip(data.to)
     if data.to == Player.Draw then
-      local targets = table.map(table.filter(room:getOtherPlayers(player), function(p)
+      local targets = table.map(table.filter(room:getOtherPlayers(player, false), function(p)
         return not p:isKongcheng() end), Util.IdMapper)
       if #targets > 0 then
         local n = math.min(2, #targets)
@@ -302,7 +302,7 @@ local fangquan_delay = fk.CreateTriggerSkill{
   on_use = function(self, event, target, player, data)
     local room = player.room
     room:notifySkillInvoked(player, fangquan.name, "support")
-    local tar, card =  room:askForChooseCardAndPlayers(player, table.map(room:getOtherPlayers(player), Util.IdMapper), 1, 1, ".|.|.|hand", "#fangquan-choose", fangquan.name, true)
+    local tar, card =  room:askForChooseCardAndPlayers(player, table.map(room:getOtherPlayers(player, false), Util.IdMapper), 1, 1, ".|.|.|hand", "#fangquan-choose", fangquan.name, true)
     if #tar > 0 and card then
       room:throwCard(card, fangquan.name, player, player)
       room:getPlayerById(tar[1]):gainAnExtraTurn()
@@ -321,7 +321,7 @@ local ruoyu = fk.CreateTriggerSkill{
       player.phase == Player.Start
   end,
   can_wake = function(self, event, target, player, data)
-    return table.every(player.room:getOtherPlayers(player), function(p) return p.hp >= player.hp end)
+    return table.every(player.room:getOtherPlayers(player, false), function(p) return p.hp >= player.hp end)
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room

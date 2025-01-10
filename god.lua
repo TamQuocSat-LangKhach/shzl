@@ -1314,8 +1314,7 @@ local jilue_trigger = fk.CreateTriggerSkill{
         return true
       end
     elseif event == fk.Damaged then
-      local to = room:askForChoosePlayers(player, table.map(room:getOtherPlayers(player), function(p)
-        return p.id end), 1, 1, "#fangzhu-choose:::"..player:getLostHp(), "fangzhu", true)
+      local to = room:askForChoosePlayers(player, table.map(room:getOtherPlayers(player, false), Util.IdMapper), 1, 1, "#fangzhu-choose:::"..player:getLostHp(), "fangzhu", true)
       if #to > 0 then
         self.cost_data = to[1]
         return true
@@ -2043,7 +2042,7 @@ local meihun = fk.CreateTriggerSkill{
   mute = true,
   events = {fk.EventPhaseStart, fk.TargetConfirmed},
   can_trigger = function(self, event, target, player, data)
-    if not (target == player and player:hasSkill(self) and table.find(player.room:getOtherPlayers(player), function(p)
+    if not (target == player and player:hasSkill(self) and table.find(player.room:getOtherPlayers(player, false), function(p)
       return not p:isNude()
     end)) then return end
     if event == fk.EventPhaseStart then
@@ -2054,7 +2053,7 @@ local meihun = fk.CreateTriggerSkill{
   end,
   on_cost = function(self, event, target, player, data)
     local room = player.room
-    local targets = table.filter(room:getOtherPlayers(player), function(p)
+    local targets = table.filter(room:getOtherPlayers(player, false), function(p)
       return not p:isNude()
     end)
     if #targets == 0 then return end

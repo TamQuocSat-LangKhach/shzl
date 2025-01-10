@@ -66,7 +66,7 @@ local fangzhu = fk.CreateTriggerSkill{
   anim_type = "masochism",
   events = {fk.Damaged},
   on_cost = function(self, event, target, player, data)
-    local to = player.room:askForChoosePlayers(player, table.map(player.room:getOtherPlayers(player), Util.IdMapper)
+    local to = player.room:askForChoosePlayers(player, table.map(player.room:getOtherPlayers(player, false), Util.IdMapper)
     , 1, 1, "#fangzhu-choose:::"..player:getLostHp(), self.name, true)
     if #to > 0 then
       self.cost_data = {tos = to}
@@ -311,7 +311,7 @@ local yinghun = fk.CreateTriggerSkill{
     return target == player and player:hasSkill(self) and player.phase == Player.Start and player:isWounded()
   end,
   on_cost = function(self, event, target, player, data)
-    local to = player.room:askForChoosePlayers(player, table.map(player.room:getOtherPlayers(player), Util.IdMapper),
+    local to = player.room:askForChoosePlayers(player, table.map(player.room:getOtherPlayers(player, false), Util.IdMapper),
     1, 1, "#yinghun-choose:::"..player:getLostHp(), self.name, true)
     if #to > 0 then
       self.cost_data = {tos = to}
