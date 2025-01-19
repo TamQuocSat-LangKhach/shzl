@@ -202,8 +202,9 @@ local huoji = fk.CreateViewAsSkill{
   anim_type = "offensive",
   pattern = "fire_attack",
   prompt = "#huoji",
+  handly_pile = true,
   card_filter = function(self, to_select, selected)
-    return #selected == 0 and Fk:getCardById(to_select).color == Card.Red and table.contains(Self:getHandlyIds(true), to_select)
+    return #selected == 0 and Fk:getCardById(to_select).color == Card.Red and table.contains(Self:getHandlyIds(), to_select)
   end,
   view_as = function(self, cards)
     if #cards ~= 1 then return end
@@ -218,8 +219,9 @@ local kanpo = fk.CreateViewAsSkill{
   anim_type = "control",
   pattern = "nullification",
   prompt = "#kanpo",
+  handly_pile = true,
   card_filter = function(self, to_select, selected)
-    return #selected == 0 and Fk:getCardById(to_select).color == Card.Black and table.contains(Self:getHandlyIds(true), to_select)
+    return #selected == 0 and Fk:getCardById(to_select).color == Card.Black and table.contains(Self:getHandlyIds(), to_select)
   end,
   view_as = function(self, cards)
     if #cards ~= 1 then return end
@@ -229,7 +231,7 @@ local kanpo = fk.CreateViewAsSkill{
     return card
   end,
   enabled_at_response = function (self, player, response)
-    return not response and not player:isKongcheng()
+    return not response and #player:getHandlyIds() > 0
   end,
 }
 wolong:addSkill(bazhen)
@@ -449,6 +451,7 @@ local shuangxiong = fk.CreateViewAsSkill{
     end
     return "#shuangxiong:::"..color
   end,
+  handly_pile = true,
   card_filter = function(self, to_select, selected)
     if #selected == 1 then return false end
     local color = Fk:getCardById(to_select):getColorString()
@@ -541,13 +544,14 @@ local luanji = fk.CreateViewAsSkill{
   anim_type = "offensive",
   pattern = "archery_attack",
   prompt = "#luanji",
+  handly_pile = true,
   card_filter = function(self, to_select, selected)
     if #selected == 1 then
-      return table.contains(Self:getHandlyIds(true), to_select) and Fk:getCardById(to_select).suit == Fk:getCardById(selected[1]).suit
+      return table.contains(Self:getHandlyIds(), to_select) and Fk:getCardById(to_select).suit == Fk:getCardById(selected[1]).suit
     elseif #selected == 2 then
       return false
     end
-    return table.contains(Self:getHandlyIds(true), to_select)
+    return table.contains(Self:getHandlyIds(), to_select)
   end,
   view_as = function(self, cards)
     if #cards ~= 2 then

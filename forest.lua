@@ -12,6 +12,7 @@ local duanliang = fk.CreateViewAsSkill{
   name = "duanliang",
   anim_type = "control",
   pattern = "supply_shortage",
+  handly_pile = true,
   card_filter = function(self, to_select, selected)
     return #selected == 0 and Fk:getCardById(to_select).color == Card.Black and Fk:getCardById(to_select).type ~= Card.TypeTrick
   end,
@@ -467,6 +468,7 @@ local jiuchi = fk.CreateViewAsSkill{
   name = "jiuchi",
   anim_type = "offensive",
   pattern = "analeptic",
+  handly_pile = true,
   card_filter = function(self, to_select, selected)
     return #selected == 0 and Fk:getCardById(to_select).suit == Card.Spade and Fk:currentRoom():getCardArea(to_select) ~= Player.Equip
   end,
@@ -557,8 +559,6 @@ Fk:loadTranslationTable{
   [":benghuai"] = "锁定技，结束阶段，若你不是体力值最小的角色，你选择：1.减1点体力上限；2.失去1点体力。",
   ["baonue"] = "暴虐",
   [":baonue"] = "主公技，其他群雄角色造成伤害后，其可以判定，若结果为♠，你回复1点体力。",
-  ["loseMaxHp"] = "减1点体力上限",
-  ["loseHp"] = "失去1点体力",
   ["#baonue-invoke"] = "暴虐：你可以判定，若为♠，%src 回复1点体力",
 
   ["$jiuchi1"] = "呃……再来……一壶……",

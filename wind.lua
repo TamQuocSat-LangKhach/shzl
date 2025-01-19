@@ -624,18 +624,11 @@ local yuji = General(extension, "yuji", "qun", 3)
 local guhuo = fk.CreateViewAsSkill{
   name = "guhuo",
   pattern = ".",
-  interaction = function()
-    local names = {}
-    for _, id in ipairs(Fk:getAllCardIds()) do
-      local card = Fk:getCardById(id)
-      if (card.type == Card.TypeBasic or card:isCommonTrick()) and not card.is_derived and
-      ((Fk.currentResponsePattern == nil and Self:canUse(card)) or
-      (Fk.currentResponsePattern and Exppattern:Parse(Fk.currentResponsePattern):match(card))) then
-        table.insertIfNeed(names, card.name)
-      end
-    end
+  interaction = function(self)
+    local all_names = U.getAllCardNames("bt")
+    local names = U.getViewAsCardNames(Self, self.name, all_names)
     if #names == 0 then return false end
-    return UI.ComboBox { choices = names }
+    return U.CardNameBox { choices = names, all_choices = all_names }
   end,
   card_filter = function(self, to_select, selected)
     return #selected == 0 and Fk:currentRoom():getCardArea(to_select) ~= Card.PlayerEquip

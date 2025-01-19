@@ -642,57 +642,13 @@ Fk:loadTranslationTable{
 }
 
 local zuoci = General(extension, "zuoci", "qun", 3)
-local function DoHuashen(player)
-  local room = player.room
-  local huashens = U.getPrivateMark(player, "&huanshen")
-  if huashens == 0 or #huashens == 0 then return end
-  local name = room:askForGeneral(player, huashens, 1)
-  local general = Fk.generals[name]
-
-  local kingdom = general.kingdom
-  if general.kingdom == "god" or general.subkingdom then
-    local allKingdoms = {}
-    if general.kingdom == "god" then
-      allKingdoms = {"wei", "shu", "wu", "qun", "jin"}
-    elseif general.subkingdom then
-      allKingdoms = { general.kingdom, general.subkingdom }
-    end
-    kingdom = room:askForChoice(player, allKingdoms, "AskForKingdom", "#ChooseInitialKingdom")
-  end
-  player.kingdom = kingdom
-  room:broadcastProperty(player, "kingdom")
-  player.gender = general.gender
-  room:broadcastProperty(player, "gender")
-  local original_general = player.general
-  player.general = general.name
-  room:broadcastProperty(player, "general")
-
-  local skills = {}
-  for _, skill_name in ipairs(general:getSkillNameList()) do
-    local s = Fk.skills[skill_name]
-    if not (s.lordSkill or s.switchSkillName or s.frequency > 3) then
-      if #s.attachedKingdom == 0 or table.contains(s.attachedKingdom, player.kingdom) then
-        table.insert(skills, s.name)
-      end
-    end
-  end
-  if #skills > 0 then
-    local skill = room:askForChoice(player, skills, "huashen", "#huashen", true)
-    local huanshen_skill = skill
-    if player:getMark("@huanshen_skill") ~= 0 then huanshen_skill = "-"..player:getMark("@huanshen_skill").."|"..skill end
-    room:setPlayerMark(player, "@huanshen_skill", skill)
-    room:handleAddLoseSkills(player, huanshen_skill, nil, true, false)
-  end
-  player.general = original_general
-  room:broadcastProperty(player, "general")
-end
 local huashen = fk.CreateTriggerSkill{
   name = "huashen",
   anim_type = "special",
-  events = {fk.GamePrepared, fk.TurnStart, fk.TurnEnd},
+  events = {fk.GameStart, fk.TurnStart, fk.TurnEnd},
   can_trigger = function(self, event, target, player, data)
     if player:hasSkill(self) then
-      if event == fk.GamePrepared then
+      if event == fk.GameStart then
         return true
       else
         return target == player and #U.getPrivateMark(player, "&huanshen") > 0
@@ -700,7 +656,7 @@ local huashen = fk.CreateTriggerSkill{
     end
   end,
   on_cost = function(self, event, target, player, data)
-    if event == fk.GamePrepared then
+    if event == fk.GameStart then
       return true
     else
       return player.room:askForSkillInvoke(player, self.name)
@@ -708,11 +664,51 @@ local huashen = fk.CreateTriggerSkill{
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room
-    if event == fk.GamePrepared then
+    if event == fk.GameStart then
       local generals = room:getNGenerals(2)
       U.setPrivateMark(player, "&huanshen", generals)
     end
-    DoHuashen(player)
+    local huashens = U.getPrivateMark(player, "&huanshen")
+    if huashens == 0 or #huashens == 0 then return end
+    local name = room:askForGeneral(player, huashens, 1)
+    local general = Fk.generals[name]
+  
+    local kingdom = general.kingdom
+    if general.kingdom == "god" or general.subkingdom then
+      local allKingdoms = {}
+      if general.kingdom == "god" then
+        allKingdoms = {"wei", "shu", "wu", "qun", "jin"}
+      elseif general.subkingdom then
+        allKingdoms = { general.kingdom, general.subkingdom }
+      end
+      kingdom = room:askForChoice(player, allKingdoms, "AskForKingdom", "#ChooseInitialKingdom")
+    end
+    player.kingdom = kingdom
+    room:broadcastProperty(player, "kingdom")
+    player.gender = general.gender
+    room:broadcastProperty(player, "gender")
+    local original_general = player.general
+    player.general = general.name
+    room:broadcastProperty(player, "general")
+  
+    local skills = {}
+    for _, skill_name in ipairs(general:getSkillNameList()) do
+      local s = Fk.skills[skill_name]
+      if not (s.lordSkill or s.switchSkillName or s.frequency > 3) then
+        if #s.attachedKingdom == 0 or table.contains(s.attachedKingdom, player.kingdom) then
+          table.insert(skills, s.name)
+        end
+      end
+    end
+    if #skills > 0 then
+      local skill = room:askForChoice(player, skills, "huashen", "#huashen", true)
+      local huanshen_skill = skill
+      if player:getMark("@huanshen_skill") ~= 0 then huanshen_skill = "-"..player:getMark("@huanshen_skill").."|"..skill end
+      room:setPlayerMark(player, "@huanshen_skill", skill)
+      room:handleAddLoseSkills(player, huanshen_skill, nil, true, false)
+    end
+    player.general = original_general
+    room:broadcastProperty(player, "general")
   end,
 }
 local xinsheng = fk.CreateTriggerSkill{
