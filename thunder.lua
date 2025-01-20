@@ -298,6 +298,9 @@ local nos__zuilun = fk.CreateActiveSkill{
       room:setPlayerMark(player, "nos__zuilun2-phase", 1)
     end
     room:moveCardTo(card, Card.PlayerHand, player, fk.ReasonPrey, self.name, nil, flag == "e")
+    if target:isAlive() then
+      target:drawCards(1, self.name)
+    end
   end,
 }
 local nos__fuyin = fk.CreateProhibitSkill{
