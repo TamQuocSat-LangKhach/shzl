@@ -163,8 +163,8 @@ local gongxin = fk.CreateActiveSkill{
     return player:usedSkillTimes(self.name, Player.HistoryPhase) == 0
   end,
   card_filter = Util.FalseFunc,
-  target_filter = function(self, to_select, selected)
-    return #selected == 0 and to_select ~= Self.id and not Fk:currentRoom():getPlayerById(to_select):isKongcheng()
+  target_filter = function(self, to_select, selected, _, _, _, player)
+    return #selected == 0 and to_select ~= player.id and not Fk:currentRoom():getPlayerById(to_select):isKongcheng()
   end,
   on_use = function(self, room, effect)
     local player = room:getPlayerById(effect.from)
@@ -307,11 +307,11 @@ local yeyan = fk.CreateActiveSkill{
   can_use = function(self, player)
     return player:usedSkillTimes(self.name, Player.HistoryGame) == 0
   end,
-  card_filter = function(self, to_select, selected)
+  card_filter = function(self, to_select, selected, player)
     if self.interaction.data == "small_yeyan" or #selected > 3 or
     Fk:currentRoom():getCardArea(to_select) ~= Card.PlayerHand then return false end
     local card = Fk:getCardById(to_select)
-    return not Self:prohibitDiscard(card) and card.suit ~= Card.NoSuit and
+    return not player:prohibitDiscard(card) and card.suit ~= Card.NoSuit and
     table.every(selected, function (id) return card.suit ~= Fk:getCardById(id).suit end)
   end,
   target_filter = function(self, to_select, selected, selected_cards)
@@ -589,8 +589,8 @@ local wuqian = fk.CreateActiveSkill{
   end,
   card_num = 0,
   target_num = 1,
-  target_filter = function(self, to_select, selected)
-    return #selected < 1 and to_select ~= Self.id and Fk:currentRoom():getPlayerById(to_select):getMark("@@wuqian-turn") == 0
+  target_filter = function(self, to_select, selected, _, _, _, player)
+    return #selected < 1 and to_select ~= player.id and Fk:currentRoom():getPlayerById(to_select):getMark("@@wuqian-turn") == 0
   end,
   card_filter = Util.FalseFunc,
   on_use = function(self, room, effect)
@@ -765,8 +765,8 @@ nos__juejing:addRelatedSkill(nos__juejing_maxcards)
 local nos__longhun = fk.CreateViewAsSkill{
   name = "nos__longhun",
   pattern = "peach,slash,jink,nullification",
-  card_filter = function(self, to_select, selected)
-    if #selected >= math.max(Self.hp, 1) then
+  card_filter = function(self, to_select, selected, player)
+    if #selected >= math.max(player.hp, 1) then
       return false
     elseif #selected > 0 then
       return Fk:getCardById(to_select):compareSuitWith(Fk:getCardById(selected[1]))
@@ -784,12 +784,12 @@ local nos__longhun = fk.CreateViewAsSkill{
       else
         return false
       end
-      return (Fk.currentResponsePattern == nil and c.skill:canUse(Self, c))
+      return (Fk.currentResponsePattern == nil and c.skill:canUse(player, c))
       or (Fk.currentResponsePattern and Exppattern:Parse(Fk.currentResponsePattern):match(c))
     end
   end,
-  view_as = function(self, cards)
-    if #cards ~= math.max(Self.hp, 1) then
+  view_as = function(self, cards, player)
+    if #cards ~= math.max(player.hp, 1) then
       return nil
     end
     local suit = Fk:getCardById(cards[1]).suit
@@ -853,7 +853,7 @@ juejing:addRelatedSkill(juejing_maxcards)
 local longhun = fk.CreateViewAsSkill{
   name = "longhun",
   pattern = "peach,slash,jink,nullification",
-  card_filter = function(self, to_select, selected)
+  card_filter = function(self, to_select, selected, player)
     if #selected == 2 then
       return false
     elseif #selected == 1 then
@@ -872,7 +872,7 @@ local longhun = fk.CreateViewAsSkill{
       else
         return false
       end
-      return (Fk.currentResponsePattern == nil and c.skill:canUse(Self, c)) or (Fk.currentResponsePattern and Exppattern:Parse(Fk.currentResponsePattern):match(c))
+      return (Fk.currentResponsePattern == nil and c.skill:canUse(player, c)) or (Fk.currentResponsePattern and Exppattern:Parse(Fk.currentResponsePattern):match(c))
     end
   end,
   view_as = function(self, cards)
@@ -995,7 +995,7 @@ local gundam__longhun = fk.CreateViewAsSkill{
   name = "gundam__longhun",
   mute = true,
   pattern = "peach,slash,jink,nullification",
-  card_filter = function(self, to_select, selected)
+  card_filter = function(self, to_select, selected, player)
     if #selected == 1 then
       return false
     else
@@ -1012,7 +1012,7 @@ local gundam__longhun = fk.CreateViewAsSkill{
       else
         return false
       end
-      return (Fk.currentResponsePattern == nil and c.skill:canUse(Self, c)) or
+      return (Fk.currentResponsePattern == nil and c.skill:canUse(player, c)) or
         (Fk.currentResponsePattern and Exppattern:Parse(Fk.currentResponsePattern):match(c))
     end
   end,
@@ -1257,9 +1257,9 @@ local jilue = fk.CreateActiveSkill{
     return player:getMark("@godsimayi_bear") > 0 and
       (player:usedSkillTimes("ex__zhiheng", Player.HistoryPhase) == 0 or not player:hasSkill("ol_ex__wansha", true))
   end,
-  card_filter = function(self, to_select)
+  card_filter = function(self, to_select, _, player)
     if self.interaction.data == "ex__zhiheng" then
-      return not Self:prohibitDiscard(to_select)
+      return not player:prohibitDiscard(to_select)
     end
     if self.interaction.data == "ol_ex__wansha" then
       return false
@@ -1621,8 +1621,8 @@ local zhanhuo = fk.CreateActiveSkill{
     return player:usedSkillTimes(self.name, Player.HistoryGame) == 0 and
       player:getMark("@junlue") > 0
   end,
-  target_filter = function(self, to_select, selected, selected_cards)
-    return #selected < Self:getMark("@junlue") and Fk:currentRoom():getPlayerById(to_select).chained
+  target_filter = function(self, to_select, selected, _, _, _, player)
+    return #selected < player:getMark("@junlue") and Fk:currentRoom():getPlayerById(to_select).chained
   end,
   on_use = function(self, room, effect)
     local player = room:getPlayerById(effect.from)
@@ -1859,9 +1859,9 @@ local poxi = fk.CreateActiveSkill{
   can_use = function(self, player)
     return player:usedSkillTimes(self.name, Player.HistoryPhase) < 1
   end,
-  card_filter = function() return false end,
-  target_filter = function(self, to_select, selected, selected_cards)
-    return #selected == 0 and to_select ~= Self.id and not Fk:currentRoom():getPlayerById(to_select):isKongcheng()
+  card_filter = Util.FalseFunc,
+  target_filter = function(self, to_select, selected, _, _, _, player)
+    return #selected == 0 and to_select ~= player.id and not Fk:currentRoom():getPlayerById(to_select):isKongcheng()
   end,
   on_use = function(self, room, effect)
     local player = room:getPlayerById(effect.from)
@@ -2133,14 +2133,14 @@ local huoxin = fk.CreateActiveSkill{
   card_num = 2,
   target_num = 2,
   prompt = "#huoxin-prompt",
-  target_filter = function(self, to_select, selected, cards)
-    if #selected >= 2 or to_select == Self.id or #cards ~= 2 then return false end
+  target_filter = function(self, to_select, selected, cards, _, _, player)
+    if #selected >= 2 or to_select == player.id or #cards ~= 2 then return false end
     if #selected < 1 then return true end
     local room = Fk:currentRoom()
     return room:getPlayerById(selected[1]):canPindian(room:getPlayerById(to_select), true, true)
   end,
   card_filter = function(self, to_select, selected)
-    if #selected == 1 then 
+    if #selected == 1 then
       return Fk:currentRoom():getCardArea(to_select) ~= Player.Equip and
         Fk:getCardById(to_select).suit == Fk:getCardById(selected[1]).suit
 

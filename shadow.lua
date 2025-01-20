@@ -110,11 +110,11 @@ local shenshi = fk.CreateActiveSkill{
   card_filter = function(self, to_select, selected)
     return #selected == 0
   end,
-  target_filter = function(self, to_select, selected)
-    if #selected == 0 and to_select ~= Self.id then
+  target_filter = function (self, to_select, selected, _, _, _, player)
+    if #selected == 0 and to_select ~= player.id then
       local n = 0
       for _, p in ipairs(Fk:currentRoom().alive_players) do
-        if p ~= Self and p:getHandcardNum() > n then
+        if p ~= player and p:getHandcardNum() > n then
           n = p:getHandcardNum()
         end
       end
@@ -308,8 +308,8 @@ local feijun = fk.CreateActiveSkill{
   can_use = function (self, player)
     return player:usedSkillTimes(self.name, Player.HistoryPhase) == 0 and not player:isNude()
   end,
-  card_filter = function(self, to_select, selected)
-    return #selected == 0 and not Self:prohibitDiscard(Fk:getCardById(to_select))
+  card_filter = function(self, to_select, selected, player)
+    return #selected == 0 and not player:prohibitDiscard(Fk:getCardById(to_select))
   end,
   target_filter = Util.FalseFunc,
   on_use = function(self, room, effect)
@@ -508,28 +508,28 @@ local kuizhu_active = fk.CreateActiveSkill{
   card_num = 0,
   card_filter = Util.FalseFunc,
   min_target_num = 1,
-  target_filter = function(self, to_select, selected)
+  target_filter = function(self, to_select, selected, _, _, _, player)
     if self.interaction.data == "kuizhu_choice1" then
-      return #selected < Self:getMark("kuizhu")
+      return #selected < player:getMark("kuizhu")
     elseif self.interaction.data == "kuizhu_choice2" then
       local n = Fk:currentRoom():getPlayerById(to_select).hp
       for _, p in ipairs(selected) do
         n = n + Fk:currentRoom():getPlayerById(p).hp
       end
-      return n <= Self:getMark("kuizhu")
+      return n <= player:getMark("kuizhu")
     end
     return false
   end,
-  feasible = function(self, selected, selected_cards)
+  feasible = function(self, selected, selected_cards, player)
     if #selected_cards ~= 0 or #selected == 0 or not self.interaction.data then return false end
     if self.interaction.data == "kuizhu_choice1" then
-      return #selected <= Self:getMark("kuizhu")
+      return #selected <= player:getMark("kuizhu")
     else
       local n = 0
       for _, p in ipairs(selected) do
         n = n + Fk:currentRoom():getPlayerById(p).hp
       end
-      return n == Self:getMark("kuizhu")
+      return n == player:getMark("kuizhu")
     end
   end,
 }

@@ -266,15 +266,15 @@ local nos__zuilun = fk.CreateActiveSkill{
     return player:getMark("nos__zuilun1-phase") == 0 or player:getMark("nos__zuilun2-phase") == 0
   end,
   card_filter = Util.FalseFunc,
-  target_filter = function(self, to_select, selected)
-    if #selected == 0 and to_select ~= Self.id then
+  target_filter = function (self, to_select, selected, selected_cards, _, _, player)
+    if #selected == 0 and to_select ~= player.id then
       local target = Fk:currentRoom():getPlayerById(to_select)
-      if Self:getMark("nos__zuilun1-phase") == 0 then
+      if player:getMark("nos__zuilun1-phase") == 0 then
         if not target:isKongcheng() then
           return true
         end
       end
-      if Self:getMark("nos__zuilun2-phase") == 0 then
+      if player:getMark("nos__zuilun2-phase") == 0 then
         if #target:getCardIds("e") > 0 then
           return true
         end
@@ -839,8 +839,8 @@ local xiongluan = fk.CreateActiveSkill{
     (#player:getAvailableEquipSlots() > 0 or not table.contains(player.sealedSlots, Player.JudgeSlot))
   end,
   card_filter = Util.FalseFunc,
-  target_filter = function(self, to_select, selected, selected_cards)
-    return Self.id ~= to_select
+  target_filter = function(self, to_select, selected, _, _, _, player)
+    return player.id ~= to_select
   end,
   on_use = function(self, room, effect)
     local to = room:getPlayerById(effect.tos[1])
