@@ -203,8 +203,8 @@ local huoji = fk.CreateViewAsSkill{
   pattern = "fire_attack",
   prompt = "#huoji",
   handly_pile = true,
-  card_filter = function(self, to_select, selected)
-    return #selected == 0 and Fk:getCardById(to_select).color == Card.Red and table.contains(Self:getHandlyIds(), to_select)
+  card_filter = function(self, to_select, selected, player)
+    return #selected == 0 and Fk:getCardById(to_select).color == Card.Red and table.contains(player:getHandlyIds(), to_select)
   end,
   view_as = function(self, cards)
     if #cards ~= 1 then return end
@@ -270,16 +270,16 @@ local lianhuan = fk.CreateActiveSkill{
   can_use = function(self, player)
     return not player:isKongcheng()
   end,
-  card_filter = function(self, to_select, selected, selected_targets)
-    return #selected == 0 and Fk:getCardById(to_select).suit == Card.Club and table.contains(Self:getHandlyIds(true), to_select)
+  card_filter = function(self, to_select, selected, player)
+    return #selected == 0 and Fk:getCardById(to_select).suit == Card.Club and table.contains(player:getHandlyIds(true), to_select)
   end,
-  target_filter = function(self, to_select, selected, selected_cards)
+  target_filter = function(self, to_select, selected, selected_cards, _, _, player)
     if #selected_cards == 1 then
       local card = Fk:cloneCard("iron_chain")
       card:addSubcard(selected_cards[1])
       card.skillName = self.name
-      return card.skill:canUse(Self, card) and card.skill:targetFilter(to_select, selected, selected_cards, card) and
-      not Self:prohibitUse(card) and not Self:isProhibited(Fk:currentRoom():getPlayerById(to_select), card)
+      return player:canUse(card) and card.skill:targetFilter(to_select, selected, selected_cards, card, nil, player) and
+      not player:prohibitUse(card) and not player:isProhibited(Fk:currentRoom():getPlayerById(to_select), card)
     end
   end,
   on_use = function(self, room, effect)
