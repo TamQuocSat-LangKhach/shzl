@@ -910,7 +910,7 @@ local longhun = fk.CreateViewAsSkill{
 }
 local longhun_discard = fk.CreateTriggerSkill{
   name = "#longhun_discard",
-  events = {fk.CardUseFinished},
+  events = {fk.CardUseFinished, fk.CardRespondFinished},
   mute = true,
   can_trigger = function(self, event, target, player, data)
     return target == player and table.contains(data.card.skillNames, "longhun") and #data.card.subcards == 2 and Fk:getCardById(data.card.subcards[1]).color == Card.Black
@@ -919,8 +919,8 @@ local longhun_discard = fk.CreateTriggerSkill{
   on_use = function(self, event, target, player, data)
     local room = player.room
     if not room.current:isNude() then
-      local cid = room:askForCardChosen(player, room.current, "he", self.name)
-      room:throwCard({cid}, self.name, room.current, player)
+      local cid = room:askForCardChosen(player, room.current, "he", longhun.name)
+      room:throwCard({cid}, longhun.name, room.current, player)
     end
   end,
 }
