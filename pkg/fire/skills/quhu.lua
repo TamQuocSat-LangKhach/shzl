@@ -21,7 +21,7 @@ quhu:addEffect("active", {
   card_num = 0,
   target_num = 1,
   can_use = function(self, player)
-    return not player:isKongcheng() and player:usedSkillTimes(self.name, Player.HistoryPhase) == 0
+    return not player:isKongcheng() and player:usedSkillTimes(quhu.name, Player.HistoryPhase) == 0
   end,
   card_filter = Util.FalseFunc,
   target_filter = function(self, player, to_select, selected)
@@ -30,14 +30,12 @@ quhu:addEffect("active", {
   on_use = function(self, room, effect)
     local player = effect.from
     local target = effect.tos[1]
-    local pindian = player:pindian({target}, self.name)
+    local pindian = player:pindian({target}, quhu.name)
+    if player.dead or target.dead then return end
     if pindian.results[target.id].winner == player then
-      local targets = {}
-      for _, p in ipairs(room:getOtherPlayers(target)) do
-        if target:inMyAttackRange(p) then
-          table.insert(targets, p.id)
-        end
-      end
+      local targets = table.filter(room.alive_players, function (p)
+        return target:inMyAttackRange(p)
+      end)
       if #targets == 0 then return end
       local tos = room:askToChoosePlayers(player, {
         min_num = 1,
@@ -51,14 +49,14 @@ quhu:addEffect("active", {
         from = target,
         to = tos[1],
         damage = 1,
-        skillName = self.name,
+        skillName = quhu.name,
       }
     else
       room:damage{
         from = target,
         to = player,
         damage = 1,
-        skillName = self.name,
+        skillName = quhu.name,
       }
     end
   end,

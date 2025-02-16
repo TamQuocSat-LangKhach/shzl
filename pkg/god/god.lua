@@ -164,7 +164,7 @@ local gongxin = fk.CreateActiveSkill{
   end,
   card_filter = Util.FalseFunc,
   target_filter = function(self, to_select, selected, _, _, _, player)
-    return #selected == 0 and to_select ~= player.id and not Fk:currentRoom():getPlayerById(to_select):isKongcheng()
+    return #selected == 0 and to_select ~= player and not Fk:currentRoom():getPlayerById(to_select):isKongcheng()
   end,
   on_use = function(self, room, effect)
     local player = room:getPlayerById(effect.from)
@@ -590,7 +590,7 @@ local wuqian = fk.CreateActiveSkill{
   card_num = 0,
   target_num = 1,
   target_filter = function(self, to_select, selected, _, _, _, player)
-    return #selected < 1 and to_select ~= player.id and Fk:currentRoom():getPlayerById(to_select):getMark("@@wuqian-turn") == 0
+    return #selected < 1 and to_select ~= player and Fk:currentRoom():getPlayerById(to_select):getMark("@@wuqian-turn") == 0
   end,
   card_filter = Util.FalseFunc,
   on_use = function(self, room, effect)
@@ -1861,7 +1861,7 @@ local poxi = fk.CreateActiveSkill{
   end,
   card_filter = Util.FalseFunc,
   target_filter = function(self, to_select, selected, _, _, _, player)
-    return #selected == 0 and to_select ~= player.id and not Fk:currentRoom():getPlayerById(to_select):isKongcheng()
+    return #selected == 0 and to_select ~= player and not Fk:currentRoom():getPlayerById(to_select):isKongcheng()
   end,
   on_use = function(self, room, effect)
     local player = room:getPlayerById(effect.from)

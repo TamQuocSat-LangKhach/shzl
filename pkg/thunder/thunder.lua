@@ -267,7 +267,7 @@ local nos__zuilun = fk.CreateActiveSkill{
   end,
   card_filter = Util.FalseFunc,
   target_filter = function (self, to_select, selected, selected_cards, _, _, player)
-    if #selected == 0 and to_select ~= player.id then
+    if #selected == 0 and to_select ~= player then
       local target = Fk:currentRoom():getPlayerById(to_select)
       if player:getMark("nos__zuilun1-phase") == 0 then
         if not target:isKongcheng() then

@@ -46,7 +46,7 @@ huangtian_active:addEffect("active", {
     room:notifySkillInvoked(target, "huangtian")
     target:broadcastSkillInvoke("huangtian")
     room:doIndicate(player.id, { target.id })
-    room:moveCardTo(effect.cards, Player.Hand, target, fk.ReasonGive, "huangtian", nil, true)
+    room:moveCardTo(effect.cards, Player.Hand, target, fk.ReasonGive, "huangtian", nil, true, player)
   end,
 })
 

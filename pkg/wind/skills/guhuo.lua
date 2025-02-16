@@ -31,7 +31,7 @@ guhuo:addEffect("viewas", {
   card_filter = function(self, player, to_select, selected)
     return #selected == 0 and table.contains(player:getCardIds("h"), to_select)
   end,
-  view_as = function(self, cards)
+  view_as = function(self, player, cards)
     if #cards ~= 1 or not self.interaction.data then return end
     local card = Fk:cloneCard(self.interaction.data)
     self.cost_data = cards
@@ -42,7 +42,7 @@ guhuo:addEffect("viewas", {
     local room = player.room
     local cards = self.cost_data
     local card_id = cards[1]
-    room:moveCardTo(cards, Card.Void, nil, fk.ReasonPut, guhuo.name, "", false)
+    room:moveCardTo(cards, Card.Void, nil, fk.ReasonPut, guhuo.name, nil, false)
     --暂时放到Card.Void,理论上应该是Card.Processing,只要moveVisible可以false
     local targets = use.tos
     if targets and #targets > 0 then
