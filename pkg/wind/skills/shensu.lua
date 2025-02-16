@@ -1,0 +1,86 @@
+local shensu = fk.CreateSkill({
+  name = "shensu",
+})
+
+Fk:loadTranslationTable{
+  ["shensu"] = "神速",
+  [":shensu"] = "你可以做出如下选择：1.跳过判定阶段和摸牌阶段；2.跳过出牌阶段并弃置一张装备牌。你每选择一项，便视为你使用一张无距离限制的【杀】。",
+
+  ["#shensu1-choose"] = "神速：跳过判定阶段和摸牌阶段，视为使用无距离限制的【杀】",
+  ["#shensu2-choose"] = "神速：跳过出牌阶段并弃一张装备牌，视为使用无距离限制的【杀】",
+
+  ["$shensu1"] = "吾善于千里袭人！",
+  ["$shensu2"] = "取汝首级，有如探囊取物！",
+}
+
+shensu:addEffect(fk.EventPhaseChanging, {
+  anim_type = "offensive",
+  events = {fk.EventPhaseChanging},
+  can_trigger = function(self, event, target, player, data)
+    if target == player and player:hasSkill(self) then
+      if data.to == Player.Judge then
+        if player.skipped_phases[Player.Draw] then return end
+      elseif data.to == Player.Play then
+        if player:isNude() then return end
+      else
+        return
+      end
+      return table.find(player.room:getOtherPlayers(player, false), function (p)
+        return player:canUseTo(Fk:cloneCard("slash"), p, {bypass_distances = true, bypass_times = true})
+      end)
+    end
+  end,
+  on_cost = function(self, event, target, player, data)
+    local room = player.room
+    local slash = Fk:cloneCard("slash")
+    local max_num = slash.skill:getMaxTargetNum(player, slash)
+    local targets = table.filter(room:getOtherPlayers(player, false), function (p)
+      return player:canUseTo(slash, p, {bypass_distances = true, bypass_times = true})
+    end)
+    if data.to == Player.Judge then
+      local tos = room:askToChoosePlayers(player, {
+        min_num = 1,
+        max_num = max_num,
+        targets = targets,
+        skill_name = shensu.name,
+        prompt = "#shensu1-choose",
+        cancelable = true,
+      })
+      if #tos > 0 then
+        event:setCostData(self, {tos = tos})
+        return true
+      end
+    elseif data.to == Player.Play then
+      local cards = table.filter(player:getCardIds("he"), function (id)
+        return Fk:getCardById(id).type == Card.TypeEquip and not player:prohibitDiscard(id)
+      end)
+      local tos, id = room:askToChooseCardAndPlayers(player, {
+        min_num = 1,
+        max_num = max_num,
+        targets = targets,
+        pattern = tostring(Exppattern{ id = cards }),
+        skill_name = shensu.name,
+        prompt = "#shensu2-choose",
+        cancelable = true,
+      })
+      if #tos > 0 and id then
+        event:setCostData(self, {tos = tos, cards = {id}})
+        return true
+      end
+    end
+  end,
+  on_use = function(self, event, target, player, data)
+    local room = player.room
+    if data.to == Player.Judge then
+      player:skip(Player.Draw)
+    elseif data.to == Player.Play then
+      room:throwCard(event:getCostData(self).cards, shensu.name, player, player)
+    end
+    if player.dead then return end
+    local targets = event:getCostData(self).tos
+    room:sortByAction(targets)
+    room:useVirtualCard("slash", nil, player, targets, shensu.name, true)
+  end,
+})
+
+return shensu
