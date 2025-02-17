@@ -31,7 +31,7 @@ tianyi:addEffect("active", {
     local target = effect.tos[1]
     local pindian = player:pindian({target}, self.name)
     if player.dead then return end
-    if pindian.results[target.id].winner == player then
+    if pindian.results[target].winner == player then
       room:addPlayerMark(player, "tianyi_win-turn", 1)
     else
       room:addPlayerMark(player, "tianyi_lose-turn", 1)
@@ -53,10 +53,89 @@ tianyi:addEffect("targetmod", {
     end
   end,
 })
+
 tianyi:addEffect("prohibit", {
   prohibit_use = function(self, player, card)
     return player:getMark("tianyi_lose-turn") > 0 and card.trueName == "slash"
   end,
 })
+
+tianyi:addTest(function(room, me)
+  local comp2, comp3, comp4 = room.players[2], room.players[3], room.players[4]
+  local slashK = room:printCard("slash", Card.Diamond, 13)
+  local jinkA = room:printCard("jink", Card.Club, 1)
+  local peachA = room:printCard("peach", Card.Spade, 1)
+  local analepticK = room:printCard("analeptic", Card.Heart, 13)
+  local slash = Fk:getCardById(1)
+  local slash2 = Fk:getCardById(2)
+
+  -- test1: 第一个出牌阶段内：对comp2发动天义，用A拼K，暂停发现不能出杀
+  FkTest.setNextReplies(me, {
+    json.encode { card = { skill = tianyi.name, }, targets = { comp2.id } },
+    json.encode { card = { subcards = { jinkA.id }, } }
+  })
+  FkTest.setNextReplies(comp2, {
+    json.encode { card = { subcards = { analepticK.id }, } }
+  })
+  -- 用了点辣鸡手段 让他在第二次询问PlayCard时切出
+  local function createTwiceClosure()
+    local i = 0
+    return function()
+      i = i + 1
+      return i == 2
+    end
+  end
+  FkTest.setRoomBreakpoint(me, "PlayCard", createTwiceClosure())
+  FkTest.runInRoom(function()
+    room:handleAddLoseSkills(me, tianyi.name)
+    room:obtainCard(me, { slashK.id, jinkA.id, slash.id, slash2.id })
+    room:obtainCard(comp2, { peachA.id, analepticK.id })
+    me:gainAnExtraTurn(false, "", {
+      who = me, reason = "", phase_table = { Player.Play }})
+  end)
+
+  -- 应该不能点杀，也不能点天义按钮
+  local handler = ClientInstance.current_request_handler --[[@as ReqPlayCard]]
+  lu.assertIsFalse(handler:cardValidity(slash.id))
+  lu.assertIsFalse(handler:skillButtonValidity(tianyi.name))
+
+  -- 结束出牌阶段，让房间恢复正常
+  FkTest.resumeRoom()
+
+  -- test2: 用K拼A，再中断一次检查tmd技能生效情况
+  FkTest.setNextReplies(me, {
+    json.encode { card = { skill = tianyi.name, }, targets = { comp2.id } },
+    json.encode { card = { subcards = { slashK.id }, } }
+  })
+  FkTest.setNextReplies(comp2, {
+    json.encode { card = { subcards = { peachA.id }, } }
+  })
+  FkTest.setRoomBreakpoint(me, "PlayCard", createTwiceClosure())
+  FkTest.runInRoom(function()
+    me:gainAnExtraTurn(false, "", {
+      who = me, reason = "", phase_table = { Player.Play }})
+  end)
+  local handler2 = ClientInstance.current_request_handler --[[@as ReqPlayCard]]
+  lu.assertIsTrue(handler2:cardValidity(slash.id))
+  handler2:selectCard(slash.id, { selected = true })
+  -- 无距离限制：可杀到所有人
+  for _, p in ipairs(room:getOtherPlayers(me)) do
+    lu.assertIsTrue(handler2:targetValidity(p.id))
+  end
+  -- 喵分叉：可多杀一个
+  handler2:selectTarget(comp2.id, { selected = true })
+  lu.assertIsTrue(handler2:targetValidity(comp3.id))
+  handler2:selectTarget(comp3.id, { selected = true })
+  lu.assertNotIsTrue(handler2:targetValidity(comp4.id))
+
+  FkTest.setNextReplies(me, {
+    json.encode{ card = slash.id, targets = { comp2.id, comp3.id }}
+  })
+  FkTest.setRoomBreakpoint(me, "PlayCard")
+  FkTest.resumeRoom()
+  -- 双刀：本阶段还可再使用杀
+  local handler3 = ClientInstance.current_request_handler --[[@as ReqPlayCard]]
+  lu.assertIsTrue(handler3:cardValidity(slash2.id))
+end)
 
 return tianyi
