@@ -26,12 +26,12 @@ guidao:addEffect(fk.AskForRetrial, {
       cancelable = true,
     })
     if card then
-      self.cost_data = {cards = {card.id}}
+      event:setCostData(self, {extra_data = card})
       return true
     end
   end,
   on_use = function(self, event, target, player, data)
-    player.room:retrial(Fk:getCardById(self.cost_data.cards[1]), player, data, self.name, true)
+    player.room:retrial(event:getCostData(self).extra_data, player, data, guidao.name, true)
   end,
 })
 

@@ -42,11 +42,10 @@ duorui:addEffect(fk.Damage, {
     })
     if choice ~= "Cancel" then
       event:setCostData(self, {tos = {data.to}, choice = choice})
-      self.cost_data = choice
       return true
     end
   end,
-  on_use = function(self, event, _, player, data)
+  on_use = function(self, event, target, player, data)
     local room = player.room
     room:abortPlayerArea(player, {event:getCostData(self).choice})
     local target = data.to

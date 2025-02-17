@@ -56,7 +56,7 @@ guzheng:addEffect(fk.EventPhaseEnd, {
       skill_name = guzheng.name,
       prompt = "#guzheng-invoke::"..target.id,
     }) then
-      event:setCostData(self, {tos = {target}})
+      event:setCostData(self, {tos = {target}, extra_data = event:getCostData(self).extra_data})
       return true
     end
   end,

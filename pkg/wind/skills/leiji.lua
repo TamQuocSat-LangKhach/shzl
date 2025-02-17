@@ -18,7 +18,7 @@ local leiji_spec = {
   end,
   on_cost = function(self, event, target, player, data)
     local room = player.room
-    local tos = room:askToChoosePlayers(player, {
+    local to = room:askToChoosePlayers(player, {
       min_num = 1,
       max_num = 1,
       targets = room.alive_players,
@@ -26,14 +26,14 @@ local leiji_spec = {
       prompt = "#leiji-choose",
       cancelable = true,
     })
-    if #tos > 0 then
-      self.cost_data = {tos = tos}
+    if #to > 0 then
+      event:setCostData(self, {tos = to})
       return true
     end
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room
-    local to = self.cost_data.tos[1]
+    local to = event:getCostData(self).tos[1]
     local judge = {
       who = to,
       reason = leiji.name,
