@@ -13,10 +13,10 @@ Fk:loadTranslationTable{
 zhenglun:addEffect(fk.EventPhaseChanging, {
   can_trigger = function(self, event, target, player, data)
     return target == player and player:hasSkill(zhenglun.name) and
-      data.to == Player.Draw and player:getMark("@orange") == 0
+      data.phase == Player.Draw and not data.skipped and player:getMark("@orange") == 0
   end,
   on_use = function(self, event, target, player, data)
-    player:skip(Player.Draw)
+    data.skipped = true
     player.room:addPlayerMark(player, "@orange")
   end,
 })

@@ -27,9 +27,10 @@ Fk:addPoxiMethod{
 shelie:addEffect(fk.EventPhaseStart, {
   anim_type = "drawcard",
   can_trigger = function(self, event, target, player, data)
-    return target == player and player:hasSkill(shelie.name) and player.phase == Player.Draw
+    return target == player and player:hasSkill(shelie.name) and player.phase == Player.Draw and not data.phase_end
   end,
   on_use = function(self, event, target, player, data)
+    data.phase_end = true
     local room = player.room
     local cards = room:getNCards(5)
     room:moveCards({
@@ -63,7 +64,6 @@ shelie:addEffect(fk.EventPhaseStart, {
       room:obtainCard(player, get, true, fk.ReasonPrey, player, shelie.name)
     end
     room:cleanProcessingArea(cards)
-    return true
   end,
 })
 

@@ -14,10 +14,11 @@ Fk:loadTranslationTable{
 zaiqi:addEffect(fk.EventPhaseStart, {
   anim_type = "support",
   can_trigger = function(self, event, target, player, data)
-    return target == player and player:hasSkill(zaiqi.name) and player.phase == Player.Draw and player:isWounded()
+    return target == player and player:hasSkill(zaiqi.name) and player.phase == Player.Draw and not data.phase_end and player:isWounded()
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room
+    data.phase_end = true
     local n = player:getLostHp()
     local cards = room:getNCards(n)
     room:moveCards{
@@ -61,7 +62,6 @@ zaiqi:addEffect(fk.EventPhaseStart, {
     if #cards > 0 then
       room:moveCardTo(cards, Card.DiscardPile, nil, fk.ReasonJustMove, zaiqi.name)
     end
-    return true
   end,
 })
 

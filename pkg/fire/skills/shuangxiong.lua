@@ -58,10 +58,11 @@ shuangxiong:addEffect("viewas", {
 shuangxiong:addEffect(fk.EventPhaseStart, {
   mute = true,
   can_trigger = function(self, event, target, player, data)
-    return target == player and player:hasSkill(shuangxiong.name) and player.phase == Player.Draw
+    return target == player and player:hasSkill(shuangxiong.name) and player.phase == Player.Draw and not data.phase_end
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room
+    data.phase_end = true
     local judge = {
       who = player,
       reason = "shuangxiong",
@@ -73,7 +74,6 @@ shuangxiong:addEffect(fk.EventPhaseStart, {
     local color = judge.card:getColorString()
     if color == "nocolor" then return end
     room:addTableMarkIfNeed(player, "@shuangxiong-turn", color)
-    return true
   end,
 })
 shuangxiong:addEffect(fk.FinishJudge, {

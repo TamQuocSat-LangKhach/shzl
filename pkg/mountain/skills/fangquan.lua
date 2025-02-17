@@ -15,10 +15,10 @@ Fk:loadTranslationTable{
 fangquan:addEffect(fk.EventPhaseChanging, {
   anim_type = "support",
   can_trigger = function(self, event, target, player, data)
-    return target == player and player:hasSkill(fangquan.name) and data.to == Player.Play
+    return target == player and player:hasSkill(fangquan.name) and data.phase == Player.Play and not data.skipped
   end,
   on_use = function (self, event, target, player, data)
-    player:skip(Player.Play)
+    data.skipped = true
   end,
 })
 fangquan:addEffect(fk.TurnEnd, {

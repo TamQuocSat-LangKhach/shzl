@@ -17,10 +17,10 @@ shensu:addEffect(fk.EventPhaseChanging, {
   anim_type = "offensive",
   events = {fk.EventPhaseChanging},
   can_trigger = function(self, event, target, player, data)
-    if target == player and player:hasSkill(self) then
-      if data.to == Player.Judge then
+    if target == player and player:hasSkill(self) and not data.skipped then
+      if data.phase == Player.Judge then
         if player.skipped_phases[Player.Draw] then return end
-      elseif data.to == Player.Play then
+      elseif data.phase == Player.Play then
         if player:isNude() then return end
       else
         return
@@ -37,7 +37,7 @@ shensu:addEffect(fk.EventPhaseChanging, {
     local targets = table.filter(room:getOtherPlayers(player, false), function (p)
       return player:canUseTo(slash, p, {bypass_distances = true, bypass_times = true})
     end)
-    if data.to == Player.Judge then
+    if data.phase == Player.Judge then
       local tos = room:askToChoosePlayers(player, {
         min_num = 1,
         max_num = max_num,
@@ -50,7 +50,7 @@ shensu:addEffect(fk.EventPhaseChanging, {
         event:setCostData(self, {tos = tos})
         return true
       end
-    elseif data.to == Player.Play then
+    elseif data.phase == Player.Play then
       local cards = table.filter(player:getCardIds("he"), function (id)
         return Fk:getCardById(id).type == Card.TypeEquip and not player:prohibitDiscard(id)
       end)
@@ -71,11 +71,12 @@ shensu:addEffect(fk.EventPhaseChanging, {
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room
-    if data.to == Player.Judge then
+    if data.phase == Player.Judge then
       player:skip(Player.Draw)
-    elseif data.to == Player.Play then
+    elseif data.phase == Player.Play then
       room:throwCard(event:getCostData(self).cards, shensu.name, player, player)
     end
+    data.skipped = true
     if player.dead then return end
     local targets = event:getCostData(self).tos
     room:sortByAction(targets)

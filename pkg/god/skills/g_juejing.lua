@@ -34,10 +34,10 @@ juejing:addEffect(fk.AfterCardsMove, {
 juejing:addEffect(fk.EventPhaseChanging, {
   anim_type = "negative",
   can_trigger = function(self, event, target, player, data)
-    return target == player and player:hasSkill(juejing.name) and data.to == Player.Draw
+    return target == player and player:hasSkill(juejing.name) and data.phase == Player.Draw and not data.skipped
   end,
   on_use = function (self, event, target, player, data)
-    player:skip(Player.Draw)
+    data.skipped = true
   end,
 })
 

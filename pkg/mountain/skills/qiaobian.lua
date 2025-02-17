@@ -18,8 +18,8 @@ Fk:loadTranslationTable{
 qiaobian:addEffect(fk.EventPhaseChanging, {
   anim_type = "control",
   can_trigger = function(self, event, target, player, data)
-    return target == player and player:hasSkill(qiaobian.name) and not player:isKongcheng() and
-      data.to > Player.Start and data.to < Player.Finish
+    return target == player and player:hasSkill(qiaobian.name) and not player:isKongcheng() and not data.skipped and
+      data.phase > Player.Start and data.phase < Player.Finish
   end,
   on_cost = function(self, event, target, player, data)
     local card =  player.room:askToDiscard(player, {
@@ -28,7 +28,7 @@ qiaobian:addEffect(fk.EventPhaseChanging, {
       min_num = 1,
       max_num = 1,
       include_equip = false,
-      prompt = "#qiaobian-invoke:::"..Util.PhaseStrMapper(data.to)
+      prompt = "#qiaobian-invoke:::"..Util.PhaseStrMapper(data.phase)
     })
     if #card > 0 then
       event:setCostData(self, {cards = card})
@@ -37,10 +37,10 @@ qiaobian:addEffect(fk.EventPhaseChanging, {
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room
-    player:skip(data.to)
+    data.skipped = true
     room:throwCard(event:getCostData(self).cards, self.name, player, player)
     if player.dead then return end
-    if data.to == Player.Draw then
+    if data.phase == Player.Draw then
       local targets = table.filter(room:getOtherPlayers(player, false), function(p)
         return not p:isKongcheng()
       end)
@@ -68,7 +68,7 @@ qiaobian:addEffect(fk.EventPhaseChanging, {
           end
         end
       end
-    elseif data.to == Player.Play then
+    elseif data.phase == Player.Play then
       local targets = room:askToChooseToMoveCardInBoard(player, {
         prompt = "#qiaobian-move",
         skill_name = self.name,
