@@ -31,6 +31,7 @@ kuanggu:addEffect(fk.Damage, {
     }
   end,
 })
+
 kuanggu:addEffect(fk.BeforeHpChanged, {
   can_refresh = function(self, event, target, player, data)
     return data.damageEvent and player == data.damageEvent.from and player:compareDistance(target, 2, "<")
@@ -40,5 +41,15 @@ kuanggu:addEffect(fk.BeforeHpChanged, {
     data.damageEvent.extra_data.kuanggucheck = true
   end,
 })
+
+kuanggu:addTest(function (room, me)
+  FkTest.runInRoom(function ()
+    room:handleAddLoseSkills(me, kuanggu.name)
+    room:loseHp(me, 3)
+    room:damage({ from = me, to = room.players[2], damage = 1})
+    room:damage({ from = me, to = room.players[3], damage = 1})
+  end)
+  lu.assertEquals(me.hp, 2)
+end)
 
 return kuanggu

@@ -23,4 +23,40 @@ liegong:addEffect(fk.TargetSpecified, {
   end,
 })
 
+liegong:addTest(function (room, me)
+  local comp2 = room.players[2]
+
+  -- test1: 出牌阶段外出杀，可以闪避
+  FkTest.setNextReplies(me, { "1" })
+  FkTest.setNextReplies(comp2, { "1" })
+  FkTest.runInRoom(function ()
+    room:handleAddLoseSkills(me, liegong.name)
+    room:obtainCard(me, { 1, 2, 3, 4 }) -- 摸4个杀
+    room:loseHp(me, 3)
+    comp2:drawCards(2)
+    room:useCard({
+      from = comp2, tos = {},
+      card = room:printCard("eight_diagram"),
+    })
+    room:moveCardTo(room:printCard("jink", Card.Heart, 3), Card.DrawPile)
+    room:useCard{
+      from = me, tos = { comp2 }, card = Fk:cloneCard("slash")
+    }
+  end)
+
+  lu.assertEquals(comp2.hp, 4)
+
+  -- test2: 出牌阶段内可烈弓（只测手牌数比血多的那段吧）
+  FkTest.setNextReplies(me, { json.encode {
+    card = 1, targets = { comp2.id },
+  }, "1", "" })
+  FkTest.setNextReplies(comp2, { "1" })
+  FkTest.runInRoom(function()
+    room:moveCardTo(room:printCard("jink", Card.Heart, 3), Card.DrawPile)
+    me:gainAnExtraPhase(Player.Play)
+  end)
+
+  lu.assertEquals(comp2.hp, 3)
+end)
+
 return liegong
