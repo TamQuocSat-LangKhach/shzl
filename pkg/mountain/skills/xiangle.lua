@@ -28,7 +28,7 @@ xiangle:addEffect(fk.TargetConfirmed, {
       pattern = ".|.|.|.|.|basic",
       prompt = "#xiangle-discard:"..player.id,
     }) == 0 then
-      table.insertIfNeed(data.nullifiedTargets, player.id)
+      table.insertIfNeed(data.nullifiedTargets, player)
     end
   end,
 })

@@ -32,7 +32,7 @@ quhu:addEffect("active", {
     local target = effect.tos[1]
     local pindian = player:pindian({target}, quhu.name)
     if player.dead or target.dead then return end
-    if pindian.results[target.id].winner == player then
+    if pindian.results[target].winner == player then
       local targets = table.filter(room.alive_players, function (p)
         return target:inMyAttackRange(p)
       end)

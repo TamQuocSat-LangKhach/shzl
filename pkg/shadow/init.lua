@@ -33,7 +33,7 @@ Fk:loadTranslationTable{
   ["#yanyan"] = "断头将军",
   ["illustrator:yanyan"] = "Town",
 
-  ["$juzhan2"] = "我州但有断头将军，无降将军也！",
+  ["~yanyan"] = "宁可断头死，安能屈膝降！",
 }
 
 General:new(extension, "wangping", "shu", 4):addSkills { "feijun", "binglue" }

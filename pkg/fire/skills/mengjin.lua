@@ -24,6 +24,7 @@ mengjin:addEffect(fk.CardEffectCancelledOut, {
       prompt = "#mengjin-invoke::"..data.to,
     }) then
       event:setCostData(self, {tos = {data.to}})
+      return true
     end
   end,
   on_use = function(self, event, target, player, data)

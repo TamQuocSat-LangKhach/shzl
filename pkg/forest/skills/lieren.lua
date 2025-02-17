@@ -20,12 +20,12 @@ lieren:addEffect(fk.Damage, {
       and player.room.logic:damageByCardEffect()
   end,
   on_cost = function (self, event, target, player, data)
-    self.cost_data = {tos = {data.to.id}}
     if player.room:askToSkillInvoke(player, {
       skill_name = lieren.name,
       prompt = "#lieren-invoke::"..data.to.id,
     }) then
       event:setCostData(self, {tos = {data.to}})
+      return true
     end
   end,
   on_use = function(self, event, target, player, data)

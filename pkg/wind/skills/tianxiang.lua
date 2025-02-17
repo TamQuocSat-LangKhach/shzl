@@ -34,23 +34,25 @@ tianxiang:addEffect(fk.EventPhaseChanging, {
       cancelable = true,
     })
     if #tos > 0 and id then
-      self.cost_data = {tos = tos, cards = {id}}
+      event:setCostData(self, {tos = tos, cards = {id}})
       return true
     end
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room
-    local to = self.cost_data.tos[1]
-    room:throwCard(self.cost_data.cards, tianxiang.name, player, player)
-    room:damage{
-      from = data.from,
-      to = to,
-      damage = data.damage,
-      damageType = data.damageType,
-      skillName = data.skillName,
-      chain = data.chain,
-      card = data.card,
-    }
+    local to = event:getCostData(self).tos[1]
+    room:throwCard(event:getCostData(self).cards, tianxiang.name, player, player)
+    if not to.dead then
+      room:damage{
+        from = data.from,
+        to = to,
+        damage = data.damage,
+        damageType = data.damageType,
+        skillName = data.skillName,
+        chain = data.chain,
+        card = data.card,
+      }
+    end
     if not to.dead then
       to:drawCards(to:getLostHp(), tianxiang.name)
     end

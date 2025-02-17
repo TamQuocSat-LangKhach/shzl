@@ -24,7 +24,7 @@ fangzhu:addEffect(fk.Damaged, {
       max_num = 1,
       targets = room:getOtherPlayers(player, false),
       skill_name = fangzhu.name,
-      prompt = "#fangzhu-choose:::"..player:getLostHp(),
+      prompt = "#gn_jieying-choose",
       cancelable = true,
     })
     if #to > 0 then

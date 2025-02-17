@@ -9,11 +9,11 @@ local fire = require (prefix.."fire")
 local forest = require (prefix.."forest")
 local mountain = require (prefix.."mountain")
 
---[[local shadow = require (prefix.."shadow")
+local shadow = require (prefix.."shadow")
 
 local thunder = require (prefix.."thunder")
 
-local god = require (prefix.."god")--]]
+local god = require (prefix.."god")
 
 Fk:loadTranslationTable{ ["shzl"] = "神话再临" }
 
@@ -22,5 +22,7 @@ return {
     fire,
     forest,
     mountain,
-    --shadow,
+    shadow,
+    thunder,
+    god,
 }

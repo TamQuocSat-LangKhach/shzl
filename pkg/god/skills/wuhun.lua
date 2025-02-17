@@ -1,0 +1,71 @@
+local wuhun = fk.CreateSkill {
+  name = "wuhun",
+  frequency = Skill.Compulsory,
+
+  on_lose = function (self, player, is_death)
+    local room = player.room
+    for _, p in ipairs(room.alive_players) do
+      room:setPlayerMark(player, "@nightmare", 0)
+    end
+  end,
+}
+
+Fk:loadTranslationTable {
+  ["wuhun"] = "武魂",
+  [":wuhun"] = "锁定技，当你受到1点伤害后，伤害来源获得1枚“梦魇”；你死亡时，令“梦魇”最多的一名其他角色判定，若不为【桃】或【桃园结义】，其死亡。",
+
+  ["@nightmare"] = "梦魇",
+  ["#wuhun-choose"] = "武魂：选择一名“梦魇”最多的其他角色",
+
+  ["$wuhun1"] = "拿命来！",
+  ["$wuhun2"] = "谁来与我同去？",
+}
+
+wuhun:addEffect(fk.Damaged, {
+  anim_type = "offensive",
+  can_trigger = function(self, event, target, player, data)
+    return target == player and player:hasSkill(wuhun.name) and
+      data.from and not data.from.dead
+  end,
+  on_use = function(self, event, target, player, data)
+    player.room:addPlayerMark(data.from, "@nightmare", data.damage)
+  end,
+})
+wuhun:addEffect(fk.Death, {
+  anim_type = "offensive",
+  can_trigger = function(self, event, target, player, data)
+    return target == player and player:hasSkill(wuhun.name, false, true)
+  end,
+  on_use = function(self, event, target, player, data)
+    local room = player.room
+    local targets = table.filter(room:getOtherPlayers(player, false), function (p)
+      return table.every(room:getOtherPlayers(player, false), function (p2)
+        return p:getMark("@nightmare") >= p2:getMark("@nightmare")
+      end)
+    end)
+    if #targets > 1 then
+      targets = room:askToChoosePlayers(player, {
+        min_num = 1,
+        max_num = 1,
+        targets = targets,
+        skill_name = wuhun.name,
+        prompt = "#wuhun-choose",
+        cancelable = false,
+      })
+    end
+    local to = targets[1]
+    local judge = {
+      who = to,
+      reason = wuhun.name,
+      pattern = "peach,god_salvation",
+    }
+    room:judge(judge)
+    if judge.card.name == "peach" or judge.card.name == "god_salvation" or to.dead then return end
+    room:killPlayer{
+      who = to,
+      killer = player,
+    }
+  end,
+})
+
+return wuhun

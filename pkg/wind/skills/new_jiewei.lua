@@ -1,4 +1,4 @@
-local y13__jiewei = fk.CreateSkill({
+local jiewei = fk.CreateSkill({
   name = "y13__jiewei",
 })
 
@@ -12,13 +12,13 @@ Fk:loadTranslationTable{
   ["$y13__jiewei2"] = "援军已到，转守为攻！",
 }
 
-y13__jiewei:addEffect(fk.TurnedOver, {
+jiewei:addEffect(fk.TurnedOver, {
   anim_type = "drawcard",
   on_use = function(self, event, target, player, data)
     local room = player.room
-    room:drawCards(player, 1, y13__jiewei.name)
+    room:drawCards(player, 1, jiewei.name)
     local use = room:askToUseRealCard(player, {
-      skill_name = y13__jiewei.name,
+      skill_name = jiewei.name,
       prompt = "#y13__jiewei-use",
       pattern = ".|.|.|.|.|trick,equip",
       cancelable = true,
@@ -33,7 +33,7 @@ y13__jiewei:addEffect(fk.TurnedOver, {
           targets = targets,
           min_num = 1,
           max_num = 1,
-          skill_name = y13__jiewei.name,
+          skill_name = jiewei.name,
           prompt = "#y13__jiewei-discard:::" .. use.card:getTypeString(),
           cancelable = true,
         })
@@ -42,13 +42,13 @@ y13__jiewei:addEffect(fk.TurnedOver, {
           local card = room:askToChooseCard(player, {
             target = to,
             flag = flag,
-            skill_name = y13__jiewei.name,
+            skill_name = jiewei.name,
           })
-          room:throwCard(card, y13__jiewei.name, to, player)
+          room:throwCard(card, jiewei.name, to, player)
         end
       end
     end
   end,
 })
 
-return y13__jiewei
+return jiewei
