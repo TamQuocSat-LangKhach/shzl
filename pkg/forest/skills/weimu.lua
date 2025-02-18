@@ -1,6 +1,6 @@
 local weimu = fk.CreateSkill {
   name = "weimu",
-  frequency = Skill.Compulsory,
+  tags = {Skill.Compulsory},
 }
 
 Fk:loadTranslationTable{

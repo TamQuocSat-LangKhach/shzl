@@ -1,6 +1,6 @@
 local jieying = fk.CreateSkill {
   name = "jieying",
-  frequency = Skill.Compulsory,
+  tags = {Skill.Compulsory},
 
   on_acquire = function (self, player, is_start)
     if player:hasSkill(self) then

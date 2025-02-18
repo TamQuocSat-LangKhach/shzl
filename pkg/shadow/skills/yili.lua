@@ -33,7 +33,7 @@ yili:addEffect(fk.EventPhaseStart, {
       local choice = (player:getMark("@orange") == 0) and "loseHp" or
         room:askToChoice(player, {
           choices = {"loseHp", "yili_lose_orange"},
-          skill_name = self.name,
+          skill_name = yili.name,
         })
       event:setCostData(self, {tos = to, choice = choice})
       return true

@@ -20,7 +20,7 @@ wanglie:addEffect(fk.CardUsing, {
   end,
   on_cost = function(self, event, target, player, data)
     return player.room:askToSkillInvoke(player, {
-      skill_name = self.name,
+      skill_name = wanglie.name,
       prompt = "#wangliec-invoke:::"..data.card:toLogString(),
     })
   end,

@@ -1,5 +1,6 @@
 local zhenliang = fk.CreateSkill {
   name = "zhenliang",
+  tags = {Skill.Switch},
 }
 
 Fk:loadTranslationTable{

@@ -1,6 +1,6 @@
 local zaoxian = fk.CreateSkill {
   name = "zaoxian",
-  frequency = Skill.Wake,
+  tags = {Skill.Wake},
 }
 
 Fk:loadTranslationTable{

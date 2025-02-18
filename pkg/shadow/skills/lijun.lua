@@ -1,5 +1,6 @@
 local lijun = fk.CreateSkill {
-  name = "lijun$",
+  name = "lijun",
+  tags = {Skill.Lord},
 }
 
 Fk:loadTranslationTable{

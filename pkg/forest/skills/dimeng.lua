@@ -22,7 +22,7 @@ dimeng:addEffect("active", {
   target_num = 2,
   prompt = "#dimeng",
   can_use = function(self, player)
-    return player:usedSkillTimes(self.name) == 0 and #Fk:currentRoom().alive_players > 2
+    return player:usedSkillTimes(dimeng.name) == 0 and #Fk:currentRoom().alive_players > 2
   end,
   card_filter = Util.FalseFunc,
   target_filter = function(self, player, to_select, selected, selected_cards)

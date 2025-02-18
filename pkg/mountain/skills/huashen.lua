@@ -52,7 +52,10 @@ local function DoHuashen(player)
   local skills = {}
   for _, skill_name in ipairs(general:getSkillNameList()) do
     local s = Fk.skills[skill_name]
-    if not (s.lordSkill or s.switchSkillName or s.frequency > 3) then
+    if Fk.skill_skels[skill_name] and
+      not table.find({Skill.Lord, Skill.Limited, Skill.Wake}, function ()
+        return table.contains(Fk.skill_skels[skill_name].tags)
+      end) then
       if #s.attachedKingdom == 0 or table.contains(s.attachedKingdom, player.kingdom) then
         table.insert(skills, s.name)
       end

@@ -1,6 +1,6 @@
 local yeyan = fk.CreateSkill {
   name = "yeyan",
-  frequency = Skill.Limited,
+  tags = {Skill.Limited},
 }
 
 Fk:loadTranslationTable{

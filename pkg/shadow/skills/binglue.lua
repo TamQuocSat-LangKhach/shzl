@@ -1,6 +1,6 @@
 local binglue = fk.CreateSkill {
   name = "binglue",
-  frequency = Skill.Compulsory,
+  tags = {Skill.Compulsory},
 }
 
 Fk:loadTranslationTable{

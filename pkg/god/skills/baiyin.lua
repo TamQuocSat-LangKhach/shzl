@@ -1,6 +1,6 @@
 local baiyin = fk.CreateSkill {
   name = "baiyin",
-  frequency = Skill.Wake,
+  tags = {Skill.Wake},
 }
 
 Fk:loadTranslationTable{

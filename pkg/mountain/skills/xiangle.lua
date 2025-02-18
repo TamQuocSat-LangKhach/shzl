@@ -1,5 +1,6 @@
 local xiangle = fk.CreateSkill {
   name = "xiangle",
+  tags = {Skill.Compulsory},
 }
 
 Fk:loadTranslationTable{

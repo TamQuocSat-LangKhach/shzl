@@ -1,5 +1,6 @@
 local shenshi = fk.CreateSkill {
   name = "shenshi",
+  tags = {Skill.Switch},
 }
 
 Fk:loadTranslationTable{
@@ -130,6 +131,8 @@ shenshi:addEffect(fk.EventPhaseStart, {
   on_use = function(self, event, target, player, data)
     player:drawCards(4 - player:getHandcardNum(), shenshi.name)
   end,
+}, {
+  is_delay_effect = true,
 })
 
 return shenshi

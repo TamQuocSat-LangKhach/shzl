@@ -22,7 +22,7 @@ zhengrong:addEffect(fk.Damage, {
   end,
   on_cost = function(self, event, target, player, data)
     if player.room:askToSkillInvoke(player, {
-      skill_name = self.name,
+      skill_name = zhengrong.name,
       prompt = "#zhengrong-invoke::"..data.to.id,
     }) then
       event:setCostData(self, {tos = {data.to}})

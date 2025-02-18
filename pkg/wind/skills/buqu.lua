@@ -106,8 +106,7 @@ buqu:addEffect(fk.HpRecover, {
 })
 buqu:addEffect(fk.AskForPeachesDone, {
   can_refresh = function(self, event, target, player, data)
-    return target == player and player:hasSkill(self) and
-      player.hp <= 0 and player.dying and player:getMark(buqu.name) > 0
+    return target == player and player.hp <= 0 and player.dying and player:getMark(buqu.name) > 0
   end,
   on_refresh = function(self, event, target, player, data)
     local room = player.room

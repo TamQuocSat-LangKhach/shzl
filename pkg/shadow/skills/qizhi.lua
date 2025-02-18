@@ -46,7 +46,7 @@ qizhi:addEffect(fk.TargetSpecified, {
       local to = room:askToChoosePlayers(player, {
         min_num = 1,
         max_num = 1,
-        targets = room:getOtherPlayers(player, false),
+        targets = targets,
         skill_name = qizhi.name,
         prompt = "#qizhi-choose",
         cancelable = true,

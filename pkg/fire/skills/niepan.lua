@@ -1,6 +1,6 @@
 local niepan = fk.CreateSkill {
   name = "niepan",
-  frequency = Skill.Limited,
+  tags = {Skill.Limited},
 }
 
 Fk:loadTranslationTable{

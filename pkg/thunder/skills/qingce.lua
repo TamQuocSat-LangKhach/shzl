@@ -33,7 +33,7 @@ qingce:addEffect("active", {
       local card = room:askToChooseCard(player, {
         target = target,
         flag = "ej",
-        skill_name = self.name,
+        skill_name = qingce.name,
       })
       room:throwCard(card, qingce.name, target, player)
     end

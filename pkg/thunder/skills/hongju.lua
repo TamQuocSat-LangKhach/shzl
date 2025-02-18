@@ -1,6 +1,6 @@
 local hongju = fk.CreateSkill {
   name = "hongju",
-  frequency = Skill.Wake,
+  tags = {Skill.Wake},
 }
 
 Fk:loadTranslationTable{

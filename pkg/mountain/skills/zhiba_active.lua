@@ -1,5 +1,5 @@
 local zhiba_active = fk.CreateSkill {
-  name = "zhiba_active",
+  name = "zhiba_active&",
 }
 
 Fk:loadTranslationTable{
@@ -46,7 +46,7 @@ zhiba_active:addEffect("active", {
     if target:usedSkillTimes("hunzi", Player.HistoryGame) + target:usedSkillTimes("m_ex__hunzi", Player.HistoryGame) > 0 and
       room:askToChoice(target, {
         choices = {"zhiba_yes", "zhiba_no"},
-        skill_name = self.name,
+        skill_name = "zhiba",
         prompt = "#zhiba-ask:" .. player.id,
       }) == "zhiba_no" then
       return

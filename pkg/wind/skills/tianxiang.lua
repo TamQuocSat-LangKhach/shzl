@@ -13,16 +13,15 @@ Fk:loadTranslationTable{
   ["$tianxiang1"] = "替我挡着~",
 }
 
-tianxiang:addEffect(fk.EventPhaseChanging, {
+tianxiang:addEffect(fk.DamageInflicted, {
   anim_type = "defensive",
-  events = {fk.DamageInflicted},
   can_trigger = function(self, event, target, player, data)
-    return target == player and player:hasSkill(self) and not player:isKongcheng()
+    return target == player and player:hasSkill(tianxiang.name) and not player:isKongcheng()
   end,
   on_cost = function(self, event, target, player, data)
     local room = player.room
     local cards = table.filter(player:getCardIds("h"), function(id)
-      return Fk:getCardById(id).suit == Card.Heart and not player:prohibitDiscard(Fk:getCardById(id))
+      return Fk:getCardById(id).suit == Card.Heart and not player:prohibitDiscard(id)
     end)
     local tos, id = room:askToChooseCardAndPlayers(player, {
       min_num = 1,

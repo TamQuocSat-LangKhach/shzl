@@ -29,7 +29,7 @@ luanji:addEffect("viewas", {
   view_as = function(self, player, cards)
     if #cards ~= 2 then return end
     local card = Fk:cloneCard("archery_attack")
-    card.skillName = self.name
+    card.skillName = luanji.name
     card:addSubcards(cards)
     return card
   end,

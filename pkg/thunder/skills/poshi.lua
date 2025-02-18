@@ -1,6 +1,6 @@
 local poshi = fk.CreateSkill {
   name = "poshi",
-  frequency = Skill.Wake,
+  tags = {Skill.Wake},
 }
 
 Fk:loadTranslationTable{

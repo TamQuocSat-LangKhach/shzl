@@ -40,7 +40,7 @@ tuntian:addEffect(fk.AfterCardsMove, {
 })
 tuntian:addEffect(fk.FinishJudge, {
   can_refresh = function(self, event, target, player, data)
-    return target == player and player:hasSkill(tuntian.name) and data.reason == self.name
+    return target == player and player:hasSkill(tuntian.name) and data.reason == tuntian.name
   end,
   on_refresh = function(self, event, target, player, data)
     if data.card.suit ~= Card.Heart and player.room:getCardArea(data.card) == Card.Processing then

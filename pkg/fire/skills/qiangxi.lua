@@ -34,16 +34,16 @@ qiangxi:addEffect("active", {
     local player = effect.from
     local target = effect.tos[1]
     if #effect.cards > 0 then
-      room:throwCard(effect.cards, self.name, player, player)
+      room:throwCard(effect.cards, qiangxi.name, player, player)
     else
-      room:loseHp(player, 1, self.name)
+      room:loseHp(player, 1, qiangxi.name)
     end
     if not target.dead then
       room:damage{
         from = player,
         to = target,
         damage = 1,
-        skillName = self.name,
+        skillName = qiangxi.name,
       }
     end
   end,

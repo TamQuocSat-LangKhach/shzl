@@ -1,6 +1,6 @@
 local wuhun = fk.CreateSkill {
   name = "wuhun",
-  frequency = Skill.Compulsory,
+  tags = {Skill.Compulsory},
 
   on_lose = function (self, player, is_death)
     local room = player.room

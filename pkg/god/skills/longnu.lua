@@ -1,6 +1,6 @@
 local longnu = fk.CreateSkill {
   name = "longnu",
-  frequency = Skill.Compulsory,
+  tags = {Skill.Compulsory, Skill.Switch},
 }
 
 Fk:loadTranslationTable{

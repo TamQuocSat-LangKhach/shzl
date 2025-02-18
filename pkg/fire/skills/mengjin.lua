@@ -34,7 +34,7 @@ mengjin:addEffect(fk.CardEffectCancelledOut, {
       skill_name = mengjin.name,
       flag = "he",
     })
-    room:throwCard(card, self.name, data.to, player)
+    room:throwCard(card, mengjin.name, data.to, player)
   end,
 })
 

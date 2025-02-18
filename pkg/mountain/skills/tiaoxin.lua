@@ -19,7 +19,7 @@ tiaoxin:addEffect("active", {
   card_num = 0,
   target_num = 1,
   can_use = function(self, player)
-    return player:usedSkillTimes(self.name, Player.HistoryPhase) == 0
+    return player:usedSkillTimes(tiaoxin.name, Player.HistoryPhase) == 0
   end,
   card_filter = Util.FalseFunc,
   target_filter = function(self, player, to_select, selected)
@@ -33,7 +33,7 @@ tiaoxin:addEffect("active", {
       pattern = "slash",
       prompt = "#tiaoxin-use:"..player.id,
       extra_data = {
-        exclusive_targets = {player},
+        exclusive_targets = {player.id},
         bypass_times = true,
       }
     })

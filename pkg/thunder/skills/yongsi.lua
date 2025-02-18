@@ -1,6 +1,6 @@
 local yongsi = fk.CreateSkill {
   name = "thunder__yongsi",
-  frequency = Skill.Compulsory,
+  tags = {Skill.Compulsory},
 }
 
 Fk:loadTranslationTable{

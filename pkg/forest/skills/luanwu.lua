@@ -1,6 +1,6 @@
 local luanwu = fk.CreateSkill {
   name = "luanwu",
-  frequency = Skill.Limited,
+  tags = {Skill.Limited},
 }
 
 Fk:loadTranslationTable{
@@ -42,7 +42,7 @@ luanwu:addEffect("active", {
           prompt = "#luanwu-use",
           cancelable = true,
           extra_data = {
-            exclusive_targets = luanwu_targets,
+            exclusive_targets = table.map(luanwu_targets, Util.IdMapper),
             bypass_times = true,
           }
         })

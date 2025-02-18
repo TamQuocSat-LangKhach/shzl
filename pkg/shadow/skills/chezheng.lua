@@ -1,6 +1,6 @@
 local chezheng = fk.CreateSkill {
   name = "chezheng",
-  frequency = Skill.Compulsory,
+  tags = {Skill.Compulsory},
 }
 
 Fk:loadTranslationTable{
@@ -46,7 +46,7 @@ chezheng:addEffect(fk.EventPhaseEnd, {
       local card = room:askToChooseCard(player, {
         target = to,
         flag = "he",
-        skill_name = self.name,
+        skill_name = chezheng.name,
       })
       room:throwCard(card, chezheng.name, to, player)
     end

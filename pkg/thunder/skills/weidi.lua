@@ -1,5 +1,6 @@
 local weidi = fk.CreateSkill {
-  name = "thunder__weidi$",
+  name = "thunder__weidi",
+  tags = {Skill.Lord},
 }
 
 Fk:loadTranslationTable{

@@ -1,6 +1,6 @@
 local junlue = fk.CreateSkill {
   name = "junlue",
-  frequency = Skill.Compulsory,
+  tags = {Skill.Compulsory},
 
   on_lose = function (self, player, is_death)
     player.room:setPlayerMark(player, "@junlue", 0)

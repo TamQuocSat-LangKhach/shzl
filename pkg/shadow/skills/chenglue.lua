@@ -1,6 +1,6 @@
 local chenglue = fk.CreateSkill {
   name = "chenglue",
-  frequency = Skill.Compulsory,
+  tags = {Skill.Switch},
 }
 
 Fk:loadTranslationTable{

@@ -15,7 +15,7 @@ Fk:loadTranslationTable{
 
 jueyan:addEffect("active", {
   can_use = function (self, player)
-    return #player:getAvailableEquipSlots() > 0 and player:usedSkillTimes(self.name, Player.HistoryPhase) == 0
+    return #player:getAvailableEquipSlots() > 0 and player:usedSkillTimes(jueyan.name, Player.HistoryPhase) == 0
   end,
   card_num = 0,
   target_num = 0,

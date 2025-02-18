@@ -1,6 +1,6 @@
 local roulin = fk.CreateSkill {
   name = "roulin",
-  frequency = Skill.Compulsory,
+  tags = {Skill.Compulsory},
 }
 
 Fk:loadTranslationTable{

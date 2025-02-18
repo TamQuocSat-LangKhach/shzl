@@ -3,8 +3,8 @@ local huangtian_active = fk.CreateSkill({
 })
 
 Fk:loadTranslationTable{
-  ["huangtian_other&"] = "黄天",
-  [":huangtian_other&"] = "出牌阶段限一次，你可将一张【闪】或【闪电】（正面朝上移动）交给张角。",
+  ["huangtian_active&"] = "黄天",
+  [":huangtian_active&"] = "出牌阶段限一次，你可将一张【闪】或【闪电】（正面朝上移动）交给张角。",
 
   ["#huangtian"] = "黄天：将一张【闪】或【闪电】交给张角",
 }

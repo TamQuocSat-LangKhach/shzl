@@ -38,7 +38,7 @@ qiaobian:addEffect(fk.EventPhaseChanging, {
   on_use = function(self, event, target, player, data)
     local room = player.room
     data.skipped = true
-    room:throwCard(event:getCostData(self).cards, self.name, player, player)
+    room:throwCard(event:getCostData(self).cards, qiaobian.name, player, player)
     if player.dead then return end
     if data.phase == Player.Draw then
       local targets = table.filter(room:getOtherPlayers(player, false), function(p)
@@ -71,7 +71,7 @@ qiaobian:addEffect(fk.EventPhaseChanging, {
     elseif data.phase == Player.Play then
       local targets = room:askToChooseToMoveCardInBoard(player, {
         prompt = "#qiaobian-move",
-        skill_name = self.name,
+        skill_name = qiaobian.name,
         cancelable = true,
       })
       if #targets == 2 then

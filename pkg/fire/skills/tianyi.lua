@@ -20,7 +20,7 @@ tianyi:addEffect("active", {
   card_num = 0,
   target_num = 1,
   can_use = function(self, player)
-    return not player:isKongcheng() and player:usedSkillTimes(self.name, Player.HistoryPhase) == 0
+    return not player:isKongcheng() and player:usedSkillTimes(tianyi.name, Player.HistoryPhase) == 0
   end,
   card_filter = Util.FalseFunc,
   target_filter = function(self, player, to_select, selected, selected_cards)
@@ -29,7 +29,7 @@ tianyi:addEffect("active", {
   on_use = function(self, room, effect)
     local player = effect.from
     local target = effect.tos[1]
-    local pindian = player:pindian({target}, self.name)
+    local pindian = player:pindian({target}, tianyi.name)
     if player.dead then return end
     if pindian.results[target].winner == player then
       room:addPlayerMark(player, "tianyi_win-turn", 1)

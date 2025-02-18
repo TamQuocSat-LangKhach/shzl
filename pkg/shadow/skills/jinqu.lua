@@ -32,7 +32,7 @@ jinqu:addEffect(fk.EventPhaseStart, {
         min_num = n,
         max_num = n,
         include_equip = false,
-        skill_name = self.name,
+        skill_name = jinqu.name,
         cancelable = false,
       })
     end
