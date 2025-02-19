@@ -35,8 +35,7 @@ fuyin:addEffect(fk.TargetConfirmed, {
     end
   end,
   on_use = function(self, event, target, player, data)
-    data.use.nullifiedTargets = data.use.nullifiedTargets or {}
-    table.insertIfNeed(data.use.nullifiedTargets, player)
+    data.nullified = true
   end,
 })
 
