@@ -18,8 +18,8 @@ liegong:addEffect(fk.TargetSpecified, {
       (data.to:getHandcardNum() <= player:getAttackRange() or data.to:getHandcardNum() >= player.hp)
   end,
   on_use = function(self, event, target, player, data)
-    data.disresponsiveList = data.disresponsiveList or {}
-    table.insert(data.disresponsiveList, data.to)
+    data.use.disresponsiveList = data.use.disresponsiveList or {}
+    table.insert(data.use.disresponsiveList, data.to)
   end,
 })
 
