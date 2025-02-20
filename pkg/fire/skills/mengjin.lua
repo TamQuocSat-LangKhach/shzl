@@ -16,12 +16,12 @@ mengjin:addEffect(fk.CardEffectCancelledOut, {
   anim_type = "offensive",
   can_trigger = function(self, event, target, player, data)
     return target == player and player:hasSkill(mengjin.name) and
-      data.card.trueName == "slash" and not data.to:isNude()
+      data.card.trueName == "slash" and not data.to:isNude() and not data.to.dead
   end,
   on_cost = function (self, event, target, player, data)
     if player.room:askToSkillInvoke(player, {
       skill_name = mengjin.name,
-      prompt = "#mengjin-invoke::"..data.to,
+      prompt = "#mengjin-invoke::"..data.to.id,
     }) then
       event:setCostData(self, {tos = {data.to}})
       return true

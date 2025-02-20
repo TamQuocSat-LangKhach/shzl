@@ -1,6 +1,6 @@
 local luanwu = fk.CreateSkill {
   name = "luanwu",
-  tags = {Skill.Limited},
+  tags = { Skill.Limited },
 }
 
 Fk:loadTranslationTable{
@@ -25,9 +25,8 @@ luanwu:addEffect("active", {
   card_filter = Util.FalseFunc,
   on_use = function(self, room, effect)
     local player = effect.from
-    local targets = room:getOtherPlayers(player)
-    room:doIndicate(player.id, table.map(targets, Util.IdMapper))
-    for _, target in ipairs(targets) do
+    room:doIndicate(player, room:getOtherPlayers(player, false))
+    for _, target in ipairs(room:getOtherPlayers(player)) do
       if not target.dead then
         local other_players = table.filter(room:getOtherPlayers(target, false), function(p)
           return not p:isRemoved()

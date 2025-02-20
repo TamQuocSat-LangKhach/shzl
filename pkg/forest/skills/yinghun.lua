@@ -15,9 +15,8 @@ Fk:loadTranslationTable{
   ["$yinghun2"] = "不诛此贼三族，则吾死不瞑目！",
 }
 
-yinghun:addEffect(fk.Damage, {
+yinghun:addEffect(fk.EventPhaseStart, {
   mute = true,
-  events = {fk.EventPhaseStart},
   can_trigger = function(self, event, target, player, data)
     return target == player and player:hasSkill(yinghun.name) and player.phase == Player.Start and player:isWounded() and
       #player.room:getOtherPlayers(player, false) > 0

@@ -1,10 +1,6 @@
 local junlue = fk.CreateSkill {
   name = "junlue",
-  tags = {Skill.Compulsory},
-
-  on_lose = function (self, player, is_death)
-    player.room:setPlayerMark(player, "@junlue", 0)
-  end,
+  tags = { Skill.Compulsory },
 }
 
 Fk:loadTranslationTable{
@@ -17,6 +13,9 @@ Fk:loadTranslationTable{
   ["$junlue2"] = "文韬武略兼备，方可破敌如破竹。",
 }
 
+junlue:addLoseEffect(function (self, player)
+  player.room:setPlayerMark(player, "@junlue", 0)
+end)
 junlue:addEffect(fk.Damage, {
   on_use = function(self, event, target, player, data)
     player.room:addPlayerMark(player, "@junlue", data.damage)

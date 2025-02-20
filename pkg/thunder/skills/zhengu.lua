@@ -1,14 +1,5 @@
 local zhengu = fk.CreateSkill {
   name = "zhengu",
-
-  on_lose = function (self, player, is_death)
-    if is_death then
-      local room = player.room
-      for _, p in ipairs(room.alive_players) do
-        room:removeTableMark(p, "@@zhengu", player.id)
-      end
-    end
-  end,
 }
 
 Fk:loadTranslationTable{
@@ -22,6 +13,14 @@ Fk:loadTranslationTable{
   ["$zhengu2"] = "孔明计虽百算，却难敌吾镇骨千具！",
 }
 
+zhengu:addLoseEffect(function (self, player, is_death)
+  if is_death then
+    local room = player.room
+    for _, p in ipairs(room.alive_players) do
+      room:removeTableMark(p, "@@zhengu", player.id)
+    end
+  end
+end)
 zhengu:addEffect(fk.EventPhaseStart, {
   anim_type = "control",
   can_trigger = function(self, event, target, player, data)

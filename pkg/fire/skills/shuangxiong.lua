@@ -56,7 +56,7 @@ shuangxiong:addEffect("viewas", {
   end,
 })
 shuangxiong:addEffect(fk.EventPhaseStart, {
-  mute = true,
+  anim_type = "offensive",
   can_trigger = function(self, event, target, player, data)
     return target == player and player:hasSkill(shuangxiong.name) and player.phase == Player.Draw and not data.phase_end
   end,
@@ -67,8 +67,6 @@ shuangxiong:addEffect(fk.EventPhaseStart, {
       who = player,
       reason = "shuangxiong",
     }
-    room:notifySkillInvoked(player, "shuangxiong", "offensive")
-    player:broadcastSkillInvoke("shuangxiong")
     player:revealBySkillName("shuangxiong") -- 先这样
     room:judge(judge)
     local color = judge.card:getColorString()
@@ -84,8 +82,10 @@ shuangxiong:addEffect(fk.FinishJudge, {
   end,
   on_cost = Util.TrueFunc,
   on_use = function(self, event, target, player, data)
-    player.room:obtainCard(player, data.card, true, fk.ReasonJustMove, player.id, shuangxiong.name)
+    player.room:obtainCard(player, data.card, true, fk.ReasonJustMove, player, shuangxiong.name)
   end,
+}, {
+  is_delay_effect = true,
 })
 
 return shuangxiong

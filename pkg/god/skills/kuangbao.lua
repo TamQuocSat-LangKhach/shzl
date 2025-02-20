@@ -1,10 +1,6 @@
 local kuangbao = fk.CreateSkill {
   name = "kuangbao",
-  tags = {Skill.Compulsory},
-
-  on_lose = function (self, player, is_death)
-    player.room:setPlayerMark(player, "@baonu", 0)
-  end,
+  tags = { Skill.Compulsory },
 }
 
 Fk:loadTranslationTable{
@@ -17,6 +13,9 @@ Fk:loadTranslationTable{
   ["$kuangbao2"] = "哼！",
 }
 
+kuangbao:addLoseEffect(function (self, player)
+  player.room:setPlayerMark(player, "@baonu", 0)
+end)
 kuangbao:addEffect(fk.GameStart, {
   can_trigger = function(self, event, target, player, data)
     return player:hasSkill(kuangbao.name)

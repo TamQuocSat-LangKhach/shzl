@@ -26,7 +26,7 @@ zaiqi:addEffect(fk.EventPhaseStart, {
       toArea = Card.Processing,
       moveReason = fk.ReasonJustMove,
       skillName = zaiqi.name,
-      proposer = player.id,
+      proposer = player,
     }
     room:delay(2000)
     local hearts, to_get = {}, {}
@@ -46,22 +46,12 @@ zaiqi:addEffect(fk.EventPhaseStart, {
           skillName = zaiqi.name,
         })
       end
-      room:moveCards{
-        ids = hearts,
-        toArea = Card.DiscardPile,
-        moveReason = fk.ReasonPutIntoDiscardPile,
-        skillName = zaiqi.name,
-      }
+      room:cleanProcessingArea(hearts)
     end
     if #to_get > 0 and not player.dead then
       room:obtainCard(player, to_get, true, fk.ReasonJustMove, player, zaiqi.name)
     end
-    cards = table.filter(cards, function (id)
-      return room:getCardArea(id) == Card.Processing
-    end)
-    if #cards > 0 then
-      room:moveCardTo(cards, Card.DiscardPile, nil, fk.ReasonJustMove, zaiqi.name)
-    end
+    room:cleanProcessingArea(cards)
   end,
 })
 

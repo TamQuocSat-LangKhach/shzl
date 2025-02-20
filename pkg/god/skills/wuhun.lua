@@ -1,13 +1,6 @@
 local wuhun = fk.CreateSkill {
   name = "wuhun",
-  tags = {Skill.Compulsory},
-
-  on_lose = function (self, player, is_death)
-    local room = player.room
-    for _, p in ipairs(room.alive_players) do
-      room:setPlayerMark(player, "@nightmare", 0)
-    end
-  end,
+  tags = { Skill.Compulsory },
 }
 
 Fk:loadTranslationTable {
@@ -21,6 +14,12 @@ Fk:loadTranslationTable {
   ["$wuhun2"] = "谁来与我同去？",
 }
 
+wuhun:addLoseEffect(function (self, player)
+  local room = player.room
+  for _, p in ipairs(room.alive_players) do
+    room:setPlayerMark(p, "@nightmare", 0)
+  end
+end)
 wuhun:addEffect(fk.Damaged, {
   anim_type = "offensive",
   can_trigger = function(self, event, target, player, data)

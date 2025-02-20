@@ -1,6 +1,6 @@
 local songwei = fk.CreateSkill {
   name = "songwei",
-  tags = {Skill.Lord},
+  tags = { Skill.Lord },
 }
 
 Fk:loadTranslationTable{

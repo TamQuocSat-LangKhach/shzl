@@ -1,14 +1,5 @@
 local jieying = fk.CreateSkill {
   name = "gn_jieying",
-
-  on_lose = function (self, player, is_death)
-    local room = player.room
-    if table.every(room.alive_players, function (p) return not p:hasSkill("gn_jieying", true) end) then
-      for _, p in ipairs(room.alive_players) do
-        room:setPlayerMark(p, "@@jieying_camp", 0)
-      end
-    end
-  end,
 }
 
 Fk:loadTranslationTable{
@@ -22,6 +13,15 @@ Fk:loadTranslationTable{
   ["$gn_jieying1"] = "裹甲衔枚，劫营如入无人之境。",
   ["$gn_jieying2"] = "劫营速战，措手不及。",
 }
+
+jieying:addLoseEffect(function (self, player)
+  local room = player.room
+  if table.every(room.alive_players, function (p) return not p:hasSkill(jieying.name, true) end) then
+    for _, p in ipairs(room.alive_players) do
+      room:setPlayerMark(p, "@@jieying_camp", 0)
+    end
+  end
+end)
 
 jieying:addEffect(fk.TurnStart, {
   anim_type = "special",

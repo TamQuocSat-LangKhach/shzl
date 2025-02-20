@@ -1,10 +1,6 @@
 local renjie = fk.CreateSkill {
   name = "renjie",
-  tags = {Skill.Compulsory},
-
-  on_lose = function (self, player, is_death)
-    player.room:setPlayerMark(player, "@godsimayi_bear", 0)
-  end,
+  tags = { Skill.Compulsory },
 }
 
 Fk:loadTranslationTable{
@@ -17,6 +13,9 @@ Fk:loadTranslationTable{
   ["$renjie2"] = "退一步，海阔天空。",
 }
 
+renjie:addLoseEffect(function (self, player)
+  player.room:setPlayerMark(player, "@godsimayi_bear", 0)
+end)
 renjie:addEffect(fk.Damaged, {
   anim_type = "masochism",
   on_use = function(self, event, target, player, data)

@@ -1,6 +1,7 @@
 local huangtian = fk.CreateSkill({
   name = "huangtian",
-  tags = {Skill.Lord},
+  tags = { Skill.Lord },
+  attached_skill_name = "huangtian_active&",
 })
 
 Fk:loadTranslationTable{
@@ -15,6 +16,17 @@ Fk:loadTranslationTable{
   ["$huangtian2"] = "岁在甲子，天下大吉！",
 }
 
+huangtian:addAcquireEffect(function (self, player)
+  local room = player.room
+  for _, p in ipairs(room:getOtherPlayers(player, false)) do
+    if p.kingdom == "qun" then
+      room:handleAddLoseSkills(p, "huangtian_active&", nil, false, true)
+    else
+      room:handleAddLoseSkills(p, "-huangtian_active&", nil, false, true)
+    end
+  end
+end)
+
 huangtian:addEffect(fk.AfterPropertyChange, {
   can_refresh = function(self, event, target, player, data)
     return target == player
@@ -27,17 +39,6 @@ huangtian:addEffect(fk.AfterPropertyChange, {
       room:handleAddLoseSkills(player, "huangtian_active&", nil, false, true)
     else
       room:handleAddLoseSkills(player, "-huangtian_active&", nil, false, true)
-    end
-  end,
-
-  attached_skill_name = "huangtian_active&",
-
-  on_acquire = function(self, player)
-    local room = player.room
-    for _, p in ipairs(room.alive_players) do
-      if p ~= player and p.kingdom == "qun" then
-        room:handleAddLoseSkills(p, "huangtian_active&", nil, false, true)
-      end
     end
   end,
 })

@@ -1,6 +1,6 @@
 local roulin = fk.CreateSkill {
   name = "roulin",
-  tags = {Skill.Compulsory},
+  tags = { Skill.Compulsory },
 }
 
 Fk:loadTranslationTable{
@@ -24,7 +24,7 @@ roulin:addEffect(fk.TargetSpecified, {
   on_use = roulin_on_use,
 })
 roulin:addEffect(fk.TargetConfirmed, {
-  anim_type = "offensive",
+  anim_type = "negative",
   can_trigger = function(self, event, target, player, data)
     return target == player and player:hasSkill(roulin.name) and data.card.trueName == "slash" and data.from:isFemale()
   end,

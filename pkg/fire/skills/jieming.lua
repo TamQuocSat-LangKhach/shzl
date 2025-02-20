@@ -15,9 +15,8 @@ Fk:loadTranslationTable{
 jieming:addEffect(fk.Damaged, {
   anim_type = "masochism",
   on_trigger = function(self, event, target, player, data)
-    self.cancel_cost = false
     for i = 1, data.damage do
-      if self.cancel_cost or player.dead then break end
+      if event:isCancelCost(self) or not player:hasSkill(jieming.name) then break end
       self:doCost(event, target, player, data)
     end
   end,
@@ -35,7 +34,6 @@ jieming:addEffect(fk.Damaged, {
       event:setCostData(self, {tos = to})
       return true
     end
-    self.cancel_cost = true
   end,
   on_use = function(self, event, target, player, data)
     local to = event:getCostData(self).tos[1]

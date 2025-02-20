@@ -1,6 +1,7 @@
 local zhiba = fk.CreateSkill {
   name = "zhiba",
-  tags = {Skill.Lord},
+  tags = { Skill.Lord },
+  attached_skill_name = "zhiba_active&",
 }
 
 Fk:loadTranslationTable{
@@ -15,6 +16,17 @@ Fk:loadTranslationTable{
   ["$zhiba2"] = "是友是敌，一探便知。",
 }
 
+zhiba:addAcquireEffect(function (self, player)
+  local room = player.room
+  for _, p in ipairs(room:getOtherPlayers(player, false)) do
+    if p.kingdom == "wu" then
+      room:handleAddLoseSkills(p, "zhiba_active&", nil, false, true)
+    else
+      room:handleAddLoseSkills(p, "-zhiba_active&", nil, false, true)
+    end
+  end
+end)
+
 zhiba:addEffect(fk.AfterPropertyChange, {
   can_refresh = function(self, event, target, player, data)
     return target == player
@@ -27,18 +39,6 @@ zhiba:addEffect(fk.AfterPropertyChange, {
       room:handleAddLoseSkills(player, "zhiba_active&", nil, false, true)
     else
       room:handleAddLoseSkills(player, "-zhiba_active&", nil, false, true)
-    end
-  end,
-
-  --FIXME: 应该加在skel而非addEffect
-  attached_skill_name = "zhiba_active&",
-
-  on_acquire = function(self, player)
-    local room = player.room
-    for _, p in ipairs(room.alive_players) do
-      if p ~= player and p.kingdom == "wu" then
-        room:handleAddLoseSkills(p, "zhiba_active&", nil, false, true)
-      end
     end
   end,
 })

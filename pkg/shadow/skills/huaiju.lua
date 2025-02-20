@@ -1,17 +1,6 @@
 local huaiju = fk.CreateSkill {
   name = "huaiju",
-  tags = {Skill.Compulsory},
-
-  on_lose = function (self, player, is_death)
-    local room = player.room
-    if table.every(room.alive_players, function (p)
-      return not p:hasSkill("huaiju", true, true)
-    end) then
-      for _, p in ipairs(room.alive_players) do
-        room:setPlayerMark(p, "@orange", 0)
-      end
-    end
-  end,
+  tags = { Skill.Compulsory },
 }
 
 Fk:loadTranslationTable{
@@ -24,6 +13,16 @@ Fk:loadTranslationTable{
   ["$huaiju2"] = "袖中怀绿桔，遗母报乳哺。",
 }
 
+huaiju:addLoseEffect(function (self, player)
+  local room = player.room
+  if table.every(room.alive_players, function (p)
+    return not p:hasSkill("huaiju", true, true)
+  end) then
+    for _, p in ipairs(room.alive_players) do
+      room:setPlayerMark(p, "@orange", 0)
+    end
+  end
+end)
 huaiju:addEffect(fk.GameStart, {
   can_trigger = function(self, event, target, player, data)
     return player:hasSkill(huaiju.name)

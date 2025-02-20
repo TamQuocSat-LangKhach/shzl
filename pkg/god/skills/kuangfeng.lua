@@ -15,20 +15,22 @@ Fk:loadTranslationTable{
 
 kuangfeng:addEffect(fk.EventPhaseStart, {
   anim_type = "offensive",
-  expand_pile = "$star",
   can_trigger = function(self, event, target, player, data)
     return target == player and player:hasSkill(kuangfeng.name) and player.phase == Player.Finish and #player:getPile("$star") > 0
   end,
   on_cost = function(self, event, target, player, data)
     local room = player.room
-    local tos, id = room:askToChooseCardAndPlayers(player, {
+    local tos, id = room:askToChooseCardsAndPlayers(player, {
       min_num = 1,
       max_num = 1,
+      min_card_num = 1,
+      max_card_num = 1,
       targets = room.alive_players,
       pattern = ".|.|.|$star",
       skill_name = kuangfeng.name,
       prompt = "#kuangfeng-invoke",
       cancelable = true,
+      expand_pile = player:getPile("$star")
     })
     if #tos > 0 and id then
       event:setCostData(self, {tos = tos, cards = {id}})

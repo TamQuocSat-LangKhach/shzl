@@ -26,6 +26,13 @@ Fk:loadTranslationTable{
   ["$buqu1"] = "还不够！",
 }
 
+buqu:addLoseEffect(function (self, player, is_death)
+  if not is_death and player.hp <= 0 then
+    player.room:enterDying({
+      who = player,
+    })
+  end
+end)
 buqu:addEffect(fk.BeforeHpChanged, {
   anim_type = "defensive",
   can_trigger = function(self, event, target, player, data)

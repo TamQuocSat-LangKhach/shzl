@@ -1,6 +1,6 @@
 local juxiang = fk.CreateSkill {
   name = "juxiang",
-  tags = {Skill.Compulsory},
+  tags = { Skill.Compulsory },
 }
 
 Fk:loadTranslationTable{
@@ -16,7 +16,9 @@ juxiang:addEffect(fk.PreCardEffect, {
   can_trigger = function(self, event, target, player, data)
     return player:hasSkill(juxiang.name) and data.card.trueName == "savage_assault" and data.to == player
   end,
-  on_use = Util.TrueFunc,
+  on_use = function (self, event, target, player, data)
+    data.nullified = true
+  end,
 })
 juxiang:addEffect(fk.CardUseFinished, {
   anim_type = "drawcard",

@@ -59,7 +59,8 @@ haoshi:addEffect(fk.AfterDrawNCards, {
     })
     room:moveCardTo(cards, Card.PlayerHand, tos[1], fk.ReasonGive, haoshi.name, nil, false, player)
   end,
+}, {
+  is_delay_effect = true,
 })
-
 
 return haoshi

@@ -1,6 +1,6 @@
 local wansha = fk.CreateSkill {
   name = "wansha",
-  tags = {Skill.Compulsory},
+  tags = { Skill.Compulsory },
 }
 
 Fk:loadTranslationTable{
@@ -16,7 +16,7 @@ wansha:addEffect(fk.EnterDying, {
     return player:hasSkill(wansha.name) and player.room.current == player
   end,
   on_refresh = function(self, event, target, player, data)
-    player.room:notifySkillInvoked(player, wansha.name)
+    player.room:notifySkillInvoked(player, wansha.name, "offensive")
     player:broadcastSkillInvoke(wansha.name)
   end,
 })

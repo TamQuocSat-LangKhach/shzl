@@ -1,6 +1,6 @@
 local huoshou = fk.CreateSkill {
   name = "huoshou",
-  tags = {Skill.Compulsory},
+  tags = { Skill.Compulsory },
 }
 
 Fk:loadTranslationTable{
@@ -16,7 +16,9 @@ huoshou:addEffect(fk.PreCardEffect, {
   can_trigger = function(self, event, target, player, data)
     return player:hasSkill(huoshou.name) and data.card.trueName == "savage_assault" and data.to == player
   end,
-  on_use = Util.TrueFunc,
+  on_use = function (self, event, target, player, data)
+    data.nullified = true
+  end,
 })
 huoshou:addEffect(fk.TargetSpecified, {
   anim_type = "defensive",
