@@ -24,7 +24,7 @@ qizhi:addEffect(fk.TargetSpecified, {
   on_cost = function(self, event, target, player, data)
     local room = player.room
     local targets = table.filter(room.alive_players, function(p)
-      return not p:isNude() and not table.contains(data.tos, p)
+      return not p:isNude() and not table.contains(data.use.tos, p)
     end)
     if table.contains(targets, player) and
       not table.find(player:getCardIds("he"), function (id)

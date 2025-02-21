@@ -23,8 +23,7 @@ fuyin:addEffect(fk.TargetConfirmed, {
       if mark == 0 then
         room.logic:getEventsOfScope(GameEvent.UseCard, 1, function (e)
           local use = e.data
-          if table.contains({"slash", "duel"}, use.card.trueName) and
-          table.contains(use.tos, player) then
+          if table.contains({"slash", "duel"}, use.card.trueName) and table.contains(use.tos, player) then
             mark = e.id
             room:setPlayerMark(player, "fuyin_record-turn", mark)
             return true

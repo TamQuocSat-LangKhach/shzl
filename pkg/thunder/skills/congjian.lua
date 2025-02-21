@@ -18,7 +18,7 @@ congjian:addEffect(fk.TargetConfirmed, {
   can_trigger = function(self, event, target, player, data)
     return target == player and player:hasSkill(congjian.name) and data.card.type == Card.TypeTrick and
       #data.use.tos > 1 and not player:isNude() and
-      table.find(data.tos, function (p)
+      table.find(data.use.tos, function (p)
         return p ~= player and not p.dead
       end)
   end,
