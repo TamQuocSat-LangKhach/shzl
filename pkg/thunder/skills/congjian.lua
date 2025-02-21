@@ -26,7 +26,9 @@ congjian:addEffect(fk.TargetConfirmed, {
     local room = player.room
     local targets = data.tos
     table.removeOne(targets, player)
-    local tos, id = room:askToChooseCardAndPlayers(player, {
+    local tos, cards = room:askToChooseCardsAndPlayers(player, {
+      min_card_num = 1,
+      max_card_num = 1,
       min_num = 1,
       max_num = 1,
       targets = targets,
@@ -34,8 +36,8 @@ congjian:addEffect(fk.TargetConfirmed, {
       prompt = "#congjian-give",
       cancelable = true,
     })
-    if #tos > 0 and id then
-      event:setCostData(self, {tos = tos, cards = {id}})
+    if #tos > 0 and #cards > 0 then
+      event:setCostData(self, {tos = tos, cards = cards})
       return true
     end
   end,

@@ -14,7 +14,7 @@ Fk:loadTranslationTable{
 juxiang:addEffect(fk.PreCardEffect, {
   anim_type = "defensive",
   can_trigger = function(self, event, target, player, data)
-    return player:hasSkill(juxiang.name) and data.card.trueName == "savage_assault" and data.to == player
+    return player:hasSkill(juxiang.name) and data.card.name == "savage_assault" and data.to == player
   end,
   on_use = function (self, event, target, player, data)
     data.nullified = true
@@ -23,7 +23,8 @@ juxiang:addEffect(fk.PreCardEffect, {
 juxiang:addEffect(fk.CardUseFinished, {
   anim_type = "drawcard",
   can_trigger = function(self, event, target, player, data)
-    return target ~= player and player:hasSkill(juxiang.name) and player.room:getCardArea(data.card) == Card.Processing
+    return target ~= player and player:hasSkill(juxiang.name) and player.room:getCardArea(data.card) == Card.Processing and
+      data.card.name == "savage_assault"
   end,
   on_use = function(self, event, target, player, data)
     player.room:obtainCard(player, data.card, true, fk.ReasonJustMove, player, juxiang.name)

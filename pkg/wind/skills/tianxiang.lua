@@ -20,20 +20,20 @@ tianxiang:addEffect(fk.DamageInflicted, {
   end,
   on_cost = function(self, event, target, player, data)
     local room = player.room
-    local cards = table.filter(player:getCardIds("h"), function(id)
-      return Fk:getCardById(id).suit == Card.Heart and not player:prohibitDiscard(id)
-    end)
-    local tos, id = room:askToChooseCardAndPlayers(player, {
+    local tos, cards = room:askToChooseCardsAndPlayers(player, {
+      min_card_num = 1,
+      max_card_num = 1,
       min_num = 1,
       max_num = 1,
       targets = room:getOtherPlayers(player, false),
-      pattern = tostring(Exppattern{ id = cards }),
+      pattern = ".|.|heart",
       skill_name = tianxiang.name,
       prompt = "#tianxiang-choose",
       cancelable = true,
+      will_throw = true,
     })
-    if #tos > 0 and id then
-      event:setCostData(self, {tos = tos, cards = {id}})
+    if #tos > 0 and #cards == 1 then
+      event:setCostData(self, {tos = tos, cards = cards})
       return true
     end
   end,

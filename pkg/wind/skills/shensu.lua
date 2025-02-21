@@ -51,20 +51,19 @@ shensu:addEffect(fk.EventPhaseChanging, {
         return true
       end
     elseif data.phase == Player.Play then
-      local cards = table.filter(player:getCardIds("he"), function (id)
-        return Fk:getCardById(id).type == Card.TypeEquip and not player:prohibitDiscard(id)
-      end)
-      local tos, id = room:askToChooseCardAndPlayers(player, {
+      local tos, cards = room:askToChooseCardsAndPlayers(player, {
+        min_card_num = 1,
+        max_card_num = 1,
         min_num = 1,
         max_num = max_num,
         targets = targets,
-        pattern = tostring(Exppattern{ id = cards }),
+        pattern = ".|.|.|.|.|equip",
         skill_name = shensu.name,
         prompt = "#shensu2-choose",
         cancelable = true,
       })
-      if #tos > 0 and id then
-        event:setCostData(self, {tos = tos, cards = {id}})
+      if #tos > 0 and #cards > 0 then
+        event:setCostData(self, {tos = tos, cards = cards})
         return true
       end
     end
