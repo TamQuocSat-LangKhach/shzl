@@ -12,8 +12,7 @@ Fk:loadTranslationTable{
 }
 
 local roulin_on_use = function(self, event, target, player, data)
-  data.fixedResponseTimes = data.fixedResponseTimes or {}
-  data.fixedResponseTimes["jink"] = 2
+  data.fixedResponseTimes = 2
 end
 
 roulin:addEffect(fk.TargetSpecified, {
