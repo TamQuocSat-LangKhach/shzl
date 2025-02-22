@@ -19,7 +19,7 @@ shensu:addEffect(fk.EventPhaseChanging, {
   can_trigger = function(self, event, target, player, data)
     if target == player and player:hasSkill(self) and not data.skipped then
       if data.phase == Player.Judge then
-        if player.skipped_phases[Player.Draw] then return end
+        if not player:canSkip(Player.Draw) then return end
       elseif data.phase == Player.Play then
         if player:isNude() then return end
       else
@@ -61,6 +61,7 @@ shensu:addEffect(fk.EventPhaseChanging, {
         skill_name = shensu.name,
         prompt = "#shensu2-choose",
         cancelable = true,
+        will_throw = true,
       })
       if #tos > 0 and #cards > 0 then
         event:setCostData(self, {tos = tos, cards = cards})
