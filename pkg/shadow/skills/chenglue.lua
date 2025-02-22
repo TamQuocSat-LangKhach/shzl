@@ -23,7 +23,6 @@ Fk:loadTranslationTable{
 
 chenglue:addEffect("active", {
   anim_type = "switch",
-  switch_skill_name = "chenglue",
   prompt = function (self, player)
     return player:getSwitchSkillState("chenglue", false) == fk.SwitchYang and "#chenglue-active:::1:2" or "#chenglue-active:::2:1"
   end,

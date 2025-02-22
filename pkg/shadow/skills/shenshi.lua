@@ -29,12 +29,11 @@ local U = require "packages/utility/utility"
 
 shenshi:addEffect("active", {
   anim_type = "switch",
-  switch_skill_name = "shenshi",
   card_num = 1,
   target_num = 1,
   prompt = "#shenshi",
   can_use = function(self, player)
-    return player:usedSkillTimes(self.name, Player.HistoryPhase) == 0 and
+    return player:usedEffectTimes(self.name, Player.HistoryPhase) == 0 and
       player:getSwitchSkillState(shenshi.name, false) == fk.SwitchYang
   end,
   card_filter = function(self, player, to_select, selected)
@@ -82,7 +81,6 @@ shenshi:addEffect("active", {
 })
 shenshi:addEffect(fk.Damaged, {
   anim_type = "switch",
-  switch_skill_name = "shenshi",
   can_trigger = function(self, event, target, player, data)
     return target == player and player:hasSkill(shenshi.name) and
       player:getSwitchSkillState(shenshi.name, false) == fk.SwitchYin and
@@ -117,6 +115,7 @@ shenshi:addEffect(fk.Damaged, {
 })
 shenshi:addEffect(fk.EventPhaseStart, {
   anim_type = "drawcard",
+  is_delay_effect = true,
   can_trigger = function(self, event, target, player, data)
     if target.phase == Player.Finish and player:getMark("shenshi-turn") ~= 0 and player:getHandcardNum() < 4 then
       for _, t in ipairs(player:getMark("shenshi-turn")) do
@@ -131,8 +130,6 @@ shenshi:addEffect(fk.EventPhaseStart, {
   on_use = function(self, event, target, player, data)
     player:drawCards(4 - player:getHandcardNum(), shenshi.name)
   end,
-}, {
-  is_delay_effect = true,
 })
 
 return shenshi

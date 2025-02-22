@@ -1,6 +1,6 @@
 local longnu = fk.CreateSkill {
   name = "longnu",
-  tags = {Skill.Compulsory, Skill.Switch},
+  tags = { Skill.Compulsory, Skill.Switch },
 }
 
 Fk:loadTranslationTable{
@@ -13,7 +13,6 @@ Fk:loadTranslationTable{
 }
 
 longnu:addEffect(fk.EventPhaseStart, {
-  switch_skill_name = "longnu",
   anim_type = "switch",
   can_trigger = function(self, event, target, player, data)
     return target == player and player:hasSkill(longnu.name) and player.phase == Player.Play
@@ -36,6 +35,7 @@ longnu:addEffect(fk.EventPhaseStart, {
   end,
 })
 longnu:addEffect("filter", {
+  anim_type = "offensive",
   card_filter = function(self, to_select, player)
     if player:hasSkill(longnu.name) and player.phase == Player.Play and
     table.contains(player:getCardIds("h"), to_select.id) then

@@ -22,7 +22,6 @@ Fk:loadTranslationTable{
 }
 
 juzhan:addEffect(fk.TargetConfirmed, {
-  switch_skill_name = "juzhan",
   anim_type = "drawcard",
   can_trigger = function(self, event, target, player, data)
     return target == player and player:hasSkill(juzhan.name) and data.card.trueName == "slash" and
@@ -47,7 +46,6 @@ juzhan:addEffect(fk.TargetConfirmed, {
   end,
 })
 juzhan:addEffect(fk.TargetSpecified, {
-  switch_skill_name = "juzhan",
   anim_type = "drawcard",
   can_trigger = function(self, event, target, player, data)
     return target == player and player:hasSkill(juzhan.name) and data.card.trueName == "slash" and

@@ -76,6 +76,7 @@ shuangxiong:addEffect(fk.EventPhaseStart, {
 })
 shuangxiong:addEffect(fk.FinishJudge, {
   mute = true,
+  is_delay_effect = true,
   can_trigger = function(self, event, target, player, data)
     return target == player and not player.dead and data.reason == shuangxiong.name and
       player.room:getCardArea(data.card) == Card.Processing
@@ -84,8 +85,6 @@ shuangxiong:addEffect(fk.FinishJudge, {
   on_use = function(self, event, target, player, data)
     player.room:obtainCard(player, data.card, true, fk.ReasonJustMove, player, shuangxiong.name)
   end,
-}, {
-  is_delay_effect = true,
 })
 
 return shuangxiong

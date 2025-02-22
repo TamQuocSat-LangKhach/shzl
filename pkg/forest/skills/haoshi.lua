@@ -21,6 +21,7 @@ haoshi:addEffect(fk.DrawNCards, {
 })
 haoshi:addEffect(fk.AfterDrawNCards, {
   mute = true,
+  is_delay_effect = true,
   can_trigger = function(self, event, target, player, data)
     return not player.dead and player:usedSkillTimes(haoshi.name, Player.HistoryPhase) > 0 and
       player:getHandcardNum() > 5 and #player.room.alive_players > 1
@@ -59,8 +60,6 @@ haoshi:addEffect(fk.AfterDrawNCards, {
     })
     room:moveCardTo(cards, Card.PlayerHand, tos[1], fk.ReasonGive, haoshi.name, nil, false, player)
   end,
-}, {
-  is_delay_effect = true,
 })
 
 return haoshi

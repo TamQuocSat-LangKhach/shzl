@@ -1,12 +1,6 @@
 local jieying = fk.CreateSkill {
   name = "jieying",
-  tags = {Skill.Compulsory},
-
-  on_acquire = function (self, player, is_start)
-    if player:hasSkill(self) then
-      player:setChainState(true)
-    end
-  end,
+  tags = { Skill.Compulsory },
 }
 
 Fk:loadTranslationTable{
@@ -19,6 +13,9 @@ Fk:loadTranslationTable{
   ["$jieying2"] = "结草衔环，报兄弟大恩。",
 }
 
+jieying:addAcquireEffect(function (self, player, is_start)
+  player:setChainState(true)
+end)
 jieying:addEffect(fk.BeforeChainStateChange, {
   can_trigger = function(self, event, target, player, data)
     return target == player and player:hasSkill(jieying.name) and player.chained
@@ -37,15 +34,20 @@ jieying:addEffect(fk.EventPhaseStart, {
     local targets = table.filter(room.alive_players, function(p)
       return p ~= player and not p.chained
     end)
-    local to = room:askToChoosePlayers(player, {
-      min_num = 1,
-      max_num = 1,
-      targets = targets,
-      skill_name = jieying.name,
-      prompt = "#jieying-choose",
-      cancelable = false,
-    })[1]
-    to:setChainState(true)
+    if #targets == 1 then
+      room:doIndicate(player, targets)
+      targets[1]:setChainState(true)
+    elseif #targets > 1 then
+      local to = room:askToChoosePlayers(player, {
+        min_num = 1,
+        max_num = 1,
+        targets = targets,
+        skill_name = jieying.name,
+        prompt = "#jieying-choose",
+        cancelable = false,
+      })[1]
+      to:setChainState(true)
+    end
   end,
 })
 jieying:addEffect("maxcards", {
