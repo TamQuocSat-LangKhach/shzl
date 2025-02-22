@@ -53,15 +53,16 @@ zhiba_active:addEffect("active", {
     end
     local pindian = player:pindian({target}, "zhiba")
     if target.dead then return end
-    if not pindian.results[target.id].winner or pindian.results[target.id].winner ~= player then
+    if pindian.results[target].winner ~= player then
       local to_get = {}
-      local leftFromCardIds = room:getSubcardsByRule(pindian.fromCard, { Card.DiscardPile })
-      if #leftFromCardIds > 0 then
-        table.insertTableIfNeed(to_get, leftFromCardIds)
+      local cid = pindian.fromCard and pindian.fromCard:getEffectiveId()
+      if room:getCardArea(cid) == Card.DiscardPile then
+        table.insert(to_get, cid)
       end
-      local leftToCardIds = room:getSubcardsByRule(pindian.results[target.id].toCard, { Card.DiscardPile })
-      if #leftToCardIds > 0 then
-        table.insertTableIfNeed(to_get, leftToCardIds)
+      local toCard = pindian.results[target].toCard
+      cid = toCard and toCard:getEffectiveId()
+      if room:getCardArea(cid) == Card.DiscardPile then
+        table.insertIfNeed(to_get, cid)
       end
       if #to_get > 0 then
         room:obtainCard(target, to_get, true, fk.ReasonJustMove, target, "zhiba")
