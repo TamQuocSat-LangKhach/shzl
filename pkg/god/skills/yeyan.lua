@@ -66,7 +66,7 @@ yeyan:addEffect("active", {
       return Fk:getCardById(to_select):compareSuitWith(Fk:getCardById(id), true)
     end)
   end,
-  target_filter = function(self, to_select, selected, selected_cards)
+  target_filter = function(self, player, to_select, selected, selected_cards)
     if self.interaction.data == "small_yeyan" then
       return #selected_cards == 0 and #selected < 3
     elseif self.interaction.data == "middle_yeyan" then
