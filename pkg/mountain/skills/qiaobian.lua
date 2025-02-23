@@ -28,7 +28,8 @@ qiaobian:addEffect(fk.EventPhaseChanging, {
       min_num = 1,
       max_num = 1,
       include_equip = false,
-      prompt = "#qiaobian-invoke:::"..Util.PhaseStrMapper(data.phase)
+      prompt = "#qiaobian-invoke:::"..Util.PhaseStrMapper(data.phase),
+      skip = true
     })
     if #card > 0 then
       event:setCostData(self, {cards = card})
