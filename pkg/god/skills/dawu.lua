@@ -47,7 +47,9 @@ dawu:addEffect(fk.DamageInflicted, {
       data.damageType ~= fk.ThunderDamage and table.contains(player:getTableMark("_dawu"), target.id)
   end,
   on_cost = Util.TrueFunc,
-  on_use = Util.TrueFunc,
+  on_use = function(self, event, target, player, data)
+    data:preventDamage()
+  end
 })
 
 local clean_spec = {

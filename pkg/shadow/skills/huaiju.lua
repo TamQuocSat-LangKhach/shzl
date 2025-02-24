@@ -16,7 +16,7 @@ Fk:loadTranslationTable{
 huaiju:addLoseEffect(function (self, player)
   local room = player.room
   if table.every(room.alive_players, function (p)
-    return not p:hasSkill("huaiju", true, true)
+    return not p:hasSkill(huaiju.name, true, true)
   end) then
     for _, p in ipairs(room.alive_players) do
       room:setPlayerMark(p, "@orange", 0)
@@ -47,7 +47,7 @@ huaiju:addEffect(fk.DamageInflicted, {
   end,
   on_use = function(self, event, target, player, data)
     player.room:removePlayerMark(target, "@orange")
-    return true
+    data:preventDamage()
   end,
 })
 
