@@ -55,7 +55,7 @@ local function DoHuashen(player)
     if not table.find({Skill.Lord, Skill.Limited, Skill.Wake}, function (tag)
         return s:hasTag(tag)
       end) then
-      if #s.attachedKingdom == 0 or table.contains(s.attachedKingdom, player.kingdom) then
+      if not s:hasTag(Skill.AttachedKingdom) or table.contains(s:getSkeleton().attached_kingdom, player.kingdom) then
         table.insert(skills, s.name)
       end
     end

@@ -51,17 +51,21 @@ duorui:addEffect(fk.Damage, {
     local target = data.to
     if player.dead or target.dead then return end
     local skills = {}
-    local ban_types = {Skill.Limited, Skill.Wake, Skill.Quest}
+    local ban_types = {Skill.Limited, Skill.Wake, Skill.Quest, Skill.Lord}
     for _, skill_name in ipairs(Fk.generals[target.general]:getSkillNameList()) do
       local skill = Fk.skills[skill_name]
-      if not (skill.lordSkill or table.contains(ban_types, skill.frequency)) then
+      if not table.find(ban_types, function (tag)
+        return skill:hasTag(tag)
+      end) then
         table.insertIfNeed(skills, skill_name)
       end
     end
     if target.deputyGeneral and target.deputyGeneral ~= "" then
       for _, skill_name in ipairs(Fk.generals[target.deputyGeneral]:getSkillNameList()) do
         local skill = Fk.skills[skill_name]
-        if not (skill.lordSkill or table.contains(ban_types, skill.frequency)) then
+        if not table.find(ban_types, function (tag)
+          return skill:hasTag(tag)
+        end) then
           table.insertIfNeed(skills, skill_name)
         end
       end
