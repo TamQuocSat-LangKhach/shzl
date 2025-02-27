@@ -1,6 +1,6 @@
 local chezheng = fk.CreateSkill {
   name = "chezheng",
-  tags = {Skill.Compulsory},
+  tags = { Skill.Compulsory },
 }
 
 Fk:loadTranslationTable{
@@ -16,7 +16,6 @@ Fk:loadTranslationTable{
 
 chezheng:addEffect(fk.EventPhaseEnd, {
   anim_type = "control",
-  events = {fk.EventPhaseEnd},
   can_trigger = function(self, event, target, player, data)
     if target == player and player:hasSkill(chezheng.name) and player.phase == Player.Play then
       local targets = table.filter(player.room:getOtherPlayers(player, false), function(p)

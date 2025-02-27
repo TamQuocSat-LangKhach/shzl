@@ -39,6 +39,7 @@ tianxiang:addEffect(fk.DamageInflicted, {
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room
+    data:preventDamage()
     local to = event:getCostData(self).tos[1]
     room:throwCard(event:getCostData(self).cards, tianxiang.name, player, player)
     if not to.dead then
@@ -55,7 +56,6 @@ tianxiang:addEffect(fk.DamageInflicted, {
     if not to.dead then
       to:drawCards(to:getLostHp(), tianxiang.name)
     end
-    return true
   end,
 })
 

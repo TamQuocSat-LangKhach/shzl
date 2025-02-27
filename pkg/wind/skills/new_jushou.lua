@@ -12,7 +12,6 @@ Fk:loadTranslationTable{
 
 jushou:addEffect(fk.EventPhaseEnd, {
   anim_type = "defensive",
-  events = {fk.EventPhaseEnd},
   can_trigger = function(self, event, target, player, data)
     return target == player and player:hasSkill(jushou.name) and player.phase == Player.Finish
   end,

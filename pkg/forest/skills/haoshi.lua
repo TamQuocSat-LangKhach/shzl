@@ -14,7 +14,6 @@ Fk:loadTranslationTable{
 
 haoshi:addEffect(fk.DrawNCards, {
   anim_type = "drawcard",
-  events = {fk.DrawNCards},
   on_use = function(self, event, target, player, data)
     data.n = data.n + 2
   end,
