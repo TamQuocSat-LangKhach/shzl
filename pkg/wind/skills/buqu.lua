@@ -1,14 +1,6 @@
 local buqu = fk.CreateSkill({
   name = "buqu",
   derived_piles = "zhoutai_chuang",
-
-  on_lose = function (self, player, is_death)
-    if not is_death and player.hp <= 0 then
-      player.room:enterDying({
-        who = player,
-      })
-    end
-  end,
 })
 
 Fk:loadTranslationTable{
@@ -77,13 +69,7 @@ buqu:addEffect(fk.HpRecover, {
           from = player.id,
           arg = buqu_card:toLogString()
         }
-        room:moveCards({
-          from = player.id,
-          ids = { id },
-          toArea = Card.DiscardPile,
-          moveReason = fk.ReasonPutIntoDiscardPile,
-          skillName = buqu.name,
-        })
+        room:moveCardTo(id, Card.DiscardPile, nil, fk.ReasonPutIntoDiscardPile, buqu.name)
       end
     else
       while #player:getPile("zhoutai_chuang") > 0 and #player:getPile("zhoutai_chuang") + player.hp > 1 do
@@ -100,13 +86,7 @@ buqu:addEffect(fk.HpRecover, {
           from = player.id,
           arg = buqu_card:toLogString(),
         }
-        room:moveCards({
-          from = player.id,
-          ids = { id },
-          toArea = Card.DiscardPile,
-          moveReason = fk.ReasonPutIntoDiscardPile,
-          skillName = buqu.name,
-        })
+        room:moveCardTo(id, Card.DiscardPile, nil, fk.ReasonPutIntoDiscardPile, buqu.name)
       end
     end
   end,
@@ -160,5 +140,97 @@ buqu:addEffect(fk.AskForPeachesDone, {
     end
   end,
 })
+
+buqu:addTest(function (room, me)
+  FkTest.setNextReplies(me, {"1"})
+  FkTest.runInRoom(function ()
+    room:handleAddLoseSkills(me, buqu.name)
+    room:damage{
+      to = me,
+      damage = 4,
+    }
+  end)
+  lu.assertEquals(me.hp, 0)
+  lu.assertEquals(#me:getPile("zhoutai_chuang"), 1)
+  lu.assertIsTrue(me:isAlive())
+
+  FkTest.runInRoom(function ()
+    room:recover{
+      who = me,
+      num = 1,
+    }
+  end)
+  lu.assertEquals(me.hp, 1)
+  lu.assertEquals(#me:getPile("zhoutai_chuang"), 0)
+  local jink1 = room:printCard("jink", Card.Club, 1)
+  local jink2 = room:printCard("jink", Card.Club, 1)
+  local cards = { jink1, jink2 }
+  local peach1 = room:printCard("peach")
+  FkTest.setNextReplies(me, {"1", json.encode {
+    card = peach1.id,
+  }, tostring(jink2.id) })
+  FkTest.runInRoom(function ()
+    room:moveCardTo(cards, Card.DrawPile)
+    room:obtainCard(me, peach1)
+    room:damage{
+      to = me,
+      damage = 2,
+    }
+  end)
+  lu.assertEquals(me.hp, 0)
+  lu.assertEquals(#me:getPile("zhoutai_chuang"), 1)
+
+  -- 1组，但移出了一张不重复的牌
+  local jink3 = room:printCard("jink", Card.Club, 2)
+  cards = { jink2, jink3 }
+  local peach2 = room:printCard("peach")
+  FkTest.setNextReplies(me, {"1", json.encode {
+    card = peach2.id,
+  }, tostring(jink3.id), json.encode {
+    card = peach1.id,
+  }, tostring(jink2.id) })
+  FkTest.runInRoom(function ()
+    room:moveCardTo(cards, Card.DrawPile)
+    room:obtainCard(me, peach1)
+    room:obtainCard(me, peach2)
+    room:damage{
+      to = me,
+      damage = 2,
+    }
+  end)
+  lu.assertEquals(#me:getPile("zhoutai_chuang"), 1)
+
+  local jink4 = room:printCard("jink", Card.Club, 2)
+  cards = { jink2, jink3, jink4 }
+  FkTest.setNextReplies(me, {"1", json.encode {
+    card = peach2.id,
+  }, tostring(jink3.id), json.encode {
+    card = peach1.id,
+  }, tostring(jink2.id) })
+  FkTest.runInRoom(function ()
+    room:moveCardTo(cards, Card.DrawPile)
+    room:obtainCard(me, peach1)
+    room:obtainCard(me, peach2)
+    room:damage{
+      to = me,
+      damage = 3,
+    }
+  end)
+  lu.assertIsTrue(me:isKongcheng())
+  lu.assertIsTrue(me:isAlive())
+
+  FkTest.setNextReplies(me, {json.encode {
+    card = peach2.id,
+  }, json.encode {
+    card = peach1.id,
+  } })
+  FkTest.runInRoom(function ()
+    room:obtainCard(me, peach1)
+    room:obtainCard(me, peach2)
+    room:handleAddLoseSkills(me, "-" .. buqu.name)
+  end)
+  lu.assertIsTrue(me:isKongcheng())
+  lu.assertIsTrue(me:isAlive())
+end)
 
 return buqu

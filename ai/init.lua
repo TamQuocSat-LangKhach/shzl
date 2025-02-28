@@ -5,7 +5,7 @@ SmartAI:setSkillAI("buqu", {
 })
 -- 火包
 ------------------------------
-
+SmartAI:setSkillAI("huoji", nil, "spear_skill")
 -- 林包
 ------------------------------
 

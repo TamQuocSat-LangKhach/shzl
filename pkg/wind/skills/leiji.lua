@@ -55,4 +55,40 @@ local leiji_spec = {
 leiji:addEffect(fk.CardUsing, leiji_spec)
 leiji:addEffect(fk.CardResponding, leiji_spec)
 
+leiji:addAI(
+  --[[
+  SmartAI:setSkillAI("leiji", {
+    think = function(self, ai)
+      local player = ai.player
+      -- 选出界面上所有可选的目标
+      local players = ai:getEnabledTargets()
+      -- 对所有目标计算他们受到2点雷电伤害后对自己的收益
+      local benefits = table.map(players, function(p)
+        return { p, ai:getBenefitOfEvents(function(logic)
+          logic:damage{
+            from = player,
+            to = p,
+            damage = 2,
+            damageType = fk.ThunderDamage,
+            skillName = self.skill.name,
+          }
+        end)}
+      end)
+      local benefit = 0
+      local targets = {}
+      table.sort(benefits, function(a, b) return a[2] > b[2] end)
+      for i, b in ipairs(benefits) do
+        local p, val = table.unpack(b)
+        if val < 0 then break end
+        table.insert(targets, p)
+        benefit = val
+        break
+      end
+      if #targets == 0 or benefit <= 0 then return "" end
+      return { targets = targets }, benefit
+    end
+  })
+  --]]
+)
+
 return leiji
