@@ -23,8 +23,8 @@ local U = require "packages/utility/utility"
 guhuo:addEffect("viewas", {
   pattern = ".",
   interaction = function(self, player)
-    local all_names = U.getAllCardNames("bt")
-    local names = U.getViewAsCardNames(player, guhuo.name, all_names)
+    local all_names = Fk:getAllCardNames("bt")
+    local names = player:getViewAsCardNames(guhuo.name, all_names)
     if #names == 0 then return false end
     return U.CardNameBox { choices = names, all_choices = all_names }
   end,
