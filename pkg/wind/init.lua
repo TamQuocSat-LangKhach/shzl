@@ -1,11 +1,11 @@
 local extension = Package:new("wind")
 extension.extensionName = "shzl"
 
+extension:loadSkillSkelsByPath("./packages/shzl/pkg/wind/skills")
+
 Fk:loadTranslationTable{
   ["wind"] = "神话再临·风",
 }
-
-extension:loadSkillSkels(require("packages.shzl.pkg.wind.skills"))
 
 General:new(extension, "xiahouyuan", "wei", 4):addSkills { "shensu" }
 Fk:loadTranslationTable{

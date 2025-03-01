@@ -1,13 +1,13 @@
 local extension = Package:new("shzl_god")
 extension.extensionName = "shzl"
 
+extension:loadSkillSkelsByPath("./packages/shzl/pkg/god/skills")
+
 Fk:loadTranslationTable{
   ["god"] = "神",
   ["shzl_god"] = "神话再临·神",
   ["nos"] = "旧",
 }
-
-extension:loadSkillSkels(require("packages.shzl.pkg.god.skills"))
 
 General:new(extension, "godguanyu", "god", 5):addSkills { "wushen", "wuhun" }
 Fk:loadTranslationTable{

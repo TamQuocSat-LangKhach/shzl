@@ -1,11 +1,11 @@
 local extension = Package:new("fire")
 extension.extensionName = "shzl"
 
+extension:loadSkillSkelsByPath("./packages/shzl/pkg/fire/skills")
+
 Fk:loadTranslationTable{
   ["fire"] = "神话再临·火",
 }
-
-extension:loadSkillSkels(require("packages.shzl.pkg.fire.skills"))
 
 General:new(extension, "dianwei", "wei", 4):addSkills { "qiangxi" }
 Fk:loadTranslationTable{

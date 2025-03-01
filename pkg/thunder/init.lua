@@ -1,11 +1,11 @@
 local extension = Package:new("thunder")
 extension.extensionName = "shzl"
 
+extension:loadSkillSkelsByPath("./packages/shzl/pkg/thunder/skills")
+
 Fk:loadTranslationTable{
   ["thunder"] = "神话再临·雷",
 }
-
-extension:loadSkillSkels(require("packages.shzl.pkg.thunder.skills"))
 
 General:new(extension, "haozhao", "wei", 4):addSkills { "zhengu" }
 Fk:loadTranslationTable{
