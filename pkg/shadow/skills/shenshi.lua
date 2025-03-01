@@ -126,7 +126,6 @@ shenshi:addEffect(fk.EventPhaseStart, {
       end
     end
   end,
-  on_cost = Util.TrueFunc,
   on_use = function(self, event, target, player, data)
     player:drawCards(4 - player:getHandcardNum(), shenshi.name)
   end,

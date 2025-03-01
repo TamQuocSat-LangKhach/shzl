@@ -25,7 +25,6 @@ haoshi:addEffect(fk.AfterDrawNCards, {
     return not player.dead and player:usedSkillTimes(haoshi.name, Player.HistoryPhase) > 0 and
       player:getHandcardNum() > 5 and #player.room.alive_players > 1
   end,
-  on_cost = Util.TrueFunc,
   on_use = function(self, event, target, player, data)
     local room = player.room
     local x = player:getHandcardNum() // 2
