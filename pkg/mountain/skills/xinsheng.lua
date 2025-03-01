@@ -17,12 +17,8 @@ xinsheng:addEffect(fk.Damaged, {
   can_trigger = function(self, event, target, player, data)
     return target == player and player:hasSkill(xinsheng.name) and #player.room.general_pile > 0
   end,
-  on_trigger = function(self, event, target, player, data)
-    self.cancel_cost = false
-    for i = 1, data.damage do
-      if self.cancel_cost or #player.room.general_pile == 0 then break end
-      self:doCost(event, target, player, data)
-    end
+  trigger_times = function(self, event, target, player, data)
+    return data.damage
   end,
   on_cost = function(self, event, target, player, data)
     if player.room:askToSkillInvoke(player, {
@@ -30,7 +26,6 @@ xinsheng:addEffect(fk.Damaged, {
     }) then
       return true
     end
-    self.cancel_cost = true
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room

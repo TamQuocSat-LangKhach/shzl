@@ -12,15 +12,13 @@ Fk:loadTranslationTable{
 
 guixin:addEffect(fk.Damaged, {
   anim_type = "masochism",
-  on_trigger = function(self, event, target, player, data)
-    self.cancel_cost = false
-    for _ = 1, data.damage do
-      if self.cancel_cost or not player:hasSkill(guixin.name) or
-        table.every(player.room:getOtherPlayers(player, false), function (p)
-          return p:isAllNude()
-        end) then break end
-      self:doCost(event, target, player, data)
-    end
+  can_trigger = function (self, event, target, player, data)
+    return target == player and player:hasSkill(guixin.name) and table.find(player.room.alive_players, function (p)
+      return p ~= player and not p:isAllNude()
+    end)
+  end,
+  trigger_times = function(self, event, target, player, data)
+    return data.damage
   end,
   on_cost = function(self, event, target, player, data)
     local room = player.room
@@ -30,7 +28,6 @@ guixin:addEffect(fk.Damaged, {
       event:setCostData(self, {tos = room:getOtherPlayers(player, false)})
       return true
     end
-    self.cancel_cost = true
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room

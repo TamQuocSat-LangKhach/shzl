@@ -16,11 +16,8 @@ kuanggu:addEffect(fk.Damage, {
   can_trigger = function(self, event, target, player, data)
     return target == player and player:hasSkill(kuanggu.name) and (data.extra_data or {}).kuanggucheck and player:isWounded()
   end,
-  on_trigger = function(self, event, target, player, data)
-    for i = 1, data.damage do
-      if not (player:isWounded() and player:hasSkill(kuanggu.name)) then break end
-      self:doCost(event, target, player, data)
-    end
+  trigger_times = function(self, event, target, player, data)
+    return data.damage
   end,
   on_use = function(self, event, target, player, data)
     player.room:recover{
