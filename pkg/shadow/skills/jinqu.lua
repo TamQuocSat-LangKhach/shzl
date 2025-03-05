@@ -26,7 +26,7 @@ jinqu:addEffect(fk.EventPhaseStart, {
   on_use = function(self, event, target, player, data)
     player:drawCards(2, jinqu.name)
     if player.dead then return end
-    local n = #player:getHandcardNum() - player:usedSkillTimes("qizhi", Player.HistoryTurn)
+    local n = player:getHandcardNum() - player:usedSkillTimes("qizhi", Player.HistoryTurn)
     if n > 0 then
       player.room:askToDiscard(player, {
         min_num = n,
