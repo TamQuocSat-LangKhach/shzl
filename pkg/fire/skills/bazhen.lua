@@ -13,33 +13,10 @@ Fk:loadTranslationTable{
 
 local bazhen_on_use = function (self, event, target, player, data)
   local room = player.room
-  local judgeData = {
-    who = player,
-    reason = bazhen.name,
-    pattern = ".|.|heart,diamond",
-  }
-  room:judge(judgeData)
-
-  if judgeData.card.color == Card.Red then
-    if event:isInstanceOf(fk.AskForCardUse) then
-      data.result = {
-        from = player,
-        card = Fk:cloneCard("jink"),
-        tos = {},
-      }
-      data.result.card.skillName = "eight_diagram"
-
-      if data.eventData then
-        data.result.toCard = data.eventData.toCard
-        data.result.responseToEvent = data.eventData.responseToEvent
-      end
-    else
-      data.result = Fk:cloneCard("jink")
-      data.result.skillName = "eight_diagram"
-    end
-
-    return true
-  end
+  room:broadcastPlaySound("./packages/standard_cards/audio/card/eight_diagram")
+  room:setEmotion(player, "./packages/standard_cards/image/anim/eight_diagram")
+  local skill = Fk.skills["#eight_diagram_skill"]
+  skill:use(event, target, player, data)
 end
 bazhen:addEffect(fk.AskForCardUse, {
   anim_type = "defensive",

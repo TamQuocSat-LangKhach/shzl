@@ -10,7 +10,7 @@ Fk:loadTranslationTable{
 
 xueyi:addEffect("maxcards", {
   correct_func = function(self, player)
-    if player:hasSkill(self) then
+    if player:hasSkill(xueyi.name) then
       local n = 0
       for _, p in ipairs(Fk:currentRoom().alive_players) do
         if p ~= player and p.kingdom == "qun" then
