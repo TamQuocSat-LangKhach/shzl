@@ -15,8 +15,6 @@ Fk:loadTranslationTable{
   ["$qixing2"] = "伏望天恩，誓讨汉贼！",
 }
 
-local U = require "packages/utility/utility"
-
 local function QixingArrange(player)
   local room = player.room
   local cids = room:askToArrangeCards(player, {
@@ -28,7 +26,7 @@ local function QixingArrange(player)
     prompt = "#qixing-exchange",
     free_arrange = true,
   })
-  U.swapCardsWithPile(player, cids[1], cids[2], qixing.name, "$star")
+  room:swapCardsWithPile(player, cids[1], cids[2], qixing.name, "$star")
 end
 
 qixing:addEffect(fk.GameStart, {

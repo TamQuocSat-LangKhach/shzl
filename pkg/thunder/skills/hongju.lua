@@ -13,8 +13,6 @@ Fk:loadTranslationTable{
   ["$hongju2"] = "鸿飞荣升，举重若轻。",
 }
 
-local U = require "packages/utility/utility"
-
 hongju:addEffect(fk.EventPhaseStart, {
   can_trigger = function(self, event, target, player, data)
     return target == player and player:hasSkill(hongju.name) and
@@ -38,7 +36,7 @@ hongju:addEffect(fk.EventPhaseStart, {
         },
         prompt = "#hongju-exchange",
       })
-      U.swapCardsWithPile(player, piles[1], piles[2], hongju.name, "$guanqiujian__glory", true)
+      room:swapCardsWithPile(player, piles[1], piles[2], hongju.name, "$guanqiujian__glory", true)
       if player.dead then return end
     end
     room:changeMaxHp(player, -1)

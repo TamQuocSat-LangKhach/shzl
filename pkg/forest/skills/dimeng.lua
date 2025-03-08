@@ -13,8 +13,6 @@ Fk:loadTranslationTable{
   ["$dimeng2"] = "合纵连横，方能以弱胜强。",
 }
 
-local U = require "packages/utility/utility"
-
 dimeng:addEffect("active", {
   anim_type = "control",
   max_phase_use_time = 1,
@@ -55,7 +53,7 @@ dimeng:addEffect("active", {
         prompt = "#dimeng-discard:"..effect.tos[1].id..":"..effect.tos[2].id..":"..n,
       })
     end
-    U.swapHandCards(room, player, target1, target2, dimeng.name)
+    room:swapAllCards(player, effect.tos, dimeng.name)
   end,
 })
 
