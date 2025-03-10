@@ -95,7 +95,8 @@ zhengu:addEffect(fk.TurnEnd, {
     end
   end,
 })
-zhengu:addEffect(fk.AfterTurnEnd, {
+zhengu:addEffect(fk.TurnEnd, {
+  late_refresh = true,
   can_refresh = function(self, event, target, player, data)
     return target == player and player:getMark("@@zhengu") ~= 0
   end,

@@ -122,7 +122,11 @@ local clean_spec = {
     end
   end,
 }
-duorui:addEffect(fk.AfterTurnEnd, clean_spec)
+duorui:addEffect(fk.TurnEnd, {
+  late_refresh = true,
+  can_refresh = clean_spec.can_refresh,
+  on_refresh = clean_spec.on_refresh,
+})
 duorui:addEffect(fk.BuryVictim, clean_spec)
 
 return duorui

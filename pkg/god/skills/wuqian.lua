@@ -34,7 +34,8 @@ wuqian:addEffect("active", {
     room:addPlayerMark(target, MarkEnum.MarkArmorNullified)
   end
 })
-wuqian:addEffect(fk.AfterTurnEnd, {
+wuqian:addEffect(fk.TurnEnd, {
+  late_refresh = true,
   can_refresh = function(self, event, target, player, data)
     return target == player and player:usedSkillTimes(wuqian.name) > 0
   end,
