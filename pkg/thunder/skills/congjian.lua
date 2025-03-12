@@ -24,7 +24,7 @@ congjian:addEffect(fk.TargetConfirmed, {
   end,
   on_cost = function(self, event, target, player, data)
     local room = player.room
-    local targets = data.tos
+    local targets = data.use.tos
     table.removeOne(targets, player)
     local tos, cards = room:askToChooseCardsAndPlayers(player, {
       min_card_num = 1,
