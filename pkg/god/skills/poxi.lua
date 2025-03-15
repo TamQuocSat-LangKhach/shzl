@@ -91,7 +91,7 @@ poxi:addEffect("active", {
       })
     elseif #cards1 == 1 then
       room:addPlayerMark(player, MarkEnum.MinusMaxCardsInTurn)
-      player._phase_end = true
+      player:endPlayPhase()
     elseif #cards1 == 4 then
       room:drawCards(player, 4, poxi.name)
     end

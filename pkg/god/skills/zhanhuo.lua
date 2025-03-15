@@ -22,7 +22,7 @@ zhanhuo:addEffect("active", {
     return Self:getMark("@junlue")
   end,
   card_num = 0,
-  card_filter = function() return false end,
+  card_filter = Util.FalseFunc,
   can_use = function(self, player)
     return player:usedSkillTimes(zhanhuo.name, Player.HistoryGame) == 0 and player:getMark("@junlue") > 0
   end,

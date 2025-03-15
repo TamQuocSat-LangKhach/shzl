@@ -13,16 +13,24 @@ Fk:loadTranslationTable{
   ["$jieying2"] = "结草衔环，报兄弟大恩。",
 }
 
-jieying:addAcquireEffect(function (self, player, is_start)
-  player:setChainState(true)
-end)
+jieying:addEffect(fk.GameStart, {
+  anim_type = "negative",
+  can_trigger = function(self, event, target, player, data)
+    return player:hasSkill(jieying.name) and not player.chained
+  end,
+  on_use = function (self, event, target, player, data)
+    player:setChainState(true)
+  end,
+})
 jieying:addEffect(fk.BeforeChainStateChange, {
+  anim_type = "negative",
   can_trigger = function(self, event, target, player, data)
     return target == player and player:hasSkill(jieying.name) and player.chained
   end,
   on_use = Util.TrueFunc,
 })
 jieying:addEffect(fk.EventPhaseStart, {
+  anim_type = "control",
   can_trigger = function(self, event, target, player, data)
     return target == player and player:hasSkill(jieying.name) and player.phase == Player.Finish and
       table.find(player.room.alive_players, function(p)

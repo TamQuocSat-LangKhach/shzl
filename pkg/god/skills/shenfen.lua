@@ -18,14 +18,16 @@ shenfen:addEffect("active", {
   card_num = 0,
   target_num = 0,
   can_use = function(self, player)
-    return player:usedSkillTimes(shenfen.name, Player.HistoryPhase) == 0 and player:getMark("@baonu") > 5
+    return player:usedSkillTimes(shenfen.name, Player.HistoryPhase) == 0 and player:getMark("@baonu") > 5 and
+      #Fk:currentRoom().alive_players > 1
   end,
   card_filter = Util.FalseFunc,
   on_use = function(self, room, effect)
     local player = effect.from
     room:removePlayerMark(player, "@baonu", 6)
-    room:doIndicate(effect.from.id, table.map(room:getOtherPlayers(player, false), Util.IdMapper))
-    for _, p in ipairs(room:getAlivePlayers()) do
+    local tos = room:getOtherPlayers(player)
+    room:doIndicate(effect.from.id, table.map(tos, Util.IdMapper))
+    for _, p in ipairs(tos) do
       if not p.dead then
         room:damage{
           from = player,
@@ -35,12 +37,12 @@ shenfen:addEffect("active", {
         }
       end
     end
-    for _, p in ipairs(room:getAlivePlayers()) do
+    for _, p in ipairs(tos) do
       if not p.dead then
         p:throwAllCards("e")
       end
     end
-    for _, p in ipairs(room:getAlivePlayers()) do
+    for _, p in ipairs(tos) do
       if not p.dead then
         room:askToDiscard(p, {
           min_num = 4,
