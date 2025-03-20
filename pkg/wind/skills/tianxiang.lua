@@ -39,6 +39,7 @@ tianxiang:addEffect(fk.DamageInflicted, {
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room
+    local n = data.damage
     data:preventDamage()
     local to = event:getCostData(self).tos[1]
     room:throwCard(event:getCostData(self).cards, tianxiang.name, player, player)
@@ -46,7 +47,7 @@ tianxiang:addEffect(fk.DamageInflicted, {
       room:damage{
         from = data.from,
         to = to,
-        damage = data.damage,
+        damage = n,
         damageType = data.damageType,
         skillName = data.skillName,
         chain = data.chain,
