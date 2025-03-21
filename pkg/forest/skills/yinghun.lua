@@ -40,8 +40,8 @@ yinghun:addEffect(fk.EventPhaseStart, {
     local room = player.room
     local to = event:getCostData(self).tos[1]
     local n = player:getLostHp()
-    local choices = {"#yinghun-draw:::" .. n,  "#yinghun-discard:::" .. n}
-    local choice = (n == 1) and choices[1] or room:askToChoice(player, {
+    local choices = {"#yinghun-draw:::" .. n, "#yinghun-discard:::" .. n}
+    local choice = room:askToChoice(player, {
       choices = choices,
       skill_name = yinghun.name,
     })

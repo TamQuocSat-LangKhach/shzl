@@ -48,14 +48,14 @@ qinyin:addEffect(fk.EventPhaseEnd, {
       all_choices = {"loseHp", "recover", "Cancel"},
     })
     if choice ~= "Cancel" then
-      event:setCostData(self, choice)
+      event:setCostData(self, {tos = table.simpleClone(room.alive_players), choice = choice}) -- mute，所以tos也没有作用
       return true
     end
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room
-    if event:getCostData(self) == "recover" then
-      room:notifySkillInvoked(player, qinyin.name, "support")
+    if event:getCostData(self).choice == "recover" then
+      room:notifySkillInvoked(player, qinyin.name, "support", table.simpleClone(room.alive_players))
       player:broadcastSkillInvoke(qinyin.name, 2)
       for _, p in ipairs(room:getAlivePlayers()) do
         if p:isWounded() and not p.dead then
@@ -68,7 +68,7 @@ qinyin:addEffect(fk.EventPhaseEnd, {
         end
       end
     else
-      room:notifySkillInvoked(player, qinyin.name, "offensive")
+      room:notifySkillInvoked(player, qinyin.name, "offensive", table.simpleClone(room.alive_players))
       player:broadcastSkillInvoke(qinyin.name, 1)
       for _, p in ipairs(room:getAlivePlayers()) do
         if not p.dead then
@@ -78,5 +78,32 @@ qinyin:addEffect(fk.EventPhaseEnd, {
     end
   end,
 })
+
+qinyin:addTest(function (room, me)
+  FkTest.runInRoom(function()
+    room:handleAddLoseSkills(me, qinyin.name)
+  end)
+  FkTest.setNextReplies(me, {json.encode {
+    card = { skill = "discard_skill", subcards = { 1, 2 } },
+    targets = {}
+  }, "loseHp"})
+  FkTest.runInRoom(function()
+    room:obtainCard(me, {1, 2, 3, 4, 5, 6})
+    me:gainAnExtraTurn(true, nil, {Player.Discard})
+  end)
+  lu.assertEquals(me.hp, 3)
+  lu.assertEquals(room.players[2].hp, 3)
+
+  FkTest.setNextReplies(me, {json.encode {
+    card = { skill = "discard_skill", subcards = { 3, 4 } },
+    targets = {}
+  }, "recover"})
+  FkTest.runInRoom(function()
+    room:obtainCard(me, {1})
+    me:gainAnExtraTurn(true, nil, {Player.Discard})
+  end)
+  lu.assertEquals(me.hp, 4)
+  lu.assertEquals(room.players[2].hp, 4)
+end)
 
 return qinyin
