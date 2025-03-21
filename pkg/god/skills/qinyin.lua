@@ -48,7 +48,7 @@ qinyin:addEffect(fk.EventPhaseEnd, {
       all_choices = {"loseHp", "recover", "Cancel"},
     })
     if choice ~= "Cancel" then
-      event:setCostData(self, {tos = room.alive_players, choice = choice})
+      event:setCostData(self, choice)
       return true
     end
   end,
