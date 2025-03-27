@@ -55,7 +55,7 @@ zuilun:addEffect(fk.EventPhaseStart, {
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room
-    local n = self.cost_data
+    local n = event:getCostData(self).extra_data
     local cards = room:getNCards(3)
     local result = room:askToGuanxing(player, {
       cards = cards,
