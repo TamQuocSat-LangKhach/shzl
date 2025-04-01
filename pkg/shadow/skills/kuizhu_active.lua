@@ -7,16 +7,18 @@ Fk:loadTranslationTable{
 }
 
 kuizhu_active:addEffect("active", {
-  interaction = function()
-    return UI.ComboBox {choices = {"kuizhu_choice1", "kuizhu_choice2"}}
+  interaction = function(self, player)
+    local num = player:getMark("kuizhu")
+    return UI.ComboBox { choices = { "kuizhu_choice1:::" .. num, "kuizhu_choice2:::" .. num }}
   end,
   card_num = 0,
   min_target_num = 1,
   card_filter = Util.FalseFunc,
   target_filter = function(self, player, to_select, selected)
-    if self.interaction.data == "kuizhu_choice1" then
+    local data = self.interaction.data or ""
+    if data:startsWith("kuizhu_choice1") then
       return #selected < player:getMark("kuizhu")
-    elseif self.interaction.data == "kuizhu_choice2" then
+    elseif data:startsWith("kuizhu_choice2") then
       local n = to_select.hp
       for _, p in ipairs(selected) do
         n = n + p.hp
@@ -27,7 +29,8 @@ kuizhu_active:addEffect("active", {
   end,
   feasible = function(self, player, selected, selected_cards)
     if #selected_cards ~= 0 or #selected == 0 or not self.interaction.data then return false end
-    if self.interaction.data == "kuizhu_choice1" then
+    local data = self.interaction.data or ""
+    if data:startsWith("kuizhu_choice1") then
       return #selected <= player:getMark("kuizhu")
     else
       local n = 0
