@@ -23,9 +23,6 @@ guzheng:addEffect(fk.EventPhaseEnd, {
     if target ~= player and player:hasSkill(guzheng.name) and target.phase == Player.Discard and not target.dead then
       local room = player.room
       local guzheng_hand, guzheng_all, cards = {}, {}, {}
-      local phase_event = room.logic:getCurrentEvent():findParent(GameEvent.Phase, true)
-      if phase_event == nil then return false end
-      local end_id = phase_event.id
       room.logic:getEventsByRule(GameEvent.MoveCards, 1, function (e)
         for _, move in ipairs(e.data) do
           for _, info in ipairs(move.moveInfo) do
@@ -43,7 +40,7 @@ guzheng:addEffect(fk.EventPhaseEnd, {
           end
         end
         return false
-      end, end_id)
+      end, nil, Player.HistoryPhase)
       if #guzheng_hand > 0 then
         event:setCostData(self, {extra_data = {guzheng_hand, guzheng_all}})
         return true
