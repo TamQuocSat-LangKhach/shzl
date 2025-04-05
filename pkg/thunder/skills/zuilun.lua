@@ -49,13 +49,13 @@ zuilun:addEffect(fk.EventPhaseStart, {
       skill_name = zuilun.name,
       prompt = "#zuilun-invoke:::"..n,
     }) then
-      event:setCostData(self, {extra_data = n})
+      event:setCostData(self, n)
       return true
     end
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room
-    local n = event:getCostData(self).extra_data
+    local n = event:getCostData(self)
     local cards = room:getNCards(3)
     local result = room:askToGuanxing(player, {
       cards = cards,
