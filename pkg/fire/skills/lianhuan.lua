@@ -17,9 +17,7 @@ lianhuan:addEffect("active", {
   prompt = "#lianhuan",
   card_num = 1,
   min_target_num = 0,
-  can_use = function(self, player)
-    return not player:isKongcheng()
-  end,
+  handly_pile = true,
   card_filter = function(self, player, to_select, selected)
     return #selected == 0 and Fk:getCardById(to_select).suit == Card.Club and table.contains(player:getHandlyIds(), to_select)
   end,
@@ -29,6 +27,18 @@ lianhuan:addEffect("active", {
       card:addSubcard(selected_cards[1])
       card.skillName = lianhuan.name
       return player:canUse(card) and card.skill:targetFilter(player, to_select, selected, selected_cards, card)
+    end
+  end,
+  feasible = function (self, player, selected, selected_cards)
+    if #selected_cards == 1 then
+      if #selected == 0 then
+        return table.contains(player:getCardIds("h"), selected_cards[1])
+      else
+        local card = Fk:cloneCard("iron_chain")
+        card:addSubcard(selected_cards[1])
+        card.skillName = lianhuan.name
+        return card.skill:feasible(player, selected, {}, card)
+      end
     end
   end,
   on_use = function(self, room, effect)
