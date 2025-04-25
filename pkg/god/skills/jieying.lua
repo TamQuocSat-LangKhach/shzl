@@ -22,6 +22,17 @@ jieying:addEffect(fk.GameStart, {
     player:setChainState(true)
   end,
 })
+
+jieying:addEffect(fk.EventAcquireSkill, {
+  anim_type = "negative",
+  can_trigger = function(self, event, target, player, data)
+    return target == player and data.name == jieying.name and not player.chained
+  end,
+  on_use = function (self, event, target, player, data)
+    player:setChainState(true)
+  end,
+})
+
 jieying:addEffect(fk.BeforeChainStateChange, {
   anim_type = "negative",
   can_trigger = function(self, event, target, player, data)
@@ -29,6 +40,7 @@ jieying:addEffect(fk.BeforeChainStateChange, {
   end,
   on_use = Util.TrueFunc,
 })
+
 jieying:addEffect(fk.EventPhaseStart, {
   anim_type = "control",
   can_trigger = function(self, event, target, player, data)
@@ -39,23 +51,22 @@ jieying:addEffect(fk.EventPhaseStart, {
   end,
   on_use = function (self, event, target, player, data)
     local room = player.room
-    local targets = table.filter(room.alive_players, function(p)
+    local to = table.filter(room.alive_players, function(p)
       return p ~= player and not p.chained
     end)
-    if #targets == 1 then
-      room:doIndicate(player, targets)
-      targets[1]:setChainState(true)
-    elseif #targets > 1 then
-      local to = room:askToChoosePlayers(player, {
+    if #to > 1 then
+      to = room:askToChoosePlayers(player, {
         min_num = 1,
         max_num = 1,
-        targets = targets,
+        targets = to,
         skill_name = jieying.name,
         prompt = "#jieying-choose",
         cancelable = false,
-      })[1]
-      to:setChainState(true)
+      })
     end
+    to = to[1]
+    room:doIndicate(player, {to})
+    to:setChainState(true)
   end,
 })
 jieying:addEffect("maxcards", {

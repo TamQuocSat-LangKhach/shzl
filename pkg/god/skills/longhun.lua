@@ -8,12 +8,15 @@ Fk:loadTranslationTable{
   "<font color='red'>♦</font>当火【杀】，♣当【闪】，♠当【无懈可击】。若你以此法使用或打出了两张：<font color='red'>♥</font>牌，"..
   "此牌回复基数+1；<font color='red'>♦</font>牌，此牌伤害基数+1；黑色牌，你弃置当前回合角色一张牌。",
 
+  ["#longhun"] = "龙魂：将至多两张相同花色的牌当对应的牌使用或打出",
+
   ["$longhun1"] = "龙战于野，其血玄黄。",
   ["$longhun2"] = "潜龙勿用，藏锋守拙。",
 }
 
 longhun:addEffect("viewas", {
   pattern = "peach,slash,jink,nullification",
+  prompt = "#longhun",
   handly_pile = true,
   card_filter = function(self, player, to_select, selected)
     if #selected == 2 then
@@ -68,29 +71,29 @@ longhun:addEffect("viewas", {
       end
     end
   end,
-})
-
-local longhun_spec = {
-  mute = true,
-  can_trigger = function(self, event, target, player, data)
-    return target == player and
-      table.contains(data.card.skillNames, "longhun") and #data.card.subcards == 2 and
-      Fk:getCardById(data.card.subcards[1]).color == Card.Black and
-      not player.dead and not player.room.current.dead and not player.room.current:isNude()
-  end,
-  on_cost = Util.TrueFunc,
-  on_use = function(self, event, target, player, data)
+  after_use = function (self, player, use)
     local room = player.room
-    local card = room:askToChooseCard(player, {
-      target = room.current,
-      flag = "he",
-      skill_name = longhun.name,
-    })
-    room:throwCard(card, longhun.name, room.current, player)
+    if #use.card.subcards == 2 and Fk:getCardById(use.card.subcards[1]).color == Card.Black and
+      not player.dead and not room.current.dead and not room.current:isNude() then
+      room:doIndicate(player, {room.current})
+      if room.current == player then
+        room:askToDiscard(player, {
+          min_num = 1,
+          max_num = 1,
+          include_equip = true,
+          skill_name = longhun.name,
+          cancelable = false,
+        })
+      else
+        local card = room:askToChooseCard(player, {
+          target = room.current,
+          flag = "he",
+          skill_name = longhun.name,
+        })
+        room:throwCard(card, longhun.name, room.current, player)
+      end
+    end
   end,
-}
-
-longhun:addEffect(fk.CardUseFinished, longhun_spec)
-longhun:addEffect(fk.CardRespondFinished, longhun_spec)
+})
 
 return longhun

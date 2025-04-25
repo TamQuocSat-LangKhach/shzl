@@ -7,6 +7,7 @@ Fk:loadTranslationTable{
   [":gundam__longhun"] = "你可以将你的牌按以下规则使用或打出：<font color='red'>♥</font>当【桃】，"..
   "<font color='red'>♦</font>当火【杀】，♣当【闪】，♠当【无懈可击】。准备阶段开始时，如果场上有【青釭剑】，你可以获得之。",
 
+  ["#gundam__longhun"] = "龙魂：将一张牌按花色转化为对应的牌使用或打出",
   ["#gundam__longhun_qinggang-invoke"] = "龙魂：你可夺走场上的【青釭剑】！",
 
   ["$gundam__longhun1"] = "金甲映日，驱邪祛秽。", --无懈
@@ -18,6 +19,7 @@ Fk:loadTranslationTable{
 longhun:addEffect("viewas", {
   mute = true,
   pattern = "peach,slash,jink,nullification",
+  prompt = "#gundam__longhun",
   card_filter = function(self, player, to_select, selected)
     if #selected == 1 then
       return false
@@ -58,7 +60,24 @@ longhun:addEffect("viewas", {
     c:addSubcards(cards)
     return c
   end,
+  before_use = function (self, player, use)
+    local room = player.room
+    if use.card.trueName == "nullification" then
+      player:broadcastSkillInvoke(longhun.name, 1)
+      room:notifySkillInvoked(player, longhun.name, "control")
+    elseif use.card.trueName == "jink" then
+      player:broadcastSkillInvoke(longhun.name, 2)
+      room:notifySkillInvoked(player, longhun.name, "defensive")
+    elseif use.card.trueName == "peach" then
+      player:broadcastSkillInvoke(longhun.name, 3)
+      room:notifySkillInvoked(player, longhun.name, "support")
+    elseif use.card.trueName == "slash" then
+      player:broadcastSkillInvoke(longhun.name, 4)
+      room:notifySkillInvoked(player, longhun.name, "offensive")
+    end
+  end,
 })
+
 longhun:addEffect(fk.EventPhaseStart, {
   can_trigger = function(self, event, target, player, data)
     return target == player and player:hasSkill(longhun.name) and player.phase == Player.Start and
@@ -89,36 +108,12 @@ longhun:addEffect(fk.EventPhaseStart, {
           toArea = Card.PlayerHand,
           moveReason = fk.ReasonPrey,
           moveVisible = true,
+          skillName = longhun.name,
         })
       end
     end
     room:moveCards(table.unpack(moves))
   end,
 })
-
-local audio_spec = {
-  can_refresh = function(self, event, target, player, data)
-    return target == player and table.contains(data.card.skillNames, "gundam__longhun")
-  end,
-  on_refresh = function(self, event, target, player, data)
-    local room = player.room
-    if data.card.trueName == "nullification" then
-      player:broadcastSkillInvoke("gundam__longhun", 1)
-      room:notifySkillInvoked(player, "gundam__longhun", "control")
-    elseif data.card.trueName == "jink" then
-      player:broadcastSkillInvoke("gundam__longhun", 2)
-      room:notifySkillInvoked(player, "gundam__longhun", "defensive")
-    elseif data.card.trueName == "peach" then
-      player:broadcastSkillInvoke("gundam__longhun", 3)
-      room:notifySkillInvoked(player, "gundam__longhun", "support")
-    elseif data.card.trueName == "slash" then
-      player:broadcastSkillInvoke("gundam__longhun", 4)
-      room:notifySkillInvoked(player, "gundam__longhun", "offensive")
-    end
-  end,
-}
-
-longhun:addEffect(fk.PreCardUse, audio_spec)
-longhun:addEffect(fk.PreCardRespond, audio_spec)
 
 return longhun

@@ -7,12 +7,17 @@ Fk:loadTranslationTable{
   [":nos__longhun"] = "你可以将X张你的同花色的牌按以下规则使用或打出：<font color='red'>♥</font>当【桃】，"..
   "<font color='red'>♦</font>当火【杀】，♣当【闪】，♠当【无懈可击】（X为你的体力值且至少为1）。",
 
+  ["#nos__longhun"] = "龙魂：将%arg张相同花色的牌当对应的牌使用或打出",
+
   ["$nos__longhun1"] = "常山赵子龙在此！",
   ["$nos__longhun2"] = "能屈能伸，才是大丈夫！",
 }
 
 longhun:addEffect("viewas", {
   pattern = "peach,slash,jink,nullification",
+  prompt = function (self, player, selected_cards, selected)
+    return "#nos__longhun:::"..math.max(player.hp, 1)
+  end,
   handly_pile = true,
   card_filter = function(self, player, to_select, selected)
     if #selected >= math.max(player.hp, 1) then
