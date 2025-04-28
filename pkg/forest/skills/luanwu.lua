@@ -43,7 +43,8 @@ luanwu:addEffect("active", {
           extra_data = {
             exclusive_targets = table.map(luanwu_targets, Util.IdMapper),
             bypass_times = true,
-          }
+          },
+          skill_name = luanwu.name,
         })
         if use then
           use.extraUse = true
@@ -55,5 +56,30 @@ luanwu:addEffect("active", {
     end
   end,
 })
+
+luanwu:addTest(function (room, me)
+  local comp2, comp3 = room.players[2], room.players[3]
+  FkTest.setNextReplies(me, {
+    json.encode {
+      card = { skill = luanwu.name, subcards = {} },
+    },
+    "",
+  })
+  FkTest.setNextReplies(comp3, {
+    json.encode {
+      card = 1,
+      targets = { comp2.id }, -- 应再测试是否只能杀距离最近的角色
+    },
+  })
+  FkTest.runInRoom(function()
+    room:handleAddLoseSkills(me, luanwu.name)
+    room:obtainCard(comp3, 1)
+    GameEvent.Turn:create(TurnData:new(me, "game_rule", { Player.Play })):exec()
+  end)
+  lu.assertEquals(me.hp, 4)
+  lu.assertEquals(comp2.hp, 2)
+  lu.assertEquals(comp3.hp, 4)
+  lu.assertEvalToFalse(Fk.skills[luanwu.name]:canUse(me))
+end)
 
 return luanwu

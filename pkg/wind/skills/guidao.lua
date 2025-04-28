@@ -19,19 +19,33 @@ guidao:addEffect(fk.AskForRetrial, {
   end,
   on_cost = function(self, event, target, player, data)
     local room = player.room
-    local response = room:askToResponse(player, {
+    local allIds = table.connect(player:getHandlyIds(), player:getCardIds(Player.Equip))
+    local ids = table.filter(allIds, function (id)
+      return not player:prohibitResponse(Fk:getCardById(id)) and Fk:getCardById(id).color == Card.Black
+    end)
+    local cards = room:askToCards(player, {
+      min_num = 1,
+      max_num = 1,
       skill_name = guidao.name,
-      pattern = ".|.|spade,club|hand,equip",
+      pattern = tostring( Exppattern{ id = ids } ),
+      include_equip = true,
       prompt = "#guidao-ask::"..target.id..":"..data.reason,
       cancelable = true,
     })
-    if response then
-      event:setCostData(self, {extra_data = response.card})
+    if #cards > 0 then
+      event:setCostData(self, {cards = cards})
       return true
     end
   end,
   on_use = function(self, event, target, player, data)
-    player.room:retrial(event:getCostData(self).extra_data, player, data, guidao.name, true)
+    player.room:changeJudge{
+      card = Fk:getCardById(event:getCostData(self).cards[1]),
+      player = player,
+      data = data,
+      skillName = guidao.name,
+      response = true,
+      exchange = true,
+    }
   end,
 })
 
