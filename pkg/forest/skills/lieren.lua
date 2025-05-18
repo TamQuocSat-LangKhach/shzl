@@ -31,7 +31,7 @@ lieren:addEffect(fk.Damage, {
   on_use = function(self, event, target, player, data)
     local room = player.room
     local pindian = player:pindian({data.to}, lieren.name)
-    if pindian.results[data.to.id].winner == player then
+    if pindian.results[data.to].winner == player then
       if player.dead or data.to.dead or data.to:isNude() then return end
       local card = room:askToChooseCard(player, {
         skill_name = lieren.name,

@@ -26,7 +26,7 @@ renjie:addEffect(fk.AfterCardsMove, {
   can_trigger = function(self, event, target, player, data)
     if player:hasSkill(renjie.name) and player.phase == Player.Discard then
       for _, move in ipairs(data) do
-        if move.from == player.id and move.moveReason == fk.ReasonDiscard then
+        if move.from == player and move.moveReason == fk.ReasonDiscard then
           for _, info in ipairs(move.moveInfo) do
             if info.fromArea == Card.PlayerHand then
               return true
@@ -40,7 +40,7 @@ renjie:addEffect(fk.AfterCardsMove, {
     local room = player.room
     local n = 0
     for _, move in ipairs(data) do
-      if move.from == player.id and move.moveReason == fk.ReasonDiscard then
+      if move.from == player and move.moveReason == fk.ReasonDiscard then
         for _, info in ipairs(move.moveInfo) do
           if info.fromArea == Card.PlayerHand then
             n = n + 1
