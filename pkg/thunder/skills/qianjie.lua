@@ -1,6 +1,6 @@
 local qianjie = fk.CreateSkill {
   name = "qianjie",
-  tags = {Skill.Compulsory},
+  tags = { Skill.Compulsory },
 }
 
 Fk:loadTranslationTable{
@@ -15,7 +15,9 @@ qianjie:addEffect(fk.BeforeChainStateChange, {
   can_trigger = function(self, event, target, player, data)
     return target == player and player:hasSkill(qianjie.name) and not player.chained
   end,
-  on_use = Util.TrueFunc,
+  on_use = function (self, event, target, player, data)
+    data.prevented = true
+  end,
 })
 qianjie:addEffect("prohibit", {
   is_prohibited = function(self, from, to, card)

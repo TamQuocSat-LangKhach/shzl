@@ -1,6 +1,5 @@
 local buqu = fk.CreateSkill({
   name = "buqu",
-  derived_piles = "zhoutai_chuang",
 })
 
 Fk:loadTranslationTable{

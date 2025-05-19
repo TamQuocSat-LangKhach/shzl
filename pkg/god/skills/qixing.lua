@@ -1,6 +1,5 @@
 local qixing = fk.CreateSkill {
   name = "qixing",
-  derived_piles = "$star",
 }
 
 Fk:loadTranslationTable{
@@ -31,6 +30,7 @@ end
 
 qixing:addEffect(fk.GameStart, {
   anim_type = "drawcard",
+  derived_piles = "$star",
   can_trigger = function(self, event, target, player, data)
     return player:hasSkill(qixing.name)
   end,

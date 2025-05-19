@@ -1,6 +1,5 @@
 local tuntian = fk.CreateSkill {
   name = "tuntian",
-  derived_piles = "dengai_field",
 }
 
 Fk:loadTranslationTable{
@@ -15,6 +14,7 @@ Fk:loadTranslationTable{
 }
 
 tuntian:addEffect(fk.AfterCardsMove, {
+  derived_piles = "dengai_field",
   can_trigger = function(self, event, target, player, data)
     if player:hasSkill(tuntian.name) and player.room.current ~= player then
       for _, move in ipairs(data) do

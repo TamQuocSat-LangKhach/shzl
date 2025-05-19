@@ -38,7 +38,9 @@ jieying:addEffect(fk.BeforeChainStateChange, {
   can_trigger = function(self, event, target, player, data)
     return target == player and player:hasSkill(jieying.name) and player.chained
   end,
-  on_use = Util.TrueFunc,
+  on_use = function (self, event, target, player, data)
+    data.prevented = true
+  end,
 })
 
 jieying:addEffect(fk.EventPhaseStart, {

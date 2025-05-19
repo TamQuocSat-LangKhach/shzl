@@ -1,6 +1,5 @@
 local zhengrong = fk.CreateSkill {
   name = "zhengrong",
-  derived_piles = "$guanqiujian__glory",
 }
 
 Fk:loadTranslationTable{
@@ -16,6 +15,7 @@ Fk:loadTranslationTable{
 
 zhengrong:addEffect(fk.Damage, {
   anim_type = "control",
+  derived_piles = "$guanqiujian__glory",
   can_trigger = function(self, event, target, player, data)
     return target == player and player:hasSkill(zhengrong.name) and
       not data.to.dead and data.to:getHandcardNum() > player:getHandcardNum()
