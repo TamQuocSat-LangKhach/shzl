@@ -23,14 +23,12 @@ congjian:addEffect(fk.TargetConfirmed, {
   end,
   on_cost = function(self, event, target, player, data)
     local room = player.room
-    local targets = data.use.tos
-    table.removeOne(targets, player)
     local tos, cards = room:askToChooseCardsAndPlayers(player, {
       min_card_num = 1,
       max_card_num = 1,
       min_num = 1,
       max_num = 1,
-      targets = targets,
+      targets = table.filter(data.use.tos, function(p) return p ~= player end),
       skill_name = congjian.name,
       prompt = "#congjian-give",
       cancelable = true,
