@@ -19,7 +19,7 @@ guidao:addEffect(fk.AskForRetrial, {
   end,
   on_cost = function(self, event, target, player, data)
     local room = player.room
-    local allIds = table.connect(player:getHandlyIds(), player:getCardIds(Player.Equip))
+    local allIds = table.connect(player:getHandlyIds(), player:getCardIds("e"))
     local ids = table.filter(allIds, function (id)
       return not player:prohibitResponse(Fk:getCardById(id)) and Fk:getCardById(id).color == Card.Black
     end)

@@ -72,7 +72,7 @@ jilue:addEffect("active", {
       player:broadcastSkillInvoke("ex__zhiheng")
       room:notifySkillInvoked(player, "jilue", "drawcard")
       player:setSkillUseHistory("ex__zhiheng", player:usedSkillTimes("ex__zhiheng", Player.HistoryPhase) + 1, Player.HistoryPhase)
-      local hand = player:getCardIds(Player.Hand)
+      local hand = player:getCardIds("h")
       local more = #hand > 0
       for _, id in ipairs(hand) do
         if not table.contains(effect.cards, id) then

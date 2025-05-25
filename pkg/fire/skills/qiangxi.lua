@@ -22,13 +22,7 @@ qiangxi:addEffect("active", {
     return Fk:getCardById(to_select).sub_type == Card.SubtypeWeapon and not player:prohibitDiscard(to_select)
   end,
   target_filter = function(self, player, to_select, selected, selected_cards)
-    if #selected == 0 then
-      if #selected_cards == 0 or Fk:currentRoom():getCardArea(selected_cards[1]) ~= Player.Equip then
-        return player:inMyAttackRange(to_select)
-      else
-        return player:distanceTo(to_select) == 1  --FIXME: some skills(eg.gongqi, meibu) add attackrange directly!
-      end
-    end
+    return #selected == 0 and player:inMyAttackRange(to_select, nil, selected_cards)
   end,
   on_use = function(self, room, effect)
     local player = effect.from
