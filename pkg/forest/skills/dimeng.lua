@@ -24,7 +24,7 @@ dimeng:addEffect("active", {
   end,
   card_filter = Util.FalseFunc,
   target_filter = function(self, player, to_select, selected, selected_cards)
-    if to_select == player.id or #selected > 1 then return false end
+    if to_select == player or #selected > 1 then return false end
     if #selected == 0 then
       return true
     else
