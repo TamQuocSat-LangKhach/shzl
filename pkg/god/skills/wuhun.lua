@@ -33,15 +33,30 @@ wuhun:addEffect(fk.Damaged, {
 wuhun:addEffect(fk.Death, {
   anim_type = "offensive",
   can_trigger = function(self, event, target, player, data)
-    return target == player and player:hasSkill(wuhun.name, false, true)
+    return
+      target == player and
+      player:hasSkill(wuhun.name, false, true) and
+      table.find(player.room.alive_players, function(p) return p ~= player and p:getMark("@nightmare") > 0 end)
   end,
   on_use = function(self, event, target, player, data)
     local room = player.room
-    local targets = table.filter(room:getOtherPlayers(player, false), function (p)
-      return table.every(room:getOtherPlayers(player, false), function (p2)
-        return p:getMark("@nightmare") >= p2:getMark("@nightmare")
-      end)
+    local targets = {}
+    local maxNightmare = 1
+    table.forEach(room:getOtherPlayers(player, false), function(p)
+      local nightmareMark = p:getMark("@nightmare")
+      if nightmareMark > maxNightmare then
+        maxNightmare = nightmareMark
+        targets = {}
+      end
+
+      if nightmareMark == maxNightmare then
+        table.insert(targets, p)
+      end
     end)
+    if #targets == 0 then
+      return false
+    end
+
     if #targets > 1 then
       targets = room:askToChoosePlayers(player, {
         min_num = 1,
