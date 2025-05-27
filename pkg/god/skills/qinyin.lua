@@ -29,7 +29,7 @@ qinyin:addEffect(fk.EventPhaseEnd, {
             if n > 1 then return true end
           end
         end
-      end, Player.HistoryTurn)
+      end, Player.HistoryPhase)
       return n > 1
     end
   end,
