@@ -50,7 +50,7 @@ jilue:addEffect("active", {
     if not player:hasSkill("wansha", true) then
       table.insert(choices, "wansha")
     end
-    if #choices == 0 then return false end
+    if #choices == 0 then return end
     return UI.ComboBox { choices = choices , all_choices = {"ex__zhiheng", "wansha"}}
   end,
   can_use = function(self, player)
@@ -101,14 +101,20 @@ jilue:addEffect(fk.AskForRetrial, {
   end,
   on_cost = function(self, event, target, player, data)
     local room = player.room
-    local card = room:askToResponse(player, {
+    local ids = table.filter(table.connect(player:getHandlyIds(), player:getCardIds("e")), function (id)
+      return not player:prohibitResponse(Fk:getCardById(id))
+    end)
+    local cards = room:askToCards(player, {
+      min_num = 1,
+      max_num = 1,
       skill_name = "ex__guicai",
-      pattern = ".|.|.|hand,equip",
+      include_equip = true,
+      pattern = tostring(Exppattern{ id = ids }),
       prompt = "#ex__guicai-ask::"..target.id..":"..data.reason,
       cancelable = true,
     })
-    if card then
-      event:setCostData(self, {extra_data = card})
+    if #cards > 0 then
+      event:setCostData(self, {cards = cards})
       return true
     end
   end,
@@ -117,7 +123,13 @@ jilue:addEffect(fk.AskForRetrial, {
     room:removePlayerMark(player, "@godsimayi_bear", 1)
     room:notifySkillInvoked(player, jilue.name, "control")
     player:broadcastSkillInvoke("ex__guicai")
-    room:retrial(event:getCostData(self).extra_data, player, data, "ex__guicai")
+    room:changeJudge{
+      card = Fk:getCardById(event:getCostData(self).cards[1]),
+      player = player,
+      data = data,
+      skillName = "ex__guicai",
+      response = true,
+    }
   end,
 })
 jilue:addEffect(fk.Damaged, {
